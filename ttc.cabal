@@ -1,0 +1,136 @@
+name:           ttc
+version:        0.0.0.1
+description:    Please see the README on GitHub at <https://github.com/ExtremaIS/ttc-haskell#readme>
+homepage:       https://github.com/ExtremaIS/ttc-haskell#readme
+bug-reports:    https://github.com/ExtremaIS/ttc-haskell/issues
+author:         Travis Cardwell
+maintainer:     travis.cardwell@extrema.is
+copyright:      Copyright (c) 2019 Travis Cardwell
+license:        MIT
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >=1.10
+extra-source-files:
+    CHANGELOG.md
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/ExtremaIS/ttc-haskell
+
+flag example-invalid
+  description: build example-invalid
+  default: False
+
+flag example-mkvalid
+  description: build example-mkvalid
+  default: False
+
+flag example-prompt
+  description: build example-prompt
+  default: False
+
+flag example-valid
+  description: build example-valid
+  default: False
+
+flag examples
+  description: build all buildable examples
+  default: False
+
+library
+  hs-source-dirs: src
+  exposed-modules:
+      Data.TTC
+    , Data.TTC.Instances
+  build-depends:
+      base >=4.7 && <5
+    , bytestring >=0.10
+    , template-haskell >=2.9
+    , text >=1.1
+  default-language: Haskell2010
+  ghc-options: -Wall
+
+executable example-invalid
+  if flag(example-invalid)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: examples
+  main-is: invalid.hs
+  other-modules:
+      CreditCard
+  build-depends:
+      base
+    , template-haskell
+    , time
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-mkvalid
+  if flag(examples) || flag(example-mkvalid)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: examples
+  main-is: mkvalid.hs
+  other-modules:
+      Duration
+  build-depends:
+      base
+    , time
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-prompt
+  if flag(examples) || flag(example-prompt)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: examples
+  main-is: prompt.hs
+  other-modules:
+      CreditCard
+  build-depends:
+      base
+    , template-haskell
+    , time
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-valid
+  if flag(examples) || flag(example-valid)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: examples
+  main-is: valid.hs
+  other-modules:
+      CreditCard
+  build-depends:
+      base
+    , template-haskell
+    , time
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+test-suite ttc-test
+  type: exitcode-stdio-1.0
+  hs-source-dirs: test
+  main-is: Spec.hs
+  other-modules:
+      Data.TTC.Test
+    , Data.TTC.Instances.Test
+  build-depends:
+      base
+    , bytestring
+    , tasty
+    , tasty-hunit
+    , text
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
