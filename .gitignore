@@ -1,0 +1,9 @@
+# project
+/build/
+
+# stack
+.stack-work
+stack.yaml.lock
+
+# vi
+.*.swp
