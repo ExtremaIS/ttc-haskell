@@ -2,14 +2,12 @@
 
 TTC, an initialism of _Textual Type Classes_, is a library that provides type
 classes for conversion between data types and textual data types (strings).
-While `Show` and `Read` instances (should) work with strings representing
-syntactically correct Haskell expressions, and are mostly used for debugging,
-the type classes in this library may be used for other purposes.
 
 ## Overview
 
-The following is a brief overview of the library type classes.  See the API
-documentation for details and the `examples` directory for usage examples.
+The following is a brief overview of the type classes provided by this
+library.  See the API documentation for details and the `examples` directory
+for usage examples.
 
 ### `Textual`
 
@@ -23,7 +21,7 @@ types:
 * Lazy `ByteString`
 
 The key feature of this type class is that it has a single type variable,
-making it easy to write functions that accepts arguments and/or returns values
+making it easy to write functions that accept arguments and/or returns values
 that may be any of the supported textual data types.
 
 Functions are provided to convert to/from the following other textual data
@@ -35,23 +33,29 @@ types:
 
 ### `Render`
 
-The `Render` type class is analogous to `Show`: it renders a data type as a
-textual data type.
+The `Render` type class renders a data type as a textual data type:
 
 ```haskell
 class Render a where
   render :: Textual t => a -> t
 ```
 
+Use this type class to work with strings of any format required by your
+program.  It is analogous to the `Show` type class, which can be reserved
+for debugging/development.
+
 ### `Parse`
 
-The `Parse` type class is analogous to `Read`: it parses a data type from a
-textual data type.
+The `Parse` type class parses a data type from a textual data type:
 
 ```haskell
 class Parse a where
   parse :: Textual t => t -> Either String a
 ```
+
+Use this type class to work with strings of any format required by your
+program.  It is analogous to the `Read` type class, which can be reserved
+for debugging/development.
 
 Template Haskell functions are available to use `Parse` instances to validate
 constants at compile-time.

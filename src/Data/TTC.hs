@@ -7,10 +7,7 @@
 --
 -- TTC, an initialism of /Textual Type Classes/, is a library that provides
 -- type classes for conversion between data types and textual data types
--- (strings).  While 'Show' and 'Read' instances (should) work with strings
--- representing syntactically correct Haskell expressions, and are mostly used
--- for debugging, the type classes in this library may be used for other
--- purposes.
+-- (strings).
 --
 -- This library is meant to be imported qualified, as follows:
 --
@@ -135,8 +132,8 @@ import qualified Data.Text.Lazy.Encoding as TLE
 ------------------------------------------------------------------------------
 -- $Textual
 
--- | The 'Textual' class is used to convert between the following textual data
--- types:
+-- | The 'Textual' type class is used to convert between the following textual
+-- data types:
 --
 -- * 'String' (@S@)
 -- * Strict 'T.Text' (@T@)
@@ -350,7 +347,7 @@ fromSBS = convert . SBS.fromShort
 ------------------------------------------------------------------------------
 -- $Render
 
--- | The 'Render' class is used to convert values to textual data types.
+-- | The 'Render' type class renders a data type as a textual data type.
 --
 -- There are no default instances for the 'Render' type class, so that all
 -- instances can be customized per project when desired.  Instances for some
@@ -399,7 +396,7 @@ renderWithShow = convert . show
 ------------------------------------------------------------------------------
 -- $Parse
 
--- | The 'Parse' class is used to parse values from textual data types.
+-- | The 'Parse' type class parses a data type from a textual data type.
 --
 -- There are no default instances for the 'Parse' type class, so that all
 -- instances can be customized per project when desired.  Instances for some
