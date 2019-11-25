@@ -3,6 +3,9 @@
 TTC, an initialism of _Textual Type Classes_, is a library that provides type
 classes for conversion between data types and textual data types (strings).
 
+* Hackage: <https://hackage.haskell.org/package/ttc>
+* GitHub: <https://github.com/ExtremaIS/ttc-haskell>
+
 ## Overview
 
 The following is a brief overview of the type classes provided by this
