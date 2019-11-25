@@ -67,6 +67,12 @@ constants at compile-time.
 
 ### Rendering and Parsing
 
+The [relude](https://hackage.haskell.org/package/relude) library has
+polymorphic versions of `show` and `readEither` in `Relude.String.Conversion`,
+as well as various type classes for converting between string types.  This
+does not encourage using `Show` and `Read` instances with syntactically valid
+Haskell syntax, and it encourages the using of the `String` data type.
+
 The [rio](https://hackage.haskell.org/package/rio) library has a `Display`
 type class with a similar goal as `TTC.Render`.  Since the library encourages
 a uniform usage of textual data types, `Display` only provides functions for
