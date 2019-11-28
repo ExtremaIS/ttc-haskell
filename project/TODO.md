@@ -28,6 +28,5 @@ parseJsonString expected = A.withText expected $ either fail pure . TTC.parse
 
 ## Project
 
-* Setup Travis CI.
 * Add to Hackage.
 * Add to Stackage.
