@@ -3,6 +3,9 @@
 TTC, an initialism of _Textual Type Classes_, is a library that provides type
 classes for conversion between data types and textual data types (strings).
 
+* Hackage: <https://hackage.haskell.org/package/ttc> _coming soon_
+* GitHub: <https://github.com/ExtremaIS/ttc-haskell>
+
 ## Overview
 
 The following is a brief overview of the type classes provided by this
@@ -64,11 +67,24 @@ constants at compile-time.
 
 ### Rendering and Parsing
 
+The [relude](https://hackage.haskell.org/package/relude) library has
+polymorphic versions of `show` and `readEither` in `Relude.String.Conversion`,
+as well as various type classes for converting between string types.  This
+does not encourage using `Show` and `Read` instances with syntactically valid
+Haskell syntax, and it encourages the using of the `String` data type.
+
 The [rio](https://hackage.haskell.org/package/rio) library has a `Display`
 type class with a similar goal as `TTC.Render`.  Since the library encourages
 a uniform usage of textual data types, `Display` only provides functions for
 rendering to `Text` and a builder format.  It does not have a type class
 similar to `TTC.Parse`.
+
+Harry Garrood has an interesting series of blog posts about type classes and
+`Show`:
+
+* [Down with Show! Part 1: Rules of thumb for when to use a type class](https://harry.garrood.me/blog/down-with-show-part-1/)
+* [Down with Show! Part 2: What's wrong with the Show type class](https://harry.garrood.me/blog/down-with-show-part-2/)
+* [Down with Show! Part 3: A replacement for Show](https://harry.garrood.me/blog/down-with-show-part-3/)
 
 ### Constant Validation
 
