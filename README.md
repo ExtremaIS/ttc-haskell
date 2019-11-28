@@ -5,8 +5,9 @@
 TTC, an initialism of _Textual Type Classes_, is a library that provides type
 classes for conversion between data types and textual data types (strings).
 
-* Hackage: <https://hackage.haskell.org/package/ttc> _coming soon_
+* Hackage: <https://hackage.haskell.org/package/ttc> (_coming soon_)
 * GitHub: <https://github.com/ExtremaIS/ttc-haskell>
+* Travis CI: <https://travis-ci.com/ExtremaIS/ttc-haskell>
 
 ## Overview
 
@@ -97,8 +98,9 @@ supports conversion between arbitrary types, not just from textual data types.
 Template Haskell functions are provided to perform validation at compile-time.
 Result types must either have `Lift` instances or equivalent implementations.
 
-Chris Done posted a gist about implementing statically checked overloaded
-strings: <https://gist.github.com/chrisdone/809296b769ee36d352ae4f8dbe89a364>
+Chris Done posted
+[a gist](https://gist.github.com/chrisdone/809296b769ee36d352ae4f8dbe89a364)
+about implementing statically checked overloaded strings.
 
 ### String Type Conversion
 
