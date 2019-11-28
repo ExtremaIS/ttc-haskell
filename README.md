@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/ExtremaIS/ttc-haskell.svg?branch=master)](https://travis-ci.org/ExtremaIS/ttc-haskell)
+
 # `ttc-haskell`
 
 TTC, an initialism of _Textual Type Classes_, is a library that provides type

@@ -27,7 +27,7 @@ clean:
 clean-all: clean
 	@rm -rf .stack-work
 	@rm -rf build
-	@rm -f stack.yaml.lock
+	@rm -f *.yaml.lock
 
 coverage:
 	@stack test --coverage
@@ -79,7 +79,7 @@ help:
 	@echo "make repl             run REPL"
 	@echo "make source-git       create source tarball of git TREE"
 	@echo "make source-tar       create source tarball using tar"
-	@echo "make stack            build and test using Stack resolver R"
+	@echo "make stack            build and test using file F or resolver R"
 	@echo "make test             run tests, optionally for pattern P"
 	@echo "make todo             search for TODO items"
 	@echo "make version          show current version"
@@ -135,8 +135,11 @@ source-tar:
 	@rm -f build/.gitignore
 
 stack:
+	$(eval F := "")
 	$(eval R := "nightly")
-	@stack build --resolver $(R) --haddock --test
+	@test -z "$(F)" \
+		&& stack build --resolver $(R) --haddock --test \
+		|| stack build --stack-yaml $(F) --haddock --test
 
 test:
 	$(eval P := "")
