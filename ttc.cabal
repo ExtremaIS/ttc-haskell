@@ -1,5 +1,5 @@
 name:           ttc
-version:        0.0.0.1
+version:        0.0.0.2
 synopsis:       Textual Type Classes
 description:    Please see the README on GitHub at <https://github.com/ExtremaIS/ttc-haskell#readme>
 category:       Data, Text
