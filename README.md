@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/ExtremaIS/ttc-haskell.svg?branch=master)](https://travis-ci.org/ExtremaIS/ttc-haskell)
+[![Build Status](https://travis-ci.com/ExtremaIS/ttc-haskell.svg?branch=master)](https://travis-ci.com/ExtremaIS/ttc-haskell)
 
 # `ttc-haskell`
 
