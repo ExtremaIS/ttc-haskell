@@ -3,7 +3,7 @@
 
 # stack
 .stack-work
-stack.yaml.lock
+*.yaml.lock
 
 # vi
 .*.swp

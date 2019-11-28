@@ -27,7 +27,7 @@ clean:
 clean-all: clean
 	@rm -rf .stack-work
 	@rm -rf build
-	@rm -f stack.yaml.lock
+	@rm -f *.yaml.lock
 
 coverage:
 	@stack test --coverage
