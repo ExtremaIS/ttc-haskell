@@ -42,6 +42,10 @@ flag example-prompt
   description: build example-prompt
   default: False
 
+flag example-uname
+  description: build example-uname
+  default: False
+
 flag example-valid
   description: build example-valid
   default: False
@@ -109,6 +113,22 @@ executable example-prompt
       base
     , template-haskell
     , time >=1.8 && <1.9
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-uname
+  if flag(examples) || flag(example-uname)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: examples
+  main-is: uname.hs
+  other-modules:
+      Username
+  build-depends:
+      base
+    , text
     , ttc
   default-language: Haskell2010
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
