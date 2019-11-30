@@ -1,11 +1,15 @@
-[![Build Status](https://travis-ci.com/ExtremaIS/ttc-haskell.svg?branch=master)](https://travis-ci.com/ExtremaIS/ttc-haskell)
-
 # `ttc-haskell`
+
+[![Build Status](https://travis-ci.com/ExtremaIS/ttc-haskell.svg?branch=master)](https://travis-ci.com/ExtremaIS/ttc-haskell)
+[![Hackage](https://img.shields.io/hackage/v/ttc.svg)](https://hackage.haskell.org/package/ttc)
+[![Stackage LTS](https://stackage.org/package/ttc/badge/lts)](https://stackage.org/package/ttc)
+[![Stackage Nightly](https://stackage.org/package/ttc/badge/nightly)](https://stackage.org/nightly/package/ttc)
 
 TTC, an initialism of _Textual Type Classes_, is a library that provides type
 classes for conversion between data types and textual data types (strings).
 
-* Hackage: <https://hackage.haskell.org/package/ttc> (_coming soon_)
+* Hackage: <https://hackage.haskell.org/package/ttc>
+* Stackage: <https://stackage.org/package/ttc>
 * GitHub: <https://github.com/ExtremaIS/ttc-haskell>
 * Travis CI: <https://travis-ci.com/ExtremaIS/ttc-haskell>
 
