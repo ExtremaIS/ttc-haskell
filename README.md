@@ -66,6 +66,13 @@ for debugging/development.
 Template Haskell functions are available to use `Parse` instances to validate
 constants at compile-time.
 
+## Dependencies
+
+Dependency version bounds are strictly specified according to what versions
+have been tested.  If upper bounds need to be bumped when a new package is
+released or the package has been tested with earlier versions, feel free to
+submit an issue.
+
 ## Related Work
 
 ### Rendering and Parsing
