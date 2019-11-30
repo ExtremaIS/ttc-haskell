@@ -1,18 +1,129 @@
-[![Build Status](https://travis-ci.org/ExtremaIS/ttc-haskell.svg?branch=master)](https://travis-ci.org/ExtremaIS/ttc-haskell)
+# TTC: Textual Type Classes
 
-# `ttc-haskell`
+[![Build Status](https://travis-ci.com/ExtremaIS/ttc-haskell.svg?branch=master)](https://travis-ci.com/ExtremaIS/ttc-haskell)
+[![Hackage](https://img.shields.io/hackage/v/ttc.svg)](https://hackage.haskell.org/package/ttc)
+[![Stackage LTS](https://stackage.org/package/ttc/badge/lts)](https://stackage.org/package/ttc)
+[![Stackage Nightly](https://stackage.org/package/ttc/badge/nightly)](https://stackage.org/nightly/package/ttc)
 
-TTC, an initialism of _Textual Type Classes_, is a library that provides type
-classes for conversion between data types and textual data types (strings).
-
-* Hackage: <https://hackage.haskell.org/package/ttc> _coming soon_
-* GitHub: <https://github.com/ExtremaIS/ttc-haskell>
+* [Overview](#overview)
+    * [`Render`](#render)
+    * [`Parse`](#parse)
+    * [`Textual`](#textual)
+* [Related Work](#related-work)
+    * [Rendering and Parsing](#rendering-and-parsing)
+    * [Constant Validation](#constant-validation)
+    * [String Type Conversion](#string-type-conversion)
+* [Project](#project)
+    * [Links](#links)
+    * [Dependencies](#dependencies)
+    * [Contribution](#contribution)
+    * [License](#license)
 
 ## Overview
 
+TTC, an initialism of _Textual Type Classes_, is a library that provides
+`Render` and `Parse` type classes for conversion between data types and
+textual data types (strings).  Use the `Show` and `Read` type classes for
+debugging/development, and use the `Render` and `Parse` type classes for your
+own purposes.
+
 The following is a brief overview of the type classes provided by this
-library.  See the API documentation for details and the `examples` directory
-for usage examples.
+library.  See the
+[API documentation on Hackage](https://hackage.haskell.org/package/ttc#modules)
+for details and the [`examples` directory](examples) for usage examples.
+
+### `Render`
+
+The `Render` type class renders a data type as a [`Textual`](#textual) data
+type:
+
+```haskell
+class Render a where
+  render :: Textual t => a -> t
+```
+
+It is analogous to the `Show` type class, which can be reserved for
+debugging/development.
+
+The `render` function returns any of the supported textual data types.  Use
+the textual data type that is most natural in the implementation of `render`
+instances, and return values are converted to other textual data types when
+necessary.  The `Show` and `IsString` type classes are not used, so use of the
+`String` type is not required.
+
+As a simple example, consider a `Username` type that is implemented as a
+`newtype` over `Text`:
+
+```haskell
+module Username (Username) where
+
+import Control.Monad (unless, when)
+import Data.Char (isAsciiLower)
+import qualified Data.Text as T
+import Data.Text (Text)
+import qualified Data.TTC as TTC
+
+newtype Username = Username Text
+  deriving (Eq, Ord, Show)
+
+instance TTC.Render Username where
+  render (Username t) = TTC.convert t
+```
+
+If a username needs to be included in a `String` error message, conversion is
+automatic:
+
+```haskell
+putStrLn $ "user not found: " ++ TTC.render uname
+```
+
+### `Parse`
+
+The `Parse` type class parses a data type from a [`Textual`](#textual) data
+type:
+
+```haskell
+class Parse a where
+  parse :: Textual t => t -> Either String a
+```
+
+It is analogous to the `Read` type class, which can be reserved for
+debugging/development.
+
+The `parse` function takes any of the supported textual data types as an
+argument.  Use the textual data type that is most natural in the
+implementation of `parse` instances, and arguments are converted from other
+textual data types when necessary.  The `IsString` type class is not used, so
+use of the `String` type is not required.
+
+Here is an example instance for `Username`, implementing some restrictions:
+
+```haskell
+instance TTC.Parse Username where
+  parse = TTC.asT $ \t-> do
+    unless (T.all isAsciiLower t) $ Left "username has invalid characters"
+    let len = T.length t
+    when (len < 3) $ Left "username has fewer than 3 characters"
+    when (len > 12) $ Left "username has more than 12 characters"
+    pure $ Username t
+```
+
+If a username needs to be parsed from a `String`, conversion is automatic:
+
+```haskell
+case TTC.parse "tcard" :: Either String Username of
+  Right uname -> putStrLn $ "valid username: " ++ TTC.render uname
+  Left err -> putStrLn $ "invalid username: " ++ err
+```
+
+It is common to create data types that have "smart constructors" to ensure
+that all constructed values are valid.  If the `Username` constructor were
+exported, it would be possible to create values with arbitrary `Text`, such
+as `Username T.empty`, which is not a valid `Username`.  Smart constructors
+can be inconvenient when constructing constants, however, as neither runtime
+error handling nor failure are desired.  This library provides Template
+Haskell functions that use `Parse` instances to validate such constants at
+compile-time.
 
 ### `Textual`
 
@@ -25,9 +136,11 @@ types:
 * Strict `ByteString`
 * Lazy `ByteString`
 
-The key feature of this type class is that it has a single type variable,
-making it easy to write functions that accept arguments and/or returns values
-that may be any of the supported textual data types.
+Conversion between any of these types is direct; it is not done through a
+fixed textual data type (such as `String` or `Text`).  The key feature of this
+type class is that it has a single type variable, making it easy to write
+functions that accept arguments and/or returns values that may be any of the
+supported textual data types.
 
 Functions are provided to convert to/from the following other textual data
 types:
@@ -35,35 +148,6 @@ types:
 * `Text` `Builder`
 * `ByteString` `Builder`
 * `ShortByteString`
-
-### `Render`
-
-The `Render` type class renders a data type as a textual data type:
-
-```haskell
-class Render a where
-  render :: Textual t => a -> t
-```
-
-Use this type class to work with strings of any format required by your
-program.  It is analogous to the `Show` type class, which can be reserved
-for debugging/development.
-
-### `Parse`
-
-The `Parse` type class parses a data type from a textual data type:
-
-```haskell
-class Parse a where
-  parse :: Textual t => t -> Either String a
-```
-
-Use this type class to work with strings of any format required by your
-program.  It is analogous to the `Read` type class, which can be reserved
-for debugging/development.
-
-Template Haskell functions are available to use `Parse` instances to validate
-constants at compile-time.
 
 ## Related Work
 
@@ -97,8 +181,9 @@ supports conversion between arbitrary types, not just from textual data types.
 Template Haskell functions are provided to perform validation at compile-time.
 Result types must either have `Lift` instances or equivalent implementations.
 
-Chris Done posted a gist about implementing statically checked overloaded
-strings: <https://gist.github.com/chrisdone/809296b769ee36d352ae4f8dbe89a364>
+Chris Done posted
+[a gist](https://gist.github.com/chrisdone/809296b769ee36d352ae4f8dbe89a364)
+about implementing statically checked overloaded strings.
 
 ### String Type Conversion
 
@@ -120,16 +205,31 @@ The [textual](https://hackage.haskell.org/package/textual) library
 `Textual` type class (which provides a `toString` function) as well as the
 standard `IsString` type class (which provides the `fromString` function).
 
-## Contribution
+## Project
+
+### Links
+
+* Hackage: <https://hackage.haskell.org/package/ttc>
+* Stackage: <https://stackage.org/package/ttc>
+* GitHub: <https://github.com/ExtremaIS/ttc-haskell>
+* Travis CI: <https://travis-ci.com/ExtremaIS/ttc-haskell>
+
+### Dependencies
+
+Dependency version bounds are strictly specified according to what versions
+have been tested.  If upper bounds need to be bumped when a new package is
+released or the package has been tested with earlier versions, feel free to
+submit an issue.
+
+### Contribution
 
 Issues and feature requests are tracked on GitHub:
-
 <https://github.com/ExtremaIS/ttc-haskell/issues>
 
 Issues may also be submitted via email to <bugs@extrema.is>.
 
-## License
+### License
 
 This project is released under the
 [MIT License](https://opensource.org/licenses/MIT) as specified in the
-[`LICENSE`](/ExtremaIS/ttc-haskell/blob/master/LICENSE) file.
+[`LICENSE`](LICENSE) file.

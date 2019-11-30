@@ -46,6 +46,10 @@ example-prompt:
 	@stack build --flag ttc:example-prompt
 	@stack exec example-prompt
 
+example-uname:
+	@stack build --flag ttc:example-uname
+	@stack exec example-uname
+
 example-valid:
 	@stack build --flag ttc:example-valid
 	@stack exec example-valid
@@ -67,6 +71,7 @@ help:
 	@echo "make example-invalid  build demo-invalid, which should fail"
 	@echo "make example-mkvalid  build and run demo-mkvalid"
 	@echo "make example-prompt   build and run demo-prompt"
+	@echo "make example-uname    build and run demo-uname"
 	@echo "make example-valid    build and run demo-valid"
 	@echo "make examples         build all buldable demos"
 	@echo "make grep             grep all non-hidden files for expression E"
@@ -161,6 +166,6 @@ version:
 	@echo $(VERSION)
 
 .PHONY: _default build clean clean-all coverage doc-api example-invalid \
-	example-mkvalid example-prompt example-valid examples grep help hlint \
-	hsgrep hsrecent hssloc recent repl source-git source-tar stack test todo \
-	version
+	example-mkvalid example-prompt example-uname example-valid examples grep \
+	help hlint hsgrep hsrecent hssloc recent repl source-git source-tar stack \
+	test todo version

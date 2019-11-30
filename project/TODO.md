@@ -4,7 +4,6 @@
 
 ## Documentation
 
-* Add simple examples to the README.
 * Add simple examples to the API documentation.
 
 ## Examples
@@ -28,6 +27,5 @@ parseJsonString expected = A.withText expected $ either fail pure . TTC.parse
 
 ## Project
 
-* Setup Travis CI.
 * Add to Hackage.
 * Add to Stackage.
