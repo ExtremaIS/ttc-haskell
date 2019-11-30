@@ -8,6 +8,20 @@
 TTC, an initialism of _Textual Type Classes_, is a library that provides type
 classes for conversion between data types and textual data types (strings).
 
+* [Overview](#overview)
+    * [`Textual`](#textual)
+    * [`Render`](#render)
+    * [`Parse`](#parse)
+* [Related Work](#related-work)
+    * [Rendering and Parsing](#rendering-and-parsing)
+    * [Constant Validation](#constant-validation)
+    * [String Type Conversion](#string-type-conversion)
+* [Project](#project)
+    * [Links](#links)
+    * [Dependencies](#dependencies)
+    * [Contribution](#contribution)
+    * [License](#license)
+
 ## Overview
 
 The following is a brief overview of the type classes provided by this
