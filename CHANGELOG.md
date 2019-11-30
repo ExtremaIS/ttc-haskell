@@ -26,6 +26,12 @@ following conventions:
 
 ## Unreleased
 
+### Non-Breaking
+
+* Update Cabal file in preparation for release to Hackage
+* Update documentation
+* Add examples
+
 ## 0.0.0.3 (2019-11-28)
 
 ### Non-Breaking
