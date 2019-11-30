@@ -1,20 +1,30 @@
 name:           ttc
 version:        0.0.0.3
-synopsis:       Textual Type Classes
-description:    Please see the README on GitHub at <https://github.com/ExtremaIS/ttc-haskell#readme>
 category:       Data, Text
+synopsis:       Textual Type Classes
+description:
+  This library provides type classes for conversion between data types and
+  textual data types (strings).  Please see the README on GitHub at
+  <https://github.com/ExtremaIS/ttc-haskell#readme>.
+
 homepage:       https://github.com/ExtremaIS/ttc-haskell#readme
 bug-reports:    https://github.com/ExtremaIS/ttc-haskell/issues
-author:         Travis Cardwell
-maintainer:     travis.cardwell@extrema.is
+author:         Travis Cardwell <travis.cardwell@extrema.is>
+maintainer:     Travis Cardwell <travis.cardwell@extrema.is>
 copyright:      Copyright (c) 2019 Travis Cardwell
 license:        MIT
 license-file:   LICENSE
-build-type:     Simple
+
 cabal-version:  >=1.10
+build-type:     Simple
+tested-with:
+  GHC ==8.2.2
+   || ==8.4.4
+   || ==8.6.5
+
 extra-source-files:
-    CHANGELOG.md
-    README.md
+  CHANGELOG.md
+  README.md
 
 source-repository head
   type: git
