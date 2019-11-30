@@ -145,4 +145,4 @@ Issues may also be submitted via email to <bugs@extrema.is>.
 
 This project is released under the
 [MIT License](https://opensource.org/licenses/MIT) as specified in the
-[`LICENSE`](/ExtremaIS/ttc-haskell/blob/master/LICENSE) file.
+[`LICENSE`](LICENSE) file.
