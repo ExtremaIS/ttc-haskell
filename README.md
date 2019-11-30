@@ -8,11 +8,6 @@
 TTC, an initialism of _Textual Type Classes_, is a library that provides type
 classes for conversion between data types and textual data types (strings).
 
-* Hackage: <https://hackage.haskell.org/package/ttc>
-* Stackage: <https://stackage.org/package/ttc>
-* GitHub: <https://github.com/ExtremaIS/ttc-haskell>
-* Travis CI: <https://travis-ci.com/ExtremaIS/ttc-haskell>
-
 ## Overview
 
 The following is a brief overview of the type classes provided by this
@@ -70,13 +65,6 @@ for debugging/development.
 Template Haskell functions are available to use `Parse` instances to validate
 constants at compile-time.
 
-## Dependencies
-
-Dependency version bounds are strictly specified according to what versions
-have been tested.  If upper bounds need to be bumped when a new package is
-released or the package has been tested with earlier versions, feel free to
-submit an issue.
-
 ## Related Work
 
 ### Rendering and Parsing
@@ -133,7 +121,23 @@ The [textual](https://hackage.haskell.org/package/textual) library
 `Textual` type class (which provides a `toString` function) as well as the
 standard `IsString` type class (which provides the `fromString` function).
 
-## Contribution
+## Project
+
+### Links
+
+* Hackage: <https://hackage.haskell.org/package/ttc>
+* Stackage: <https://stackage.org/package/ttc>
+* GitHub: <https://github.com/ExtremaIS/ttc-haskell>
+* Travis CI: <https://travis-ci.com/ExtremaIS/ttc-haskell>
+
+### Dependencies
+
+Dependency version bounds are strictly specified according to what versions
+have been tested.  If upper bounds need to be bumped when a new package is
+released or the package has been tested with earlier versions, feel free to
+submit an issue.
+
+### Contribution
 
 Issues and feature requests are tracked on GitHub:
 
@@ -141,7 +145,7 @@ Issues and feature requests are tracked on GitHub:
 
 Issues may also be submitted via email to <bugs@extrema.is>.
 
-## License
+### License
 
 This project is released under the
 [MIT License](https://opensource.org/licenses/MIT) as specified in the
