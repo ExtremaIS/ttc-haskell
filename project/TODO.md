@@ -4,7 +4,6 @@
 
 ## Documentation
 
-* Add simple examples to the README.
 * Add simple examples to the API documentation.
 
 ## Examples
