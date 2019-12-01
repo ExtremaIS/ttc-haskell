@@ -26,6 +26,10 @@ following conventions:
 
 ## Unreleased
 
+### Non-Breaking
+
+* Bump `time` dependency version upper bound
+
 ## 0.1.0.0 (2019-12-01)
 
 ### Non-Breaking
