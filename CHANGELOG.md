@@ -24,6 +24,12 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 0.1.0.0 (2019-12-01)
+
+### Non-Breaking
+
+* Update Cabal file in preparation for release to Hackage
+
 ## 0.0.0.4 (2019-11-30)
 
 ### Non-Breaking

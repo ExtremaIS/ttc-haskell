@@ -221,6 +221,12 @@ have been tested.  If upper bounds need to be bumped when a new package is
 released or the package has been tested with earlier versions, feel free to
 submit an issue.
 
+### Releases
+
+All releases are tagged in the `master` branch.  Release tags are signed using
+the
+[`security@extrema.is` GPG key](http://keys.gnupg.net/pks/lookup?op=vindex&fingerprint=on&search=0x1D484E4B4705FADF).
+
 ### Contribution
 
 Issues and feature requests are tracked on GitHub:
