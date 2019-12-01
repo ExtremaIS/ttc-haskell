@@ -24,6 +24,12 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 0.1.0.1 (2019-12-02)
+
+### Non-Breaking
+
+* Bump `time` dependency version upper bound
+
 ## 0.1.0.0 (2019-12-01)
 
 ### Non-Breaking

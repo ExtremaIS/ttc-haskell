@@ -27,5 +27,4 @@ parseJsonString expected = A.withText expected $ either fail pure . TTC.parse
 
 ## Project
 
-* Add to Hackage.
 * Add to Stackage.
