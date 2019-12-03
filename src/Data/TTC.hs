@@ -95,9 +95,13 @@ module Data.TTC
   , parseWithRead'
   , readsEnum
   , readsWithParse
+    -- ** Constant Validation
   , valid
   , validOf
   , mkValid
+  , untypedValidOf
+  , mkUntypedValid
+  , mkUntypedValidQQ
   ) where
 
 -- https://hackage.haskell.org/package/base
@@ -112,6 +116,7 @@ import qualified Data.ByteString.Short as SBS
 
 -- https://hackage.haskell.org/package/template-haskell
 import qualified Language.Haskell.TH as TH
+import qualified Language.Haskell.TH.Quote as Q
 import qualified Language.Haskell.TH.Syntax as THS
 
 -- https://hackage.haskell.org/package/text
@@ -598,11 +603,19 @@ readsWithParse s = case parse s of
     Left{}  -> []
 {-# INLINEABLE readsWithParse #-}
 
+-- $ParseValid
+
 -- | Validate a constant at compile-time using a 'Parse' instance
 --
--- This function parses the 'String' at compile-time in order to validate it.
--- When valid, the result is compiled in, so the result type must have a
--- 'THS.Lift' instance.  Use 'validOf' when this is inconvenient.
+-- This function parses the 'String' at compile-time and fails compilation on
+-- error.  When valid, the result is compiled in, so the result type must have
+-- a 'THS.Lift' instance.  When this is inconvenient, use one of the
+-- alternative functions in this library.
+--
+-- This function uses a typed expression.  Typed expressions were not
+-- supported in @haskell-src-exts <1.22.0@, which caused problems with
+-- @hlint@.  If the issue effects you, use @hlint -i "Parse error"@ to ignore
+-- parse errors or use one of the alternative functions in this library.
 valid
   :: (Parse a, THS.Lift a)
   => String
@@ -613,19 +626,36 @@ valid s = case parse s of
 
 -- | Validate a constant at compile-time using a 'Parse' instance
 --
--- This function parses the 'String' at compile-time in order to validate it.
--- When valid, the 'String' is compiled in, to be parsed again at run-time.
--- Since the result is not compiled in, no 'THS.Lift' instance is required.
+-- This function requires a 'Proxy' of the result type.  Use 'mkValid' to
+-- avoid having to pass a 'Proxy' during constant definition.
+--
+-- This function parses the 'String' at compile-time and fails compilation on
+-- error.  When valid, the 'String' is compiled in, to be parsed again at
+-- run-time.  Since the result is not compiled in, no 'THS.Lift' instance is
+-- required.
+--
+-- This function uses a typed expression.  Typed expressions were not
+-- supported in @haskell-src-exts <1.22.0@, which caused problems with
+-- @hlint@.  If the issue effects you, use @hlint -i "Parse error"@ to ignore
+-- parse errors or use 'untypedValidOf' instead.
 validOf
   :: Parse a
   => Proxy a
   -> String
   -> TH.Q (TH.TExp a)
 validOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
-    Right{} -> [|| parseUnsafe s ||]
+    Right{} -> [|| parseUnsafeS s ||]
     Left err -> fail $ "Invalid constant: " ++ err
 
 -- | Make a @valid@ function using 'validOf' for the given type
+--
+-- Create a @valid@ function in the module for a type in order to avoid having
+-- to write a 'Proxy' when defining constants.
+--
+-- This function uses a typed expression.  Typed expressions were not
+-- supported in @haskell-src-exts <1.22.0@, which caused problems with
+-- @hlint@.  If the issue effects you, use @hlint -i "Parse error"@ to ignore
+-- parse errors or use 'mkUntypedValidOf' instead.
 mkValid
   :: String
   -> TH.Name
@@ -638,4 +668,63 @@ mkValid funName typeName = do
     return
       [ TH.SigD funName' funType
       , TH.FunD funName' [TH.Clause [] (TH.NormalB body) []]
+      ]
+
+-- | Validate a constant at compile-time using a 'Parse' instance
+--
+-- This function requires a 'Proxy' of the result type.  Use 'mkUntypedValid'
+-- to avoid having to pass a 'Proxy' during constant definition.
+--
+-- This function parses the 'String' at compile-time and fails compilation on
+-- error.  When valid, the 'String' is compiled in, to be parsed again at
+-- run-time.  Since the result is not compiled in, no 'THS.Lift' instance is
+-- required.
+untypedValidOf
+  :: Parse a
+  => Proxy a
+  -> String
+  -> TH.ExpQ
+untypedValidOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
+    Right{} -> [| parseUnsafeS s |]
+    Left err -> fail $ "Invalid constant: " ++ err
+
+-- | Make a @valid@ function using 'untypedValidOf' for the given type
+--
+-- Create a @valid@ function in the module for a type in order to avoid having
+-- to write a 'Proxy' when defining constants.
+mkUntypedValid
+  :: String
+  -> TH.Name
+  -> TH.DecsQ
+mkUntypedValid funName typeName = do
+    let funName' = TH.mkName funName
+        resultType = pure $ TH.ConT typeName
+    funType <- [t| String -> TH.ExpQ |]
+    body <- [| untypedValidOf (Proxy :: Proxy $resultType) |]
+    return
+      [ TH.SigD funName' funType
+      , TH.FunD funName' [TH.Clause [] (TH.NormalB body) []]
+      ]
+
+-- | Make a @valid@ quasi-quoter using 'untypedValidOf' for the given type
+mkUntypedValidQQ
+  :: String
+  -> TH.Name
+  -> TH.DecsQ
+mkUntypedValidQQ funName typeName = do
+    let funName' = TH.mkName funName
+        resultType = pure $ TH.ConT typeName
+    expE <- [| untypedValidOf (Proxy :: Proxy $resultType) |]
+    expP <- [| error "pattern not supported" |]
+    expT <- [| error "type not supported" |]
+    expD <- [| error "declaration not supported" |]
+    let body = TH.NormalB $ TH.RecConE 'Q.QuasiQuoter
+          [ ('Q.quoteExp, expE)
+          , ('Q.quotePat, expP)
+          , ('Q.quoteType, expT)
+          , ('Q.quoteDec, expD)
+          ]
+    return
+      [ TH.SigD funName' $ TH.ConT ''Q.QuasiQuoter
+      , TH.FunD funName' [TH.Clause [] body []]
       ]

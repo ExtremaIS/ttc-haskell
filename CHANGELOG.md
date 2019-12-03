@@ -26,6 +26,10 @@ following conventions:
 
 ## Unreleased
 
+### Non-Breaking
+
+* Add untyped validation functions
+
 ## 0.1.0.1 (2019-12-02)
 
 ### Non-Breaking
