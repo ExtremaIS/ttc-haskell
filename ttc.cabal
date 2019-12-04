@@ -31,30 +31,6 @@ source-repository head
   type: git
   location: https://github.com/ExtremaIS/ttc-haskell.git
 
-flag example-invalid
-  description: build example-invalid
-  default: False
-
-flag example-mkvalid
-  description: build example-mkvalid
-  default: False
-
-flag example-prompt
-  description: build example-prompt
-  default: False
-
-flag example-uname
-  description: build example-uname
-  default: False
-
-flag example-valid
-  description: build example-valid
-  default: False
-
-flag examples
-  description: build all buildable examples
-  default: False
-
 library
   hs-source-dirs: src
   exposed-modules:
@@ -67,89 +43,6 @@ library
     , text >=1.2.3 && <1.3
   default-language: Haskell2010
   ghc-options: -Wall
-
-executable example-invalid
-  if flag(example-invalid)
-    buildable: True
-  else
-    buildable: False
-  hs-source-dirs: examples
-  main-is: invalid.hs
-  other-modules:
-      CreditCard
-  build-depends:
-      base
-    , template-haskell
-    , time >=1.8 && <1.10
-    , ttc
-  default-language: Haskell2010
-  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
-
-executable example-mkvalid
-  if flag(examples) || flag(example-mkvalid)
-    buildable: True
-  else
-    buildable: False
-  hs-source-dirs: examples
-  main-is: mkvalid.hs
-  other-modules:
-      Duration
-  build-depends:
-      base
-    , time >=1.8 && <1.10
-    , ttc
-  default-language: Haskell2010
-  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
-
-executable example-prompt
-  if flag(examples) || flag(example-prompt)
-    buildable: True
-  else
-    buildable: False
-  hs-source-dirs: examples
-  main-is: prompt.hs
-  other-modules:
-      CreditCard
-  build-depends:
-      base
-    , template-haskell
-    , time >=1.8 && <1.10
-    , ttc
-  default-language: Haskell2010
-  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
-
-executable example-uname
-  if flag(examples) || flag(example-uname)
-    buildable: True
-  else
-    buildable: False
-  hs-source-dirs: examples
-  main-is: uname.hs
-  other-modules:
-      Username
-  build-depends:
-      base
-    , text
-    , ttc
-  default-language: Haskell2010
-  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
-
-executable example-valid
-  if flag(examples) || flag(example-valid)
-    buildable: True
-  else
-    buildable: False
-  hs-source-dirs: examples
-  main-is: valid.hs
-  other-modules:
-      CreditCard
-  build-depends:
-      base
-    , template-haskell
-    , time >=1.8 && <1.10
-    , ttc
-  default-language: Haskell2010
-  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
 
 test-suite ttc-test
   type: exitcode-stdio-1.0

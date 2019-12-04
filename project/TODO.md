@@ -4,9 +4,16 @@
 
 ## Documentation
 
-* Add simple examples to the API documentation.
+* Add example references to the API documentation.
+* Add link to `examples/README.md` to `README.md`.
 
 ## Examples
+
+* Reorganize examples
+    * Split examples into separate source directories, with no shared code
+    * Minimal examples for each feature
+    * Small examples
+    * Guide in `examples/README.md`
 
 `aeson` example:
 

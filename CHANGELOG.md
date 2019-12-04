@@ -29,6 +29,7 @@ following conventions:
 ### Non-Breaking
 
 * Add untyped validation functions
+* Move examples to a separate package
 
 ## 0.1.0.1 (2019-12-02)
 

@@ -26,6 +26,7 @@ clean:
 
 clean-all: clean
 	@rm -rf .stack-work
+	@rm -rf examples/.stack-work
 	@rm -rf build
 	@rm -f *.yaml.lock
 
@@ -36,26 +37,26 @@ doc-api:
 	@stack haddock
 
 example-invalid:
-	@stack build --flag ttc:example-invalid
+	@stack build --flag ttc-examples:example-invalid
 
 example-mkvalid:
-	@stack build --flag ttc:example-mkvalid
+	@stack build --flag ttc-examples:example-mkvalid
 	@stack exec example-mkvalid
 
 example-prompt:
-	@stack build --flag ttc:example-prompt
+	@stack build --flag ttc-examples:example-prompt
 	@stack exec example-prompt
 
 example-uname:
-	@stack build --flag ttc:example-uname
+	@stack build --flag ttc-examples:example-uname
 	@stack exec example-uname
 
 example-valid:
-	@stack build --flag ttc:example-valid
+	@stack build --flag ttc-examples:example-valid
 	@stack exec example-valid
 
 examples:
-	@stack build --flag ttc:examples
+	@stack build --flag ttc-examples:examples
 
 grep:
 	$(eval E := "")
