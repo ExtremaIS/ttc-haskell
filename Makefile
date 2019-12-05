@@ -97,6 +97,7 @@ help:
 	@echo "make hssloc           count lines of Haskell source"
 	@echo "make recent           show N most recently modified files"
 	@echo "make repl             run REPL"
+	@echo "make sdist            create source tarball for Hackage"
 	@echo "make source-git       create source tarball of git TREE"
 	@echo "make source-tar       create source tarball using tar"
 	@echo "make test             run tests, optionally for pattern P *"
@@ -132,6 +133,11 @@ recent:
 
 repl:
 	@stack exec ghci $(RESOLVER_ARGS) $(STACK_YAML_ARGS)
+
+sdist:
+	$(eval BRANCH := $(shell git rev-parse --abbrev-ref HEAD))
+	@test "${BRANCH}" = "master" || $(call die,"not in master branch")
+	@stack sdist
 
 source-git:
 	$(eval BRANCH := $(shell git rev-parse --abbrev-ref HEAD))
@@ -182,5 +188,5 @@ version:
 
 .PHONY: _default build clean clean-all coverage doc-api example-invalid \
 	example-mkvalid example-prompt example-uname example-valid examples grep \
-	help hlint hsgrep hsrecent hssloc recent repl source-git source-tar test \
-	test-doc todo version
+	help hlint hsgrep hsrecent hssloc recent repl sdist source-git source-tar \
+	test test-doc todo version
