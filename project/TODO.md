@@ -34,4 +34,5 @@ parseJsonString expected = A.withText expected $ either fail pure . TTC.parse
 
 ## Project
 
+* Add `sdist` command to `Makefile`, verifying on branch `master`.
 * Add to Stackage.
