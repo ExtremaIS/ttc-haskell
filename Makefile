@@ -48,6 +48,11 @@ example-invalid:
 	@stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
 		--flag ttc-examples:example-invalid
 
+example-lift:
+	@stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+		--flag ttc-examples:example-lift
+	@stack exec example-lift
+
 example-mkvalid:
 	@stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
 		--flag ttc-examples:example-mkvalid
@@ -68,6 +73,11 @@ example-valid:
 		--flag ttc-examples:example-valid
 	@stack exec example-valid
 
+example-validof:
+	@stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+		--flag ttc-examples:example-validof
+	@stack exec example-validof
+
 examples:
 	@stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
 		--flag ttc-examples:examples
@@ -83,12 +93,14 @@ help:
 	@echo "make clean-all        clean package and remove artifacts"
 	@echo "make coverage         run tests with code coverage *"
 	@echo "make doc-api          build API documentation *"
-	@echo "make example-invalid  build demo-invalid, which should fail *"
-	@echo "make example-mkvalid  build and run demo-mkvalid *"
-	@echo "make example-prompt   build and run demo-prompt *"
-	@echo "make example-uname    build and run demo-uname *"
-	@echo "make example-valid    build and run demo-valid *"
-	@echo "make examples         build all buldable demos *"
+	@echo "make example-invalid  build example-invalid, which should fail *"
+	@echo "make example-lift     build and run example-lift*"
+	@echo "make example-mkvalid  build and run example-mkvalid *"
+	@echo "make example-prompt   build and run example-prompt *"
+	@echo "make example-uname    build and run example-uname *"
+	@echo "make example-valid    build and run example-valid *"
+	@echo "make example-validof  build and run example-validof *"
+	@echo "make examples         build all buldable examples *"
 	@echo "make grep             grep all non-hidden files for expression E"
 	@echo "make help             show this help"
 	@echo "make hlint            run hlint on all Haskell source"
@@ -187,6 +199,6 @@ version:
 	@echo $(VERSION)
 
 .PHONY: _default build clean clean-all coverage doc-api example-invalid \
-	example-mkvalid example-prompt example-uname example-valid examples grep \
-	help hlint hsgrep hsrecent hssloc recent repl sdist source-git source-tar \
-	test test-doc todo version
+	example-lift example-mkvalid example-prompt example-uname example-valid \
+	example-validof examples grep help hlint hsgrep hsrecent hssloc recent \
+	repl sdist source-git source-tar test test-doc todo version
