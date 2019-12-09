@@ -110,6 +110,7 @@ executable example-prompt
     buildable: True
   else
     buildable: False
+  hs-source-dirs: prompt
   main-is: prompt.hs
   other-modules:
       CreditCard
