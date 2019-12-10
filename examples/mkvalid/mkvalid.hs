@@ -14,7 +14,7 @@
 module Main (main) where
 
 -- (ttc-examples:example-valid)
-import qualified Username as Username
+import qualified Username
 import Username (Username)
 
 -- HLint does not support typed expression splices
