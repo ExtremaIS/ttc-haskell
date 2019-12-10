@@ -58,6 +58,11 @@ example-mkvalid:
 		--flag ttc-examples:example-mkvalid
 	@stack exec example-mkvalid
 
+example-mkuvalid:
+	@stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+		--flag ttc-examples:example-mkuvalid
+	@stack exec example-mkuvalid
+
 example-prompt:
 	@stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
 		--flag ttc-examples:example-prompt
@@ -67,6 +72,16 @@ example-uname:
 	@stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
 		--flag ttc-examples:example-uname
 	@stack exec example-uname
+
+example-uvalidof:
+	@stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+		--flag ttc-examples:example-uvalidof
+	@stack exec example-uvalidof
+
+example-uvalidqq:
+	@stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+		--flag ttc-examples:example-uvalidqq
+	@stack exec example-uvalidqq
 
 example-valid:
 	@stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
@@ -88,34 +103,37 @@ grep:
 	@$(call all_files) | xargs grep -Hn '$(E)' || true
 
 help:
-	@echo "make build            build package *"
-	@echo "make clean            clean package"
-	@echo "make clean-all        clean package and remove artifacts"
-	@echo "make coverage         run tests with code coverage *"
-	@echo "make doc-api          build API documentation *"
-	@echo "make example-invalid  build example-invalid, which should fail *"
-	@echo "make example-lift     build and run example-lift*"
-	@echo "make example-mkvalid  build and run example-mkvalid *"
-	@echo "make example-prompt   build and run example-prompt *"
-	@echo "make example-uname    build and run example-uname *"
-	@echo "make example-valid    build and run example-valid *"
-	@echo "make example-validof  build and run example-validof *"
-	@echo "make examples         build all buldable examples *"
-	@echo "make grep             grep all non-hidden files for expression E"
-	@echo "make help             show this help"
-	@echo "make hlint            run hlint on all Haskell source"
-	@echo "make hsgrep           grep all Haskell source for expression E"
-	@echo "make hsrecent         show N most recently modified Haskell files"
-	@echo "make hssloc           count lines of Haskell source"
-	@echo "make recent           show N most recently modified files"
-	@echo "make repl             run REPL"
-	@echo "make sdist            create source tarball for Hackage"
-	@echo "make source-git       create source tarball of git TREE"
-	@echo "make source-tar       create source tarball using tar"
-	@echo "make test             run tests, optionally for pattern P *"
-	@echo "make test-doc         run tests and build API documentation *"
-	@echo "make todo             search for TODO items"
-	@echo "make version          show current version"
+	@echo "make build             build package *"
+	@echo "make clean             clean package"
+	@echo "make clean-all         clean package and remove artifacts"
+	@echo "make coverage          run tests with code coverage *"
+	@echo "make doc-api           build API documentation *"
+	@echo "make example-invalid   build example-invalid, which should fail *"
+	@echo "make example-lift      build and run example-lift*"
+	@echo "make example-mkvalid   build and run example-mkvalid *"
+	@echo "make example-mkuvalid  build and run example-mkuvalid *"
+	@echo "make example-prompt    build and run example-prompt *"
+	@echo "make example-uname     build and run example-uname *"
+	@echo "make example-uvalidof  build and run example-uvalidof *"
+	@echo "make example-uvalidqq  build and run example-uvalidqq *"
+	@echo "make example-valid     build and run example-valid *"
+	@echo "make example-validof   build and run example-validof *"
+	@echo "make examples          build all buldable examples *"
+	@echo "make grep              grep all non-hidden files for expression E"
+	@echo "make help              show this help"
+	@echo "make hlint             run hlint on all Haskell source"
+	@echo "make hsgrep            grep all Haskell source for expression E"
+	@echo "make hsrecent          show N most recently modified Haskell files"
+	@echo "make hssloc            count lines of Haskell source"
+	@echo "make recent            show N most recently modified files"
+	@echo "make repl              run REPL"
+	@echo "make sdist             create source tarball for Hackage"
+	@echo "make source-git        create source tarball of git TREE"
+	@echo "make source-tar        create source tarball using tar"
+	@echo "make test              run tests, optionally for pattern P *"
+	@echo "make test-doc          run tests and build API documentation *"
+	@echo "make todo              search for TODO items"
+	@echo "make version           show current version"
 	@echo
 	@echo "* Use RESOLVER to specify a resolver."
 	@echo "* Use CONFIG to specify a Stack configuration file."
@@ -199,6 +217,7 @@ version:
 	@echo $(VERSION)
 
 .PHONY: _default build clean clean-all coverage doc-api example-invalid \
-	example-lift example-mkvalid example-prompt example-uname example-valid \
-	example-validof examples grep help hlint hsgrep hsrecent hssloc recent \
-	repl sdist source-git source-tar test test-doc todo version
+	example-lift example-mkvalid example-mkuvalid example-prompt example-uname \
+	example-uvalidof example-uvalidqq example-valid example-validof examples \
+	grep help hlint hsgrep hsrecent hssloc recent repl sdist source-git \
+	source-tar test test-doc todo version
