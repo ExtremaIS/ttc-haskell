@@ -9,11 +9,11 @@
 
 ## Examples
 
-* Reorganize examples
-    * Split examples into separate source directories, with no shared code
-    * Minimal examples for each feature
-    * Small examples
-    * Guide in `examples/README.md`
+* `examples/README.md`
+    * Goal: minimal examples
+    * Overview of examples, with relative links to code
+    * Code to execute
+* `parseEnum` CLI example
 
 `aeson` example:
 
@@ -34,4 +34,4 @@ parseJsonString expected = A.withText expected $ either fail pure . TTC.parse
 
 ## Project
 
-* Add to Stackage.
+* Add `0.2` to Stackage LTS.
