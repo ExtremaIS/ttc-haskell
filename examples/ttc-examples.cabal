@@ -24,6 +24,10 @@ source-repository head
   type: git
   location: https://github.com/ExtremaIS/ttc-haskell.git
 
+flag example-enum
+  description: build example-enum
+  default: False
+
 flag example-invalid
   description: build example-invalid
   default: False
@@ -67,6 +71,21 @@ flag example-validof
 flag examples
   description: build all buildable examples
   default: False
+
+executable example-enum
+  if flag(examples) || flag(example-enum)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: enum
+  main-is: enum.hs
+  build-depends:
+      ansi-wl-pprint
+    , base
+    , optparse-applicative
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
 
 executable example-invalid
   if flag(example-invalid)
