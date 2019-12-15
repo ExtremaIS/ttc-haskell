@@ -163,7 +163,6 @@ executable example-prompt
       CreditCard
   build-depends:
       base
-    , template-haskell
     , time
     , ttc
   default-language: Haskell2010
