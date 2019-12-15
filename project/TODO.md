@@ -9,12 +9,6 @@
 
 ## Examples
 
-* `examples/README.md`
-    * Goal: minimal examples
-    * Overview of examples, with relative links to code
-    * Code to execute
-* `parseEnum` CLI example
-
 `aeson` example:
 
 ```haskell
