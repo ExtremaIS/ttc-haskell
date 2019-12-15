@@ -34,7 +34,7 @@ import qualified TestString
 import TestString (TestString(TestString))
 
 -- HLint does not support typed expression splices
-{-# ANN module "HLint: ignore" #-}
+{-# ANN module ("HLint: ignore" :: String) #-}
 
 ------------------------------------------------------------------------------
 -- $HelperFunctions
