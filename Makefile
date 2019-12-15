@@ -218,9 +218,10 @@ todo:
 		| xargs grep -Hn TODO || true
 
 version:
-	$(eval VERSION := $(shell \
-		grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
-	@echo $(VERSION)
+	@grep '^version:' "ttc.cabal" \
+		| sed 's/^version: */ttc /'
+	@grep '^version:' "examples/ttc-examples.cabal" \
+		| sed 's/^version: */ttc-examples /'
 
 .PHONY: _default build clean clean-all coverage doc-api example-enum \
 	example-invalid example-lift example-mkvalid example-mkuvalid \
