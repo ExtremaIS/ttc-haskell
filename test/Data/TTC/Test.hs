@@ -1,4 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Data.TTC.Test (tests) where
 
@@ -26,6 +28,13 @@ import qualified Data.Text.Lazy.Builder as TLB
 
 -- (ttc)
 import qualified Data.TTC as TTC
+
+-- (ttc:test)
+import qualified TestString
+import TestString (TestString(TestString))
+
+-- HLint does not support typed expression splices
+{-# ANN module "HLint: ignore" #-}
 
 ------------------------------------------------------------------------------
 -- $HelperFunctions
@@ -558,6 +567,36 @@ testReadsEnum = testGroup "readsEnum"
     ]
 
 ------------------------------------------------------------------------------
+-- $Valid
+
+testValid :: TestTree
+testValid = testCase "valid" $ TestString "test" @=? validConst
+  where
+    validConst :: TestString
+    validConst = $$(TTC.valid "test")
+
+testValidOf :: TestTree
+testValidOf = testCase "validOf" $
+    TestString "test" @=? $$(TTC.validOf (Proxy :: Proxy TestString) "test")
+
+testMkValid :: TestTree
+testMkValid = testCase "mkValid" $
+    TestString "test" @=? $$(TestString.valid "test")
+
+testUntypedValidOf :: TestTree
+testUntypedValidOf = testCase "untypedValidOf" $
+    TestString "test" @=?
+      $(TTC.untypedValidOf (Proxy :: Proxy TestString) "test")
+
+testMkUntypedValid :: TestTree
+testMkUntypedValid = testCase "mkUntypedValid" $
+    TestString "test" @=? $(TestString.untypedValid "test")
+
+testMkUntypedValidQQ :: TestTree
+testMkUntypedValidQQ = testCase "mkUntypedValidQQ" $
+    TestString "test" @=? [TestString.untypedValidQQ|test|]
+
+------------------------------------------------------------------------------
 
 tests :: TestTree
 tests = testGroup "Data.TTC"
@@ -619,5 +658,13 @@ tests = testGroup "Data.TTC"
         , testParseEnum'
         , testReadsWithParse
         , testReadsEnum
+        ]
+    , testGroup "Valid"
+        [ testValid
+        , testValidOf
+        , testMkValid
+        , testUntypedValidOf
+        , testMkUntypedValid
+        , testMkUntypedValidQQ
         ]
     ]
