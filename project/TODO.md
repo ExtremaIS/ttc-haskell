@@ -4,8 +4,6 @@
 
 ## Documentation
 
-* Add simple examples to the API documentation.
-
 ## Examples
 
 `aeson` example:
@@ -27,4 +25,4 @@ parseJsonString expected = A.withText expected $ either fail pure . TTC.parse
 
 ## Project
 
-* Add to Stackage.
+* Add `0.2` to Stackage LTS.

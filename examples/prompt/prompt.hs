@@ -30,34 +30,41 @@ import CreditCard (CreditCard(CreditCard), ExpirationDate(ExpirationDate))
 -- | This function prompts for a value of the desired type.  When input is
 -- invalid, it displays the error and tries again.
 prompt
-  :: TTC.Parse a
-  => String  -- ^ prompt string
+  :: (String -> Either String a)  -- ^ parse function
+  -> String                       -- ^ prompt string
   -> IO a
-prompt promptString = loop
+prompt parse promptString = loop
   where
     loop = do
       putStr promptString
       IO.hFlush IO.stdout
       s <- getLine
-      case TTC.parse s of
+      case parse s of
         Right x -> return x
         Left err -> do
           putStrLn $ "  " <> err
           loop
+
+-- | This is a version of 'prompt' that uses 'TTC.Parse' instances.
+promptTTC
+  :: TTC.Parse a
+  => String  -- ^ prompt string
+  -> IO a
+promptTTC = prompt TTC.parse
 
 ------------------------------------------------------------------------------
 
 -- | This function prompts for credit card details.
 promptCC :: IO CreditCard
 promptCC = CreditCard
-    <$> prompt "Enter the name: "
-    <*> prompt "Enter the number: "
+    <$> promptTTC "Enter the name: "
+    <*> promptTTC "Enter the number: "
     <*>
       ( ExpirationDate
-          <$> prompt "Enter the expiration year (YYYY): "
-          <*> prompt "Enter the expiration month (MM): "
+          <$> promptTTC "Enter the expiration year (YYYY): "
+          <*> promptTTC "Enter the expiration month (MM): "
       )
-    <*> prompt "Enter the security code: "
+    <*> promptTTC "Enter the security code: "
 
 ------------------------------------------------------------------------------
 

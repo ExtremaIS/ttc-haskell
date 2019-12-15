@@ -24,6 +24,14 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 0.2.0.0 (2019-12-15)
+
+### Non-Breaking
+
+* Add untyped validation functions
+* Move examples to a separate package
+* Refactor examples and add more
+
 ## 0.1.0.1 (2019-12-02)
 
 ### Non-Breaking

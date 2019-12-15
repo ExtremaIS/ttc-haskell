@@ -101,7 +101,7 @@ Here is an example instance for `Username`, implementing some restrictions:
 ```haskell
 instance TTC.Parse Username where
   parse = TTC.asT $ \t-> do
-    unless (T.all isAsciiLower t) $ Left "username has invalid characters"
+    unless (T.all isAsciiLower t) $ Left "username has invalid character(s)"
     let len = T.length t
     when (len < 3) $ Left "username has fewer than 3 characters"
     when (len > 12) $ Left "username has more than 12 characters"

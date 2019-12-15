@@ -10,7 +10,16 @@
 --
 -- The constructor for 'Username' is not exported.  The 'TTC.Parse' instance
 -- serves as a "smart constructor," ensuring that all values are valid.
+--
+-- This version of the module provides a trivial example of deriving
+-- 'THS.Lift'.
+--
+-- The 'Username' data type derives 'THS.Lift', using the @DeriveLift@
+-- language extension.  The underlying 'String' already has a 'THS.Lift'
+-- instance.
 ------------------------------------------------------------------------------
+
+{-# LANGUAGE DeriveLift #-}
 
 module Username (Username) where
 
@@ -18,26 +27,25 @@ module Username (Username) where
 import Control.Monad (unless, when)
 import Data.Char (isAsciiLower)
 
--- https://hackage.haskell.org/package/text
-import qualified Data.Text as T
-import Data.Text (Text)
+-- https://hackage.haskell.org/package/template-haskell
+import qualified Language.Haskell.TH.Syntax as THS
 
--- ttc
+-- https://hackage.haskell.org/package/ttc
 import qualified Data.TTC as TTC
 
 ------------------------------------------------------------------------------
 
 -- | A 'Username' must consist of 3 to 12 lowercase ASCII letters.
-newtype Username = Username Text
-  deriving (Eq, Ord, Show)
+newtype Username = Username String
+  deriving (Eq, Ord, Show, THS.Lift)
 
 instance TTC.Render Username where
-  render (Username t) = TTC.convert t
+  render (Username s) = TTC.convert s
 
 instance TTC.Parse Username where
-  parse = TTC.asT $ \t -> do
-    unless (T.all isAsciiLower t) $ Left "username has invalid characters"
-    let len = T.length t
+  parse = TTC.asS $ \s -> do
+    unless (all isAsciiLower s) $ Left "username has invalid character(s)"
+    let len = length s
     when (len < 3) $ Left "username has fewer than 3 characters"
     when (len > 12) $ Left "username has more than 12 characters"
-    pure $ Username t
+    pure $ Username s

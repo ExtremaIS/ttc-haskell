@@ -8,17 +8,11 @@
 -- This module defines the data types for a credit card, with 'TTC.Render' and
 -- 'TTC.Parse' instances, as an example of TTC usage.
 --
--- The data types in this module all have 'THS.Lift' instances, to demonstrate
--- how to use 'TTC.valid' in `examples/valid.hs`.  All of the 'THS.Lift'
--- instances are derived, using the `DeriveLift` extension.
---
 -- The constructors and accessors of composite data types 'CreditCard' and
 -- 'ExpirationDate' are exported, but the constructors for 'Name', 'Number',
 -- 'Year', 'Month', and 'SecurityCode' are not.  The 'TTC.Parse' instances
 -- serve as "smart constructors," ensuring that all values are valid.
 ------------------------------------------------------------------------------
-
-{-# LANGUAGE DeriveLift #-}
 
 module CreditCard
   ( -- * CreditCard
@@ -41,9 +35,6 @@ import Control.Monad (unless, when)
 import Data.Char (digitToInt, isDigit, isSpace, toUpper)
 import Data.List (dropWhileEnd, intersperse)
 import Text.Read (readMaybe)
-
--- https://hackage.haskell.org/package/template-haskell
-import qualified Language.Haskell.TH.Syntax as THS
 
 -- http://hackage.haskell.org/package/time
 import qualified Data.Time.Calendar as Calendar
@@ -77,7 +68,7 @@ data CreditCard
 --
 -- * https://stackoverflow.com/questions/2004532
 newtype Name = Name String
-  deriving (Eq, Ord, Show, THS.Lift)
+  deriving (Eq, Ord, Show)
 
 instance TTC.Parse Name where
   parse = TTC.asS $ \s -> do
@@ -107,7 +98,7 @@ instance TTC.Render Name where
 -- * https://en.wikipedia.org/wiki/Luhn_algorithm
 -- * http://rosettacode.org/wiki/Luhn_test_of_credit_card_numbers#Haskell
 newtype Number = Number String
-  deriving (Eq, Ord, Show, THS.Lift)
+  deriving (Eq, Ord, Show)
 
 instance TTC.Parse Number where
   parse = TTC.asS $ \s -> do
@@ -143,7 +134,7 @@ data ExpirationDate
     { year  :: !Year
     , month :: !Month
     }
-  deriving (Eq, Ord, Show, THS.Lift)
+  deriving (Eq, Ord, Show)
 
 instance TTC.Parse ExpirationDate where
   parse = TTC.asS $ \s -> case break (== '-') (strip s) of
@@ -167,7 +158,7 @@ toDay (ExpirationDate (Year year') (Month month')) =
 
 -- | A year must be in `YYYY` format, between 1900 and 9999.
 newtype Year = Year Int
-  deriving (Eq, Ord, Show, THS.Lift)
+  deriving (Eq, Ord, Show)
 
 instance TTC.Parse Year where
   parse = TTC.asS $ \s -> do
@@ -183,7 +174,7 @@ instance TTC.Render Year where
 
 -- | A month must be in `MM` format, between 1 (January) and 12 (December).
 newtype Month = Month Int
-  deriving (Eq, Ord, Show, THS.Lift)
+  deriving (Eq, Ord, Show)
 
 instance TTC.Parse Month where
   parse = TTC.asS $ \s -> do
@@ -208,7 +199,7 @@ instance TTC.Render Month where
 --
 -- * https://en.wikipedia.org/wiki/Card_security_code
 newtype SecurityCode = SecurityCode String
-  deriving (Eq, Ord, Show, THS.Lift)
+  deriving (Eq, Ord, Show)
 
 instance TTC.Parse SecurityCode where
   parse = TTC.asS $ \s -> do

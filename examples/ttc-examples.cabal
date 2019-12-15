@@ -1,0 +1,249 @@
+name:           ttc-examples
+version:        0.2.0.0
+category:       Data, Text
+synopsis:       Textual Type Classes Examples
+description:
+  This package is used for building TTC examples.  Please see the README on
+  GitHub at <https://github.com/ExtremaIS/ttc-haskell#readme>.
+
+homepage:       https://github.com/ExtremaIS/ttc-haskell#readme
+bug-reports:    https://github.com/ExtremaIS/ttc-haskell/issues
+author:         Travis Cardwell <travis.cardwell@extrema.is>
+maintainer:     Travis Cardwell <travis.cardwell@extrema.is>
+copyright:      Copyright (c) 2019 Travis Cardwell
+license:        MIT
+license-file:   LICENSE
+
+cabal-version:  >=1.10
+build-type:     Simple
+
+extra-source-files:
+  README.md
+
+source-repository head
+  type: git
+  location: https://github.com/ExtremaIS/ttc-haskell.git
+
+flag example-enum
+  description: build example-enum
+  default: False
+
+flag example-invalid
+  description: build example-invalid
+  default: False
+
+flag example-lift
+  description: build example-lift
+  default: False
+
+flag example-mkvalid
+  description: build example-mkvalid
+  default: False
+
+flag example-mkuvalid
+  description: build example-mkuvalid
+  default: False
+
+flag example-prompt
+  description: build example-prompt
+  default: False
+
+flag example-uname
+  description: build example-uname
+  default: False
+
+flag example-uvalidof
+  description: build example-uvalidof
+  default: False
+
+flag example-uvalidqq
+  description: build example-uvalidqq
+  default: False
+
+flag example-valid
+  description: build example-valid
+  default: False
+
+flag example-validof
+  description: build example-validof
+  default: False
+
+flag examples
+  description: build all buildable examples
+  default: False
+
+executable example-enum
+  if flag(examples) || flag(example-enum)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: enum
+  main-is: enum.hs
+  build-depends:
+      ansi-wl-pprint
+    , base
+    , optparse-applicative
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-invalid
+  if flag(example-invalid)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: invalid
+  main-is: invalid.hs
+  other-modules:
+      Username
+  build-depends:
+      base
+    , template-haskell
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-lift
+  if flag(examples) || flag(example-lift)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: lift
+  main-is: lift.hs
+  other-modules:
+      Username
+  build-depends:
+      base
+    , template-haskell
+    , text
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-mkvalid
+  if flag(examples) || flag(example-mkvalid)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: mkvalid
+  main-is: mkvalid.hs
+  other-modules:
+      Username
+  build-depends:
+      base
+    , text
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-mkuvalid
+  if flag(examples) || flag(example-mkuvalid)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: mkuvalid
+  main-is: mkuvalid.hs
+  other-modules:
+      Username
+  build-depends:
+      base
+    , text
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-prompt
+  if flag(examples) || flag(example-prompt)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: prompt
+  main-is: prompt.hs
+  other-modules:
+      CreditCard
+  build-depends:
+      base
+    , time
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-uname
+  if flag(examples) || flag(example-uname)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: uname
+  main-is: uname.hs
+  other-modules:
+      Username
+  build-depends:
+      base
+    , text
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-uvalidof
+  if flag(examples) || flag(example-uvalidof)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: uvalidof
+  main-is: uvalidof.hs
+  other-modules:
+      Username
+  build-depends:
+      base
+    , text
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-uvalidqq
+  if flag(examples) || flag(example-uvalidqq)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: uvalidqq
+  main-is: uvalidqq.hs
+  other-modules:
+      Username
+  build-depends:
+      base
+    , text
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-valid
+  if flag(examples) || flag(example-valid)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: valid
+  main-is: valid.hs
+  other-modules:
+      Username
+  build-depends:
+      base
+    , template-haskell
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
+executable example-validof
+  if flag(examples) || flag(example-validof)
+    buildable: True
+  else
+    buildable: False
+  hs-source-dirs: validof
+  main-is: validof.hs
+  other-modules:
+      Username
+  build-depends:
+      base
+    , text
+    , ttc
+  default-language: Haskell2010
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
