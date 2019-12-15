@@ -30,6 +30,7 @@ following conventions:
 
 * Add untyped validation functions
 * Move examples to a separate package
+* Refactor examples and add more
 
 ## 0.1.0.1 (2019-12-02)
 
