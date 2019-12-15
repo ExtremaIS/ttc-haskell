@@ -357,6 +357,8 @@ fromSBS = convert . SBS.fromShort
 -- There are no default instances for the 'Render' type class, so that all
 -- instances can be customized per project when desired.  Instances for some
 -- basic data types are available in "Data.TTC.Instances".
+--
+-- See the @uname@ and @prompt@ example programs in the @examples@ directory.
 class Render a where
   render :: Textual t => a -> t
 
@@ -406,6 +408,8 @@ renderWithShow = convert . show
 -- There are no default instances for the 'Parse' type class, so that all
 -- instances can be customized per project when desired.  Instances for some
 -- basic data types are available in "Data.TTC.Instances".
+--
+-- See the @uname@ and @prompt@ example programs in the @examples@ directory.
 class Parse a where
   parse :: Textual t => t -> Either String a
 
@@ -518,6 +522,8 @@ parseUnsafeBSL = parseUnsafe
 -- $ParseUtils
 
 -- | Parse a value in an enumeration
+--
+-- See the @enum@ example program in the @examples@ directory.
 parseEnum
   :: (Bounded a, Enum a, Render a, Textual t)
   => Bool        -- ^ case-insensitive when 'True'
@@ -616,6 +622,9 @@ readsWithParse s = case parse s of
 -- supported in @haskell-src-exts <1.22.0@, which caused problems with
 -- @hlint@.  If the issue effects you, use @hlint -i "Parse error"@ to ignore
 -- parse errors or use one of the alternative functions in this library.
+--
+-- See the @valid@, @invalid@, and @lift@ example programs in the @examples@
+-- directory.
 valid
   :: (Parse a, THS.Lift a)
   => String
@@ -638,6 +647,8 @@ valid s = case parse s of
 -- supported in @haskell-src-exts <1.22.0@, which caused problems with
 -- @hlint@.  If the issue effects you, use @hlint -i "Parse error"@ to ignore
 -- parse errors or use 'untypedValidOf' instead.
+--
+-- See the @validof@ example program in the @examples@ directory.
 validOf
   :: Parse a
   => Proxy a
@@ -656,6 +667,8 @@ validOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
 -- supported in @haskell-src-exts <1.22.0@, which caused problems with
 -- @hlint@.  If the issue effects you, use @hlint -i "Parse error"@ to ignore
 -- parse errors or use 'mkUntypedValidOf' instead.
+--
+-- See the @mkvalid@ example program in the @examples@ directory.
 mkValid
   :: String
   -> TH.Name
@@ -679,6 +692,8 @@ mkValid funName typeName = do
 -- error.  When valid, the 'String' is compiled in, to be parsed again at
 -- run-time.  Since the result is not compiled in, no 'THS.Lift' instance is
 -- required.
+--
+-- See the @uvalidof@ example program in the @examples@ directory.
 untypedValidOf
   :: Parse a
   => Proxy a
@@ -692,6 +707,8 @@ untypedValidOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
 --
 -- Create a @valid@ function in the module for a type in order to avoid having
 -- to write a 'Proxy' when defining constants.
+--
+-- See the @mkuvalid@ example program in the @examples@ directory.
 mkUntypedValid
   :: String
   -> TH.Name
@@ -707,6 +724,8 @@ mkUntypedValid funName typeName = do
       ]
 
 -- | Make a @valid@ quasi-quoter using 'untypedValidOf' for the given type
+--
+-- See the @uvalidqq@ example program in the @examples@ directory.
 mkUntypedValidQQ
   :: String
   -> TH.Name

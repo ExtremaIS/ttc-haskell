@@ -4,9 +4,6 @@
 
 ## Documentation
 
-* Add example references to the API documentation.
-* Add link to `examples/README.md` to `README.md`.
-
 ## Examples
 
 `aeson` example:
