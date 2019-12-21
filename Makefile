@@ -132,7 +132,7 @@ help:
 	@echo "make hsrecent          show N most recently modified Haskell files"
 	@echo "make hssloc            count lines of Haskell source"
 	@echo "make recent            show N most recently modified files"
-	@echo "make repl              run REPL"
+	@echo "make repl              enter a REPL *"
 	@echo "make sdist             create source tarball for Hackage"
 	@echo "make source-git        create source tarball of git TREE"
 	@echo "make source-tar        create source tarball using tar"
