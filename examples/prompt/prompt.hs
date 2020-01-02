@@ -2,7 +2,7 @@
 -- |
 -- Module      : Main
 -- Description : example CLI prompt using TTC
--- Copyright   : Copyright (c) 2019 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2020 Travis Cardwell
 -- License     : MIT
 --
 -- 'TTC.Parse' and 'TTC.Render' instances are used to create a CLI prompt,
