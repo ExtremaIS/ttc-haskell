@@ -194,7 +194,6 @@ hlint:
 > @$(call hs_files) | xargs hlint -i "Parse error"
 .PHONY: hlint
 
-
 hsgrep:
 > $(eval E := "")
 > @test -n "$(E)" || $(call die,"usage: make hsgrep E=expression")
