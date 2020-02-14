@@ -265,7 +265,8 @@ test:
 
 test-doc:
 > @command -v hr >/dev/null 2>&1 && hr -t || true
-> @stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) --haddock --test
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+>   --haddock --test --bench --no-run-benchmarks
 .PHONY: test-doc
 
 todo:
