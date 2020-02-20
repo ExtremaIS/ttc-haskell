@@ -24,5 +24,3 @@ parseJsonString expected = A.withText expected $ either fail pure . TTC.parse
 ```
 
 ## Project
-
-* Add `0.2` to Stackage LTS.
