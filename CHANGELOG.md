@@ -28,7 +28,8 @@ following conventions:
 
 ### Non-Breaking
 
-* Refactor `Makefile`
+* Refactor `Makefile`, add `STACK_NIX_PATH` support
+* Add `test-all` command to `Makefile`
 
 ## 0.2.0.0 (2019-12-15)
 

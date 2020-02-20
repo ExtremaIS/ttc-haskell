@@ -19,6 +19,11 @@ SHELL := bash
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --warn-undefined-variables
 
+NIX_PATH_ARGS :=
+ifneq ($(origin STACK_NIX_PATH), undefined)
+  NIX_PATH_ARGS := "--nix-path=$(STACK_NIX_PATH)"
+endif
+
 RESOLVER_ARGS :=
 ifneq ($(origin RESOLVER), undefined)
   RESOLVER_ARGS := "--resolver" "$(RESOLVER)"
@@ -52,7 +57,7 @@ _default: build
 
 build:
 > @command -v hr >/dev/null 2>&1 && hr -t || true
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS)
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
 .PHONY: build
 
 clean:
@@ -68,81 +73,81 @@ clean-all: clean
 
 coverage:
 > @command -v hr >/dev/null 2>&1 && hr -t || true
-> @stack test --coverage $(RESOLVER_ARGS) $(STACK_YAML_ARGS)
+> @stack test --coverage $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
 .PHONY: coverage
 
 doc-api:
 > @command -v hr >/dev/null 2>&1 && hr -t || true
-> @stack haddock $(RESOLVER_ARGS) $(STACK_YAML_ARGS)
+> @stack haddock $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
 .PHONY: doc-api
 
 example-enum:
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-enum
 > @stack exec example-enum
 .PHONY: example-enum
 
 example-invalid:
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-invalid
 .PHONY: example-invalid
 
 example-lift:
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-lift
 > @stack exec example-lift
 .PHONY: example-lift
 
 example-mkvalid:
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-mkvalid
 > @stack exec example-mkvalid
 .PHONY: example-mkvalid
 
 example-mkuvalid:
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-mkuvalid
 > @stack exec example-mkuvalid
 .PHONY: example-mkuvalid
 
 example-prompt:
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-prompt
 > @stack exec example-prompt
 .PHONY: example-prompt
 
 example-uname:
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-uname
 > @stack exec example-uname
 .PHONY: example-uname
 
 example-uvalidof:
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-uvalidof
 > @stack exec example-uvalidof
 .PHONY: example-uvalidof
 
 example-uvalidqq:
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-uvalidqq
 > @stack exec example-uvalidqq
 .PHONY: example-uvalidqq
 
 example-valid:
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-valid
 > @stack exec example-valid
 .PHONY: example-valid
 
 example-validof:
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-validof
 > @stack exec example-validof
 .PHONY: example-validof
 
 examples:
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:examples
 .PHONY: examples
 
@@ -182,10 +187,12 @@ help:
 > @echo "make source-git        create source tarball of git TREE"
 > @echo "make source-tar        create source tarball using tar"
 > @echo "make test              run tests, optionally for pattern P *"
+> @echo "make test-all          run tests and build examples for all versions"
 > @echo "make test-doc          run tests and build API documentation *"
 > @echo "make todo              search for TODO items"
 > @echo "make version           show current version"
 > @echo
+> @echo "* Use STACK_NIX_PATH to specify a Nix path."
 > @echo "* Use RESOLVER to specify a resolver."
 > @echo "* Use CONFIG to specify a Stack configuration file."
 .PHONY: help
@@ -219,7 +226,7 @@ recent:
 .PHONY: recent
 
 repl:
-> @stack exec ghci $(RESOLVER_ARGS) $(STACK_YAML_ARGS)
+> @stack exec ghci $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
 .PHONY: repl
 
 sdist:
@@ -258,14 +265,56 @@ test:
 > $(eval P := "")
 > @command -v hr >/dev/null 2>&1 && hr -t || true
 > @test -z "$(P)" \
->   && stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
->   || stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+>   && stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
+>   || stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >       --test-arguments '--pattern $(P)'
 .PHONY: test
 
+test-all:
+> $(eval CONFIG := $(shell \
+    test -f stack-nix-8.2.2.yaml \
+    && echo stack-nix-8.2.2.yaml \
+    || echo stack-8.2.2.yaml))
+> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
+> @make test-doc CONFIG=$(CONFIG)
+> @make examples CONFIG=$(CONFIG)
+> $(eval CONFIG := $(shell \
+    test -f stack-nix-8.4.4.yaml \
+    && echo stack-nix-8.4.4.yaml \
+    || echo stack-8.4.4.yaml))
+> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
+> @make test-doc CONFIG=$(CONFIG)
+> @make examples CONFIG=$(CONFIG)
+> $(eval CONFIG := $(shell \
+    test -f stack-nix-8.6.5.yaml \
+    && echo stack-nix-8.6.5.yaml \
+    || echo stack-8.6.5.yaml))
+> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
+> @make test-doc CONFIG=$(CONFIG)
+> @make examples CONFIG=$(CONFIG)
+> $(eval CONFIG := $(shell \
+    test -f stack-nix.yaml \
+    && echo stack-nix.yaml \
+    || echo stack.yaml))
+> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
+> @make test-doc CONFIG=$(CONFIG)
+> @make examples CONFIG=$(CONFIG)
+> $(eval STACK_NIX_PATH := $(shell \
+    test -f stack-nix-nightly.path \
+    && cat stack-nix-nightly.path \
+    || true))
+> @command -v hr >/dev/null 2>&1 && hr nightly || true
+> @test -f stack-nix-nightly.path \
+>   && make test-doc RESOLVER=nightly STACK_NIX_PATH="$(STACK_NIX_PATH)" \
+>   || make test-doc RESOLVER=nightly
+> @test -f stack-nix-nightly.path \
+>   && make examples RESOLVER=nightly STACK_NIX_PATH="$(STACK_NIX_PATH)" \
+>   || make examples RESOLVER=nightly
+.PHONY: test-all
+
 test-doc:
 > @command -v hr >/dev/null 2>&1 && hr -t || true
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) \
+> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --haddock --test --bench --no-run-benchmarks
 .PHONY: test-doc
 
