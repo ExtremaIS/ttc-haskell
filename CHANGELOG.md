@@ -28,6 +28,7 @@ following conventions:
 
 ### Non-Breaking
 
+* Update examples to support older libraries
 * Refactor `Makefile`, add `STACK_NIX_PATH` support
 * Add `test-all` command to `Makefile`
 
