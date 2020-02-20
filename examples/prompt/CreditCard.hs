@@ -75,7 +75,7 @@ instance TTC.Parse Name where
     let name' = map toUpper $ strip s
         invChars = filter ((||) <$> (< ' ') <*> (> '_')) name'
     unless (null invChars) . Left $
-      "name has invalid character(s): " <> intersperse ',' invChars
+      "name has invalid character(s): " ++ intersperse ',' invChars
     when (null name') $ Left "name is empty"
     when (length name' > 26) $ Left "name has more than 26 characters"
     pure $ Name name'
@@ -106,7 +106,7 @@ instance TTC.Parse Number where
         invChars = filter (not . isDigit) number'
         len = length number'
     unless (null invChars) . Left $
-      "number has invalid character(s): " <> intersperse ',' invChars
+      "number has invalid character(s): " ++ intersperse ',' invChars
     unless (len >= 8) $ Left "number has fewer than 8 characters"
     unless (len <= 19) $ Left "number has more than 19 characters"
     unless (luhn number') $ Left "number checksum is invalid"
@@ -144,7 +144,7 @@ instance TTC.Parse ExpirationDate where
 
 instance TTC.Render ExpirationDate where
   render (ExpirationDate year' month') =
-    TTC.fromS $ TTC.render year' <> "-" <> TTC.render month'
+    TTC.fromS $ TTC.render year' ++ "-" ++ TTC.render month'
 
 toDay
   :: ExpirationDate
@@ -207,7 +207,7 @@ instance TTC.Parse SecurityCode where
         invChars = filter (not . isDigit) securityCode'
         len = length securityCode'
     unless (null invChars) . Left $
-      "security code has invalid character(s): " <> intersperse ',' invChars
+      "security code has invalid character(s): " ++ intersperse ',' invChars
     unless (len >= 3) $ Left "security code has fewer than 3 characters"
     unless (len <= 4) $ Left "security code has more than 4 characters"
     pure $ SecurityCode securityCode'

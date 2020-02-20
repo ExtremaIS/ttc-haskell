@@ -42,7 +42,7 @@ prompt parse promptString = loop
       case parse s of
         Right x -> return x
         Left err -> do
-          putStrLn $ "  " <> err
+          putStrLn $ "  " ++ err
           loop
 
 -- | This is a version of 'prompt' that uses 'TTC.Parse' instances.
@@ -75,20 +75,20 @@ main = do
     putStrLn "Please enter some fake credit card details."
     cc <- promptCC
     putStrLn $ replicate 78 '-'
-    putStrLn $ "Name:            " <> TTC.render (CC.name cc)
-    putStrLn $ "Number:          " <> TTC.render (CC.number cc)
-    putStrLn $ "Expiration date: " <> TTC.render (CC.expirationDate cc)
-    putStrLn $ "Security code:   " <> TTC.render (CC.securityCode cc)
+    putStrLn $ "Name:            " ++ TTC.render (CC.name cc)
+    putStrLn $ "Number:          " ++ TTC.render (CC.number cc)
+    putStrLn $ "Expiration date: " ++ TTC.render (CC.expirationDate cc)
+    putStrLn $ "Security code:   " ++ TTC.render (CC.securityCode cc)
     putStrLn $ replicate 78 '-'
     today <- Clock.utctDay <$> Clock.getCurrentTime
-    putStrLn . ("This credit card " <>) . (<> "!") $
+    putStrLn . ("This credit card " ++) . (++ "!") $
       case CC.toDay (CC.expirationDate cc) of
         expiry
-          | expiry > today -> "expires in " <> diffDays expiry today
-          | expiry < today -> "expired " <> diffDays today expiry <> " ago"
+          | expiry > today -> "expires in " ++ diffDays expiry today
+          | expiry < today -> "expired " ++ diffDays today expiry ++ " ago"
           | otherwise      -> "expires today"
   where
     diffDays :: Calendar.Day -> Calendar.Day -> String
     diffDays day1 day2 = case Calendar.diffDays day1 day2 of
       1 -> "1 day"
-      n -> show n <> " days"
+      n -> show n ++ " days"
