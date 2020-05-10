@@ -24,6 +24,15 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 0.2.1.0 (2020-05-11)
+
+### Non-Breaking
+
+* Update examples to support older libraries
+* Refactor `Makefile`, add `STACK_NIX_PATH` support
+* Add `test-all` command to `Makefile`
+* Bump `tasty` dependency version upper bound
+
 ## 0.2.0.0 (2019-12-15)
 
 ### Non-Breaking

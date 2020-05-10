@@ -4,6 +4,7 @@
 # stack
 .stack-work
 *.yaml.lock
+stack-nix*
 
 # vi
 .*.swp

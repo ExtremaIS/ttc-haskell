@@ -2,7 +2,7 @@
 -- |
 -- Module      : Main
 -- Description : example of parseEnum usage
--- Copyright   : Copyright (c) 2019 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2020 Travis Cardwell
 -- License     : MIT
 --
 -- This example program prints greetings in multiple languages.  The language
