@@ -1,6 +1,11 @@
 # project
 /build/
 
+# cabal
+cabal.project.local
+cabal.project.local~
+/dist-newstyle/
+
 # stack
 .stack-work
 *.yaml.lock
