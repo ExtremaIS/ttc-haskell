@@ -26,6 +26,11 @@ following conventions:
 
 ## Unreleased
 
+### Non-Breaking
+
+* Bump `template-haskell` dependency version upper bound
+    * Update `lift` example for compatibility with `template-haskell 2.16.0.0`
+
 ## 0.2.1.0 (2020-05-11)
 
 ### Non-Breaking

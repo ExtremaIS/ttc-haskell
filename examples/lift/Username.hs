@@ -83,4 +83,8 @@ instance TTC.Parse Username where
 #if !MIN_VERSION_text(1,2,4)
 instance THS.Lift Text where
   lift = TH.appE (TH.varE 'T.pack) . TH.stringE . T.unpack
+#if MIN_VERSION_template_haskell(2,16,0)
+  liftTyped =
+    fmap THS.TExp . TH.appE (TH.varE 'T.pack) . TH.stringE . T.unpack
+#endif
 #endif
