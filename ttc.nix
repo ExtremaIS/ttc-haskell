@@ -3,7 +3,7 @@
 }:
 mkDerivation {
   pname = "ttc";
-  version = "0.2.1.0";
+  version = "0.2.2.0";
   src = ./.;
   libraryHaskellDepends = [ base bytestring template-haskell text ];
   testHaskellDepends = [
