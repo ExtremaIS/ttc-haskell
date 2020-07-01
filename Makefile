@@ -19,6 +19,8 @@ SHELL := bash
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --warn-undefined-variables
 
+.DEFAULT_GOAL := build
+
 NIX_PATH_ARGS :=
 ifneq ($(origin STACK_NIX_PATH), undefined)
   NIX_PATH_ARGS := "--nix-path=$(STACK_NIX_PATH)"
@@ -52,190 +54,157 @@ endef
 ##############################################################################
 # Rules
 
-_default: build
-.PHONY: _default
-
-build:
+build: # build package *
 > @command -v hr >/dev/null 2>&1 && hr -t || true
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
 .PHONY: build
 
-clean:
+clean: # clean package
 > @stack clean
 .PHONY: clean
 
-clean-all: clean
+clean-all: clean # clean package and remove artifacts
 > @rm -rf .stack-work
 > @rm -rf examples/.stack-work
 > @rm -rf build
 > @rm -f *.yaml.lock
 .PHONY: clean-all
 
-coverage:
+coverage: # run tests with code coverage *
 > @command -v hr >/dev/null 2>&1 && hr -t || true
 > @stack test --coverage $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
 .PHONY: coverage
 
-doc-api:
+doc-api: # build API documentation *
 > @command -v hr >/dev/null 2>&1 && hr -t || true
 > @stack haddock $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
 .PHONY: doc-api
 
-example-enum:
+example-enum: # build and run example-enum *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-enum
 > @stack exec example-enum
 .PHONY: example-enum
 
-example-invalid:
+example-invalid: # build example-invalid, which should fail *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-invalid
 .PHONY: example-invalid
 
-example-lift:
+example-lift: # build and run example-lift *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-lift
 > @stack exec example-lift
 .PHONY: example-lift
 
-example-mkvalid:
+example-mkvalid: # build and run example-mkvalid *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-mkvalid
 > @stack exec example-mkvalid
 .PHONY: example-mkvalid
 
-example-mkuvalid:
+example-mkuvalid: # build and run example-mkuvalid *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-mkuvalid
 > @stack exec example-mkuvalid
 .PHONY: example-mkuvalid
 
-example-prompt:
+example-prompt: # build and run example-prompt *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-prompt
 > @stack exec example-prompt
 .PHONY: example-prompt
 
-example-uname:
+example-uname: # build and run example-uname *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-uname
 > @stack exec example-uname
 .PHONY: example-uname
 
-example-uvalidof:
+example-uvalidof: # build and run example-uvalidof *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-uvalidof
 > @stack exec example-uvalidof
 .PHONY: example-uvalidof
 
-example-uvalidqq:
+example-uvalidqq: # build and run example-uvalidqq *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-uvalidqq
 > @stack exec example-uvalidqq
 .PHONY: example-uvalidqq
 
-example-valid:
+example-valid: # build and run example-valid *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-valid
 > @stack exec example-valid
 .PHONY: example-valid
 
-example-validof:
+example-validof: # build and run example-validof *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:example-validof
 > @stack exec example-validof
 .PHONY: example-validof
 
-examples:
+examples: # build all buldable examples *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --flag ttc-examples:examples
 .PHONY: examples
 
-grep:
+grep: # grep all non-hidden files for expression E
 > $(eval E:= "")
 > @test -n "$(E)" || $(call die,"usage: make grep E=expression")
 > @$(call all_files) | xargs grep -Hn '$(E)' || true
 .PHONY: grep
 
-help:
-> @echo "make build             build package *"
-> @echo "make clean             clean package"
-> @echo "make clean-all         clean package and remove artifacts"
-> @echo "make coverage          run tests with code coverage *"
-> @echo "make doc-api           build API documentation *"
-> @echo "make example-enum      build and run example-enum*"
-> @echo "make example-invalid   build example-invalid, which should fail *"
-> @echo "make example-lift      build and run example-lift*"
-> @echo "make example-mkvalid   build and run example-mkvalid *"
-> @echo "make example-mkuvalid  build and run example-mkuvalid *"
-> @echo "make example-prompt    build and run example-prompt *"
-> @echo "make example-uname     build and run example-uname *"
-> @echo "make example-uvalidof  build and run example-uvalidof *"
-> @echo "make example-uvalidqq  build and run example-uvalidqq *"
-> @echo "make example-valid     build and run example-valid *"
-> @echo "make example-validof   build and run example-validof *"
-> @echo "make examples          build all buldable examples *"
-> @echo "make grep              grep all non-hidden files for expression E"
-> @echo "make help              show this help"
-> @echo "make hlint             run hlint on all Haskell source"
-> @echo "make hsgrep            grep all Haskell source for expression E"
-> @echo "make hsrecent          show N most recently modified Haskell files"
-> @echo "make hssloc            count lines of Haskell source"
-> @echo "make recent            show N most recently modified files"
-> @echo "make repl              enter a REPL *"
-> @echo "make sdist             create source tarball for Hackage"
-> @echo "make source-git        create source tarball of git TREE"
-> @echo "make source-tar        create source tarball using tar"
-> @echo "make test              run tests, optionally for pattern P *"
-> @echo "make test-all          run tests and build examples for all versions"
-> @echo "make test-doc          run tests and build API documentation *"
-> @echo "make todo              search for TODO items"
-> @echo "make version           show current version"
+help: # show this help
+> @grep '^[a-zA-Z0-9_-]\+:[^#]*# ' $(MAKEFILE_LIST) \
+>   | sed 's/^\([^:]\+\):[^#]*# \(.*\)/make \1\t\2/' \
+>   | column -t -s $$'\t'
 > @echo
 > @echo "* Use STACK_NIX_PATH to specify a Nix path."
 > @echo "* Use RESOLVER to specify a resolver."
 > @echo "* Use CONFIG to specify a Stack configuration file."
 .PHONY: help
 
-hlint:
+hlint: # run hlint on all Haskell source
 > @$(call hs_files) | xargs hlint -i "Parse error"
 .PHONY: hlint
 
-hsgrep:
+hsgrep: # grep all Haskell source for expression E
 > $(eval E := "")
 > @test -n "$(E)" || $(call die,"usage: make hsgrep E=expression")
 > @$(call hs_files) | xargs grep -Hn '$(E)' || true
 .PHONY: hsgrep
 
-hsrecent:
+hsrecent: # show N most recently modified Haskell files
 > $(eval N := "10")
 > @find . -not -path '*/\.*' -type f -name '*.hs' -printf '%T+ %p\n' \
 >   | sort --reverse \
 >   | head -n $(N)
 .PHONY: hsrecent
 
-hssloc:
+hssloc: # count lines of Haskell source
 > @$(call hs_files) | xargs wc -l | tail -n 1 | sed 's/^ *\([0-9]*\).*$$/\1/'
 .PHONY: hssloc
 
-recent:
+recent: # show N most recently modified files
 > $(eval N := "10")
 > @find . -not -path '*/\.*' -type f -printf '%T+ %p\n' \
 >   | sort --reverse \
 >   | head -n $(N)
 .PHONY: recent
 
-repl:
+repl: # enter a REPL *
 > @stack exec ghci $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
 .PHONY: repl
 
-sdist:
+sdist: # create source tarball for Hackage
 > $(eval BRANCH := $(shell git rev-parse --abbrev-ref HEAD))
 > @test "${BRANCH}" = "master" || $(call die,"not in master branch")
 > @stack sdist
 .PHONY: sdist
 
-source-git:
+source-git: # create source tarball of git TREE
 > $(eval TREE := "HEAD")
 > $(eval BRANCH := $(shell git rev-parse --abbrev-ref $(TREE)))
 > @test "${BRANCH}" = "master" || echo "WARNING: Not in master branch!" >&2
@@ -247,7 +216,7 @@ source-git:
 >   > build/$(PROJECT)-$(VERSION).tar.xz
 .PHONY: source-git
 
-source-tar:
+source-tar: # create source tarball using tar
 > $(eval VERSION := $(shell \
     grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
 > @mkdir -p build
@@ -261,7 +230,7 @@ source-tar:
 > @rm -f build/.gitignore
 .PHONY: source-tar
 
-test:
+test: # run tests, optionally for pattern P *
 > $(eval P := "")
 > @command -v hr >/dev/null 2>&1 && hr -t || true
 > @test -z "$(P)" \
@@ -270,7 +239,7 @@ test:
 >       --test-arguments '--pattern $(P)'
 .PHONY: test
 
-test-all:
+test-all: # run tests and build examples for all versions
 > $(eval CONFIG := $(shell \
     test -f stack-nix-8.2.2.yaml \
     && echo stack-nix-8.2.2.yaml \
@@ -312,13 +281,13 @@ test-all:
 >   || make examples RESOLVER=nightly
 .PHONY: test-all
 
-test-doc:
+test-doc: # run tests and build API documentation *
 > @command -v hr >/dev/null 2>&1 && hr -t || true
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --haddock --test --bench --no-run-benchmarks
 .PHONY: test-doc
 
-todo:
+todo: # search for TODO items
 > @find . -type f \
 >   -not -path '*/\.*' \
 >   -not -path './build/*' \
@@ -327,7 +296,7 @@ todo:
 >   | xargs grep -Hn TODO || true
 .PHONY: todo
 
-version:
+version: # show current version
 > @grep '^version:' $(CABAL_FILE) | sed 's/^version: */$(PROJECT) /'
 > @grep '^version:' "examples/ttc-examples.cabal" \
 >   | sed 's/^version: */ttc-examples /'
