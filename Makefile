@@ -73,6 +73,7 @@ clean-all: clean # clean package and remove artifacts
 coverage: # run tests with code coverage *
 > @command -v hr >/dev/null 2>&1 && hr -t || true
 > @stack test --coverage $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
+> @stack hpc report .
 .PHONY: coverage
 
 doc-api: # build API documentation *
