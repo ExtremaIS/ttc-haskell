@@ -294,7 +294,9 @@ todo: # search for TODO items
 >   -not -path './build/*' \
 >   -not -path './project/*' \
 >   -not -path ./Makefile \
->   | xargs grep -Hn TODO || true
+>   | xargs grep -Hn TODO \
+>   | grep -v '^Binary file ' \
+>   || true
 .PHONY: todo
 
 version: # show current version
