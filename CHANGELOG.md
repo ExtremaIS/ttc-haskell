@@ -24,6 +24,12 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 0.2.3.0 (2020-09-25)
+
+### Non-Breaking
+
+* Bump `bytestring` dependency version upper bound
+
 ## 0.2.2.0 (2020-05-17)
 
 ### Non-Breaking

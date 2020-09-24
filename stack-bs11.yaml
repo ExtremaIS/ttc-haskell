@@ -1,0 +1,20 @@
+resolver: nightly-2020-09-23
+
+packages:
+- .
+- ./examples
+
+extra-deps:
+- bytestring-0.11.0.0
+- github: haskell/cabal
+  commit: 5139d6e72d391bffa3cf06f08884277799eb0b45
+  subdirs:
+    - Cabal
+- binary-0.8.8.0
+- directory-1.3.6.0
+- text-1.2.3.2
+- unix-2.7.2.2
+- parsec-3.1.14.0
+- process-1.6.9.0
+
+allow-newer: true
