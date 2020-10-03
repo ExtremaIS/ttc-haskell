@@ -128,13 +128,6 @@ import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
 import qualified Data.Text.Lazy.Encoding as TLE
 
--- HLint does not support typed expression quotations:
---   https://github.com/ndmitchell/hlint/issues/332
---
--- The following ignore annotation is not working.  It works via the CLI:
---   hlint -i "Parse error"
-{-# ANN module "HLint: ignore Parse error" #-}
-
 ------------------------------------------------------------------------------
 -- $Textual
 

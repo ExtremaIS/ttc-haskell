@@ -17,9 +17,6 @@ module Main (main) where
 import qualified Username
 import Username (Username)
 
--- HLint does not support typed expression splices
-{-# ANN module "HLint: ignore" #-}
-
 ------------------------------------------------------------------------------
 
 sample :: Username

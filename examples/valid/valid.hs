@@ -19,9 +19,6 @@ import qualified Data.TTC as TTC
 -- (ttc-examples:example-valid)
 import Username (Username)
 
--- HLint does not support typed expression splices
-{-# ANN module "HLint: ignore" #-}
-
 ------------------------------------------------------------------------------
 
 sample :: Username

@@ -168,7 +168,7 @@ help: # show this help
 .PHONY: help
 
 hlint: # run hlint on all Haskell source
-> @$(call hs_files) | xargs hlint -i "Parse error"
+> @$(call hs_files) | xargs hlint
 .PHONY: hlint
 
 hsgrep: # grep all Haskell source for expression E

@@ -33,9 +33,6 @@ import qualified Data.TTC as TTC
 import qualified TestString
 import TestString (TestString(TestString))
 
--- HLint does not support typed expression splices
-{-# ANN module ("HLint: ignore" :: String) #-}
-
 ------------------------------------------------------------------------------
 -- $HelperFunctions
 
