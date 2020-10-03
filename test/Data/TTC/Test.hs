@@ -101,8 +101,8 @@ instance TTC.Parse PosInt where
   parse = TTC.asS $ \ s -> case readMaybe s of
     Just i
       | i >= 0 -> Right $ PosInt i
-      | otherwise -> Left "not positive"
-    Nothing -> Left "not an integer"
+      | otherwise -> Left $ TTC.fromS "not positive"
+    Nothing -> Left $ TTC.fromS "not an integer"
 
 instance TTC.Render PosInt where
   render (PosInt i) = TTC.convert $ show i
@@ -402,11 +402,11 @@ testRenderWithShow = testGroup "renderWithShow"
 
 testParse :: TestTree
 testParse = testGroup "parse"
-    [ testCase "S" $ Right answer @=? TTC.parse answerS
-    , testCase "T" $ Right answer @=? TTC.parse answerT
-    , testCase "TL" $ Right answer @=? TTC.parse answerTL
-    , testCase "BS" $ Right answer @=? TTC.parse answerBS
-    , testCase "BSL" $ Right answer @=? TTC.parse answerBSL
+    [ testCase "S" $ Just answer @=? TTC.parseMaybe answerS
+    , testCase "T" $ Just answer @=? TTC.parseMaybe answerT
+    , testCase "TL" $ Just answer @=? TTC.parseMaybe answerTL
+    , testCase "BS" $ Just answer @=? TTC.parseMaybe answerBS
+    , testCase "BSL" $ Just answer @=? TTC.parseMaybe answerBSL
     , testCase "negative" $ Left "not positive" @=?
         (TTC.parse ('-' : answerS) :: Either String PosInt)
     , testCase "invalid" $ Left "not an integer" @=?
@@ -414,19 +414,20 @@ testParse = testGroup "parse"
     ]
 
 testParseS :: TestTree
-testParseS = testCase "parseS" $ Right answer @=? TTC.parseS answerS
+testParseS = testCase "parseS" $ Just answer @=? TTC.parseMaybeS answerS
 
 testParseT :: TestTree
-testParseT = testCase "parseT" $ Right answer @=? TTC.parseT answerT
+testParseT = testCase "parseT" $ Just answer @=? TTC.parseMaybeT answerT
 
 testParseTL :: TestTree
-testParseTL = testCase "parseTL" $ Right answer @=? TTC.parseTL answerTL
+testParseTL = testCase "parseTL" $ Just answer @=? TTC.parseMaybeTL answerTL
 
 testParseBS :: TestTree
-testParseBS = testCase "parseBS" $ Right answer @=? TTC.parseBS answerBS
+testParseBS = testCase "parseBS" $ Just answer @=? TTC.parseMaybeBS answerBS
 
 testParseBSL :: TestTree
-testParseBSL = testCase "parseBSL" $ Right answer @=? TTC.parseBSL answerBSL
+testParseBSL =
+    testCase "parseBSL" $ Just answer @=? TTC.parseMaybeBSL answerBSL
 
 testParseMaybe :: TestTree
 testParseMaybe = testGroup "parseMaybe"
@@ -508,13 +509,29 @@ testParseWithRead = testGroup "parseWithRead"
 
 testParseWithRead' :: TestTree
 testParseWithRead' = testGroup "parseWithRead'"
-    [ testCase "S" $ Right answerZ @=? TTC.parseWithRead' "Int" answerS
-    , testCase "T" $ Right answerZ @=? TTC.parseWithRead' "Int" answerT
-    , testCase "TL" $ Right answerZ @=? TTC.parseWithRead' "Int" answerTL
-    , testCase "BS" $ Right answerZ @=? TTC.parseWithRead' "Int" answerBS
-    , testCase "BSL" $ Right answerZ @=? TTC.parseWithRead' "Int" answerBSL
+    [ testCase "S" $ Right answerZ @=?
+        (TTC.parseWithRead' "Int" answerS :: Either String Int)
+    , testCase "T" $ Right answerZ @=?
+        (TTC.parseWithRead' "Int" answerT :: Either String Int)
+    , testCase "TL" $ Right answerZ @=?
+        (TTC.parseWithRead' "Int" answerTL :: Either String Int)
+    , testCase "BS" $ Right answerZ @=?
+        (TTC.parseWithRead' "Int" answerBS :: Either String Int)
+    , testCase "BSL" $ Right answerZ @=?
+        (TTC.parseWithRead' "Int" answerBSL :: Either String Int)
     , testCase "invalid" $ Left "invalid Int" @=?
         (TTC.parseWithRead' "Int" ('a' : answerS) :: Either String Int)
+    ]
+
+testMaybeParseWithRead :: TestTree
+testMaybeParseWithRead = testGroup "maybeParseWithRead"
+    [ testCase "S" $ Just answerZ @=? TTC.maybeParseWithRead answerS
+    , testCase "T" $ Just answerZ @=? TTC.maybeParseWithRead answerT
+    , testCase "TL" $ Just answerZ @=? TTC.maybeParseWithRead answerTL
+    , testCase "BS" $ Just answerZ @=? TTC.maybeParseWithRead answerBS
+    , testCase "BSL" $ Just answerZ @=? TTC.maybeParseWithRead answerBSL
+    , testCase "invalid" $ Nothing @=?
+        (TTC.maybeParseWithRead ('a' : answerS) :: Maybe Int)
     ]
 
 testParseEnum :: TestTree
@@ -654,6 +671,7 @@ tests = testGroup "Data.TTC"
         , testParseUnsafeBSL
         , testParseWithRead
         , testParseWithRead'
+        , testMaybeParseWithRead
         , testParseEnum
         , testParseEnum'
         , testReadsWithParse
