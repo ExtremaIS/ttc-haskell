@@ -36,7 +36,9 @@ data Language
   deriving (Bounded, Enum, Eq, Ord, Show)
 
 instance TTC.Parse Language where
-  parse = TTC.parseEnum True True "unknown language" "ambiguous language"
+  parse = TTC.parseEnum True True
+    (TTC.fromS "unknown language")
+    (TTC.fromS "ambiguous language")
 
 instance TTC.Render Language where
   render = TTC.renderWithShow

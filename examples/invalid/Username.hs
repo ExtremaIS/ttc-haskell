@@ -25,6 +25,7 @@ module Username (Username) where
 
 -- https://hackage.haskell.org/package/base
 import Control.Monad (unless, when)
+import Data.Bifunctor (first)
 import Data.Char (isAsciiLower)
 
 -- https://hackage.haskell.org/package/template-haskell
@@ -43,7 +44,7 @@ instance TTC.Render Username where
   render (Username s) = TTC.convert s
 
 instance TTC.Parse Username where
-  parse = TTC.asS $ \s -> do
+  parse = TTC.asS $ \s -> first TTC.fromS $ do
     unless (all isAsciiLower s) $ Left "username has invalid character(s)"
     let len = length s
     when (len < 3) $ Left "username has fewer than 3 characters"

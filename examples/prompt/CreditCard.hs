@@ -32,6 +32,7 @@ module CreditCard
 
 -- http://hackage.haskell.org/package/base
 import Control.Monad (unless, when)
+import Data.Bifunctor (first)
 import Data.Char (digitToInt, isDigit, isSpace, toUpper)
 import Data.List (dropWhileEnd, intersperse)
 import Text.Read (readMaybe)
@@ -71,7 +72,7 @@ newtype Name = Name String
   deriving (Eq, Ord, Show)
 
 instance TTC.Parse Name where
-  parse = TTC.asS $ \s -> do
+  parse = TTC.asS $ \s -> first TTC.fromS $ do
     let name' = map toUpper $ strip s
         invChars = filter ((||) <$> (< ' ') <*> (> '_')) name'
     unless (null invChars) . Left $
@@ -101,7 +102,7 @@ newtype Number = Number String
   deriving (Eq, Ord, Show)
 
 instance TTC.Parse Number where
-  parse = TTC.asS $ \s -> do
+  parse = TTC.asS $ \s -> first TTC.fromS $ do
     let number' = filter ((&&) <$> (/= ' ') <*> (/= '-')) s
         invChars = filter (not . isDigit) number'
         len = length number'
@@ -140,7 +141,7 @@ instance TTC.Parse ExpirationDate where
   parse = TTC.asS $ \s -> case break (== '-') (strip s) of
     (year', '-':month') ->
       ExpirationDate <$> TTC.parse year' <*> TTC.parse month'
-    _ -> Left "expiration date not in YYYY-MM format"
+    _ -> Left $ TTC.fromS "expiration date not in YYYY-MM format"
 
 instance TTC.Render ExpirationDate where
   render (ExpirationDate year' month') =
@@ -161,7 +162,7 @@ newtype Year = Year Int
   deriving (Eq, Ord, Show)
 
 instance TTC.Parse Year where
-  parse = TTC.asS $ \s -> do
+  parse = TTC.asS $ \s -> first TTC.fromS $ do
     year' <- maybe (Left "year is not in YYYY format") pure $ readMaybe s
     unless (year' >= 1900) $ Left "year is before 1900"
     unless (year' <= 9999) $ Left "year is after 9999"
@@ -177,7 +178,7 @@ newtype Month = Month Int
   deriving (Eq, Ord, Show)
 
 instance TTC.Parse Month where
-  parse = TTC.asS $ \s -> do
+  parse = TTC.asS $ \s -> first TTC.fromS $ do
     month' <- maybe (Left "month is not in MM format") pure $ readMaybe s
     unless (month' >= 1 && month' <= 12) $ Left "month is not in 1-12 range"
     pure $ Month month'
@@ -202,7 +203,7 @@ newtype SecurityCode = SecurityCode String
   deriving (Eq, Ord, Show)
 
 instance TTC.Parse SecurityCode where
-  parse = TTC.asS $ \s -> do
+  parse = TTC.asS $ \s -> first TTC.fromS $ do
     let securityCode' = strip s
         invChars = filter (not . isDigit) securityCode'
         len = length securityCode'
