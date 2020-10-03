@@ -93,6 +93,7 @@ module Data.TTC
   , parseEnum'
   , parseWithRead
   , parseWithRead'
+  , maybeParseWithRead
   , readsEnum
   , readsWithParse
     -- ** Constant Validation
@@ -589,6 +590,13 @@ parseWithRead'
   -> Either e a  -- ^ error or parsed value
 parseWithRead' name = parseWithRead (fromS $ "invalid " ++ name)
 {-# INLINEABLE parseWithRead' #-}
+
+-- | Parse a value to a 'Maybe' type using the 'Read' instance
+maybeParseWithRead
+  :: (Read a, Textual t)
+  => t           -- ^ textual input to parse
+  -> Maybe a  -- ^ error or parsed value
+maybeParseWithRead = readMaybe . toS
 
 -- | Implement 'ReadS' using 'parseEnum'
 --
