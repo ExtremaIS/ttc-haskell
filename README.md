@@ -84,7 +84,7 @@ type:
 
 ```haskell
 class Parse a where
-  parse :: Textual t => t -> Either String a
+  parse :: (Textual t, Textual e) => t -> Either e a
 ```
 
 It is analogous to the `Read` type class, which can be reserved for
@@ -100,7 +100,7 @@ Here is an example instance for `Username`, implementing some restrictions:
 
 ```haskell
 instance TTC.Parse Username where
-  parse = TTC.asT $ \t-> do
+  parse = TTC.asT $ \t-> first TTC.fromS $ do
     unless (T.all isAsciiLower t) $ Left "username has invalid character(s)"
     let len = T.length t
     when (len < 3) $ Left "username has fewer than 3 characters"
