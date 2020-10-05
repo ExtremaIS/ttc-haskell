@@ -6,6 +6,7 @@ module Data.TTC.Test (tests) where
 
 -- https://hackage.haskell.org/package/base
 import Control.Exception (ErrorCall, Exception, evaluate, handle)
+import Control.Monad (when)
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
 import Text.Read (readMaybe)
 
@@ -165,6 +166,14 @@ redBS = "red"
 
 redBSL :: BSL.ByteString
 redBSL = "red"
+
+newtype PartialParser = PartialParser String
+  deriving (Eq, Show)
+
+instance TTC.Parse PartialParser where
+  parse = TTC.asS $ \s -> do
+    when (null s) $ Left (TTC.fromT undefined)
+    pure $ PartialParser s
 
 ------------------------------------------------------------------------------
 -- $Textual
@@ -433,6 +442,9 @@ testParseMaybe = testGroup "parseMaybe"
     , testCase "TL" $ Just answer @=? TTC.parseMaybe answerTL
     , testCase "BS" $ Just answer @=? TTC.parseMaybe answerBS
     , testCase "BSL" $ Just answer @=? TTC.parseMaybe answerBSL
+    -- successful 'parseMaybe' does not have any error type conversion:
+    , testCase "noerror" $
+        Just (PartialParser "test") @=? TTC.parseMaybe ("test" :: String)
     , testCase "negative" $
         Nothing @=? (TTC.parseMaybe ('-' : answerS) :: Maybe PosInt)
     , testCase "invalid" $
