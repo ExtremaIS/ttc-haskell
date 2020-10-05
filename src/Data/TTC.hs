@@ -523,6 +523,9 @@ parseUnsafeBSL = parseUnsafe
 
 -- | Parse a value in an enumeration
 --
+-- This function is intended to be used with types that have few choices, as
+-- the implementation uses a linear algorithm.
+--
 -- See the @enum@ example program in the @examples@ directory.
 parseEnum
   :: (Bounded a, Enum a, Render a, Textual t)
