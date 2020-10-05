@@ -26,6 +26,11 @@ following conventions:
 
 ## Unreleased
 
+### Breaking
+
+* Use `Textual` error messages
+* Add `maybeParseWithRead` function
+
 ## 0.2.3.0 (2020-09-25)
 
 ### Non-Breaking
