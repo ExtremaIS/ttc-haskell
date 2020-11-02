@@ -56,7 +56,7 @@ test-suite ttc-test
   build-depends:
       base
     , bytestring
-    , tasty >=1.0 && <1.4
+    , tasty >=1.0 && <1.5
     , tasty-hunit >=0.10 && <0.11
     , template-haskell
     , text
