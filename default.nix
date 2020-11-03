@@ -1,7 +1,7 @@
 let
 
-  nixpkgsRev = "5272327b81ed";
-  compilerVersion = "ghc8101";
+  nixpkgsRev = "cd63096d6d88";
+  compilerVersion = "ghc884";
 
   githubTarball = owner: repo: rev:
     builtins.fetchTarball { url = "https://github.com/${owner}/${repo}/archive/${rev}.tar.gz"; };
