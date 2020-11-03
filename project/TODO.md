@@ -4,6 +4,9 @@
 
 ## Documentation
 
+Rewrite README, making it easier to understand and adding links to the TTC
+article series.
+
 ## Examples
 
 `aeson` example:

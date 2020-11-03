@@ -47,7 +47,7 @@ xBSL = TTC.convert "test テスト"
 testChar :: TestTree
 testChar = testGroup "Char"
     [ testCase "Render" $ "*" @=? TTC.render '*'
-    , testCase "Parse.OK" $ Right '*' @=? TTC.parse "*"
+    , testCase "Parse.OK" $ Just '*' @=? TTC.parseMaybe "*"
     , testCase "Parse.empty" $ Left "invalid Char" @=?
         (TTC.parse "" :: Either String Char)
     , testCase "Parse.multiple" $ Left "invalid Char" @=?
@@ -57,7 +57,7 @@ testChar = testGroup "Char"
 testDouble :: TestTree
 testDouble = testGroup "Double"
     [ testCase "Render" $ s @=? TTC.render x
-    , testCase "Parse.OK" $ Right x' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just x' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Double" @=?
         (TTC.parse "invalid" :: Either String Double)
     ]
@@ -74,7 +74,7 @@ testDouble = testGroup "Double"
 testFloat :: TestTree
 testFloat = testGroup "Float"
     [ testCase "Render" $ s @=? TTC.render x
-    , testCase "Parse.OK" $ Right x' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just x' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Float" @=?
         (TTC.parse "invalid" :: Either String Float)
     ]
@@ -91,7 +91,7 @@ testFloat = testGroup "Float"
 testInt :: TestTree
 testInt = testGroup "Int"
     [ testCase "Render" $ s @=? TTC.render n
-    , testCase "Parse.OK" $ Right n' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just n' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Int" @=?
         (TTC.parse "invalid" :: Either String Int)
     ]
@@ -108,7 +108,7 @@ testInt = testGroup "Int"
 testInt8 :: TestTree
 testInt8 = testGroup "Int8"
     [ testCase "Render" $ s @=? TTC.render n
-    , testCase "Parse.OK" $ Right n' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just n' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Int8" @=?
         (TTC.parse "invalid" :: Either String Int8)
     ]
@@ -125,7 +125,7 @@ testInt8 = testGroup "Int8"
 testInt16 :: TestTree
 testInt16 = testGroup "Int16"
     [ testCase "Render" $ s @=? TTC.render n
-    , testCase "Parse.OK" $ Right n' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just n' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Int16" @=?
         (TTC.parse "invalid" :: Either String Int16)
     ]
@@ -142,7 +142,7 @@ testInt16 = testGroup "Int16"
 testInt32 :: TestTree
 testInt32 = testGroup "Int32"
     [ testCase "Render" $ s @=? TTC.render n
-    , testCase "Parse.OK" $ Right n' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just n' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Int32" @=?
         (TTC.parse "invalid" :: Either String Int32)
     ]
@@ -159,7 +159,7 @@ testInt32 = testGroup "Int32"
 testInt64 :: TestTree
 testInt64 = testGroup "Int64"
     [ testCase "Render" $ s @=? TTC.render n
-    , testCase "Parse.OK" $ Right n' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just n' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Int64" @=?
         (TTC.parse "invalid" :: Either String Int64)
     ]
@@ -176,7 +176,7 @@ testInt64 = testGroup "Int64"
 testInteger :: TestTree
 testInteger = testGroup "Integer"
     [ testCase "Render" $ s @=? TTC.render n
-    , testCase "Parse.OK" $ Right n' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just n' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Integer" @=?
         (TTC.parse "invalid" :: Either String Integer)
     ]
@@ -193,7 +193,7 @@ testInteger = testGroup "Integer"
 testWord :: TestTree
 testWord = testGroup "Word"
     [ testCase "Render" $ s @=? TTC.render n
-    , testCase "Parse.OK" $ Right n' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just n' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Word" @=?
         (TTC.parse "invalid" :: Either String Word)
     ]
@@ -210,7 +210,7 @@ testWord = testGroup "Word"
 testWord8 :: TestTree
 testWord8 = testGroup "Word8"
     [ testCase "Render" $ s @=? TTC.render n
-    , testCase "Parse.OK" $ Right n' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just n' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Word8" @=?
         (TTC.parse "invalid" :: Either String Word8)
     ]
@@ -227,7 +227,7 @@ testWord8 = testGroup "Word8"
 testWord16 :: TestTree
 testWord16 = testGroup "Word16"
     [ testCase "Render" $ s @=? TTC.render n
-    , testCase "Parse.OK" $ Right n' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just n' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Word16" @=?
         (TTC.parse "invalid" :: Either String Word16)
     ]
@@ -244,7 +244,7 @@ testWord16 = testGroup "Word16"
 testWord32 :: TestTree
 testWord32 = testGroup "Word32"
     [ testCase "Render" $ s @=? TTC.render n
-    , testCase "Parse.OK" $ Right n' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just n' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Word32" @=?
         (TTC.parse "invalid" :: Either String Word32)
     ]
@@ -261,7 +261,7 @@ testWord32 = testGroup "Word32"
 testWord64 :: TestTree
 testWord64 = testGroup "Word64"
     [ testCase "Render" $ s @=? TTC.render n
-    , testCase "Parse.OK" $ Right n' @=? TTC.parse s
+    , testCase "Parse.OK" $ Just n' @=? TTC.parseMaybe s
     , testCase "Parse.invalid" $ Left "invalid Word64" @=?
         (TTC.parse "invalid" :: Either String Word64)
     ]
@@ -278,36 +278,36 @@ testWord64 = testGroup "Word64"
 testString :: TestTree
 testString = testGroup "String"
     [ testCase "Render" $ xS @=? TTC.render xS
-    , testCase "Parse.empty" $ Right "" @=? TTC.parse ""
-    , testCase "Parse.nonempty" $ Right xS @=? TTC.parse xS
+    , testCase "Parse.empty" $ Just "" @=? TTC.parseMaybe ""
+    , testCase "Parse.nonempty" $ Just xS @=? TTC.parseMaybe xS
     ]
 
 testBSL :: TestTree
 testBSL = testGroup "BSL.ByteString"
     [ testCase "Render" $ xS @=? TTC.render xBSL
-    , testCase "Parse.empty" $ Right BSL.empty @=? TTC.parse ""
-    , testCase "Parse.nonempty" $ Right xBSL @=? TTC.parse xS
+    , testCase "Parse.empty" $ Just BSL.empty @=? TTC.parseMaybe ""
+    , testCase "Parse.nonempty" $ Just xBSL @=? TTC.parseMaybe xS
     ]
 
 testBS :: TestTree
 testBS = testGroup "BS.ByteString"
     [ testCase "Render" $ xS @=? TTC.render xBS
-    , testCase "Parse.empty" $ Right BS.empty @=? TTC.parse ""
-    , testCase "Parse.nonempty" $ Right xBS @=? TTC.parse xS
+    , testCase "Parse.empty" $ Just BS.empty @=? TTC.parseMaybe ""
+    , testCase "Parse.nonempty" $ Just xBS @=? TTC.parseMaybe xS
     ]
 
 testTL :: TestTree
 testTL = testGroup "TL.Text"
     [ testCase "Render" $ xS @=? TTC.render xTL
-    , testCase "Parse.empty" $ Right TL.empty @=? TTC.parse ""
-    , testCase "Parse.nonempty" $ Right xTL @=? TTC.parse xS
+    , testCase "Parse.empty" $ Just TL.empty @=? TTC.parseMaybe ""
+    , testCase "Parse.nonempty" $ Just xTL @=? TTC.parseMaybe xS
     ]
 
 testT :: TestTree
 testT = testGroup "T.Text"
     [ testCase "Render" $ xS @=? TTC.render xT
-    , testCase "Parse.empty" $ Right T.empty @=? TTC.parse ""
-    , testCase "Parse.nonempty" $ Right xT @=? TTC.parse xS
+    , testCase "Parse.empty" $ Just T.empty @=? TTC.parseMaybe ""
+    , testCase "Parse.nonempty" $ Just xT @=? TTC.parseMaybe xS
     ]
 
 ------------------------------------------------------------------------------

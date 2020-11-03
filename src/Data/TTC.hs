@@ -93,6 +93,7 @@ module Data.TTC
   , parseEnum'
   , parseWithRead
   , parseWithRead'
+  , maybeParseWithRead
   , readsEnum
   , readsWithParse
     -- ** Constant Validation
@@ -126,13 +127,6 @@ import qualified Data.Text.Encoding.Error as TEE
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
 import qualified Data.Text.Lazy.Encoding as TLE
-
--- HLint does not support typed expression quotations:
---   https://github.com/ndmitchell/hlint/issues/332
---
--- The following ignore annotation is not working.  It works via the CLI:
---   hlint -i "Parse error"
-{-# ANN module "HLint: ignore Parse error" #-}
 
 ------------------------------------------------------------------------------
 -- $Textual
@@ -411,7 +405,13 @@ renderWithShow = convert . show
 --
 -- See the @uname@ and @prompt@ example programs in the @examples@ directory.
 class Parse a where
-  parse :: Textual t => t -> Either String a
+  parse :: (Textual t, Textual e) => t -> Either e a
+
+-- This function is equivalent to 'parse' with the error type fixed to
+-- 'String', used internally when the error is ignored.
+parse' :: (Parse a, Textual t) => t -> Either String a
+parse' = parse
+{-# INLINE parse' #-}
 
 -- $ParseSpecific
 --
@@ -420,27 +420,27 @@ class Parse a where
 -- where the type is ambiguous.
 
 -- | Parse from a 'String'
-parseS :: Parse a => String -> Either String a
+parseS :: (Parse a, Textual e) => String -> Either e a
 parseS = parse
 {-# INLINE parseS #-}
 
 -- | Parse from strict 'T.Text'
-parseT :: Parse a => T.Text -> Either String a
+parseT :: (Parse a, Textual e) => T.Text -> Either e a
 parseT = parse
 {-# INLINE parseT #-}
 
 -- | Parse from lazy 'TL.Text'
-parseTL :: Parse a => TL.Text -> Either String a
+parseTL :: (Parse a, Textual e) => TL.Text -> Either e a
 parseTL = parse
 {-# INLINE parseTL #-}
 
 -- | Parse from a strict 'BS.ByteString'
-parseBS :: Parse a => BS.ByteString -> Either String a
+parseBS :: (Parse a, Textual e) => BS.ByteString -> Either e a
 parseBS = parse
 {-# INLINE parseBS #-}
 
 -- | Parse from a lazy 'BSL.ByteString'
-parseBSL :: Parse a => BSL.ByteString -> Either String a
+parseBSL :: (Parse a, Textual e) => BSL.ByteString -> Either e a
 parseBSL = parse
 {-# INLINE parseBSL #-}
 
@@ -452,8 +452,8 @@ parseBSL = parse
 -- annotations in cases where the type is ambiguous.
 
 -- | Parse to a 'Maybe' type
-parseMaybe :: Parse a => Textual t => t -> Maybe a
-parseMaybe = either (const Nothing) Just . parse
+parseMaybe :: (Parse a, Textual t) => t -> Maybe a
+parseMaybe = either (const Nothing) Just . parse'
 {-# INLINE parseMaybe #-}
 
 -- | Parse from a 'String' to a 'Maybe' type
@@ -523,6 +523,9 @@ parseUnsafeBSL = parseUnsafe
 
 -- | Parse a value in an enumeration
 --
+-- This function is intended to be used with types that have few choices, as
+-- the implementation uses a linear algorithm.
+--
 -- See the @enum@ example program in the @examples@ directory.
 parseEnum
   :: (Bounded a, Enum a, Render a, Textual t)
@@ -577,12 +580,19 @@ parseWithRead invalidError = maybe (Left invalidError) Right . readMaybe . toS
 --
 -- * \"invalid {name}\" when the parse fails
 parseWithRead'
-  :: (Read a, Textual t)
-  => String           -- ^ name to include in error messages
-  -> t                -- ^ textual input to parse
-  -> Either String a  -- ^ error or parsed value
-parseWithRead' name = parseWithRead ("invalid " ++ name)
+  :: (Read a, Textual t, Textual e)
+  => String      -- ^ name to include in error messages
+  -> t           -- ^ textual input to parse
+  -> Either e a  -- ^ error or parsed value
+parseWithRead' name = parseWithRead (fromS $ "invalid " ++ name)
 {-# INLINEABLE parseWithRead' #-}
+
+-- | Parse a value to a 'Maybe' type using the 'Read' instance
+maybeParseWithRead
+  :: (Read a, Textual t)
+  => t           -- ^ textual input to parse
+  -> Maybe a  -- ^ error or parsed value
+maybeParseWithRead = readMaybe . toS
 
 -- | Implement 'ReadS' using 'parseEnum'
 --
@@ -604,9 +614,9 @@ readsEnum allowCI allowPrefix s =
 readsWithParse
   :: Parse a
   => ReadS a
-readsWithParse s = case parse s of
-    Right v -> [(v, "")]
-    Left{}  -> []
+readsWithParse s = case parseMaybe s of
+    Just v  -> [(v, "")]
+    Nothing -> []
 {-# INLINEABLE readsWithParse #-}
 
 -- $ParseValid

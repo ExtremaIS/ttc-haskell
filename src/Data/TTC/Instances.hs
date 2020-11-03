@@ -44,7 +44,7 @@ import qualified Data.TTC as TTC
 instance TTC.Parse Char where
   parse = TTC.asS $ \case
     [c] -> Right c
-    _ -> Left "invalid Char"
+    _ -> Left $ TTC.fromS "invalid Char"
 
 instance TTC.Render Char where
   render c = TTC.fromS [c]
