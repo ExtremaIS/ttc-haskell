@@ -4,7 +4,8 @@
 
 ## Documentation
 
-Add links to TTC article series to the README.
+Rewrite README, making it easier to understand and adding links to the TTC
+article series.
 
 ## Examples
 
