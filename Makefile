@@ -201,14 +201,14 @@ repl: # enter a REPL *
 
 sdist: # create source tarball for Hackage
 > $(eval BRANCH := $(shell git rev-parse --abbrev-ref HEAD))
-> @test "${BRANCH}" = "master" || $(call die,"not in master branch")
+> @test "${BRANCH}" = "main" || $(call die,"not in main branch")
 > @stack sdist
 .PHONY: sdist
 
 source-git: # create source tarball of git TREE
 > $(eval TREE := "HEAD")
 > $(eval BRANCH := $(shell git rev-parse --abbrev-ref $(TREE)))
-> @test "${BRANCH}" = "master" || echo "WARNING: Not in master branch!" >&2
+> @test "${BRANCH}" = "main" || echo "WARNING: Not in main branch!" >&2
 > $(eval VERSION := $(shell \
     grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
 > @mkdir -p build

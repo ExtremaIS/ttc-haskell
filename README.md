@@ -1,6 +1,6 @@
 # TTC: Textual Type Classes
 
-[![Build Status](https://travis-ci.com/ExtremaIS/ttc-haskell.svg?branch=master)](https://travis-ci.com/ExtremaIS/ttc-haskell)
+[![Build Status](https://travis-ci.com/ExtremaIS/ttc-haskell.svg?branch=main)](https://travis-ci.com/ExtremaIS/ttc-haskell)
 [![Hackage](https://img.shields.io/hackage/v/ttc.svg)](https://hackage.haskell.org/package/ttc)
 [![Stackage LTS](https://stackage.org/package/ttc/badge/lts)](https://stackage.org/package/ttc)
 [![Stackage Nightly](https://stackage.org/package/ttc/badge/nightly)](https://stackage.org/nightly/package/ttc)
@@ -223,7 +223,7 @@ submit an issue.
 
 ### Releases
 
-All releases are tagged in the `master` branch.  Release tags are signed using
+All releases are tagged in the `main` branch.  Release tags are signed using
 the
 [`security@extrema.is` GPG key](http://keys.gnupg.net/pks/lookup?op=vindex&fingerprint=on&search=0x1D484E4B4705FADF).
 
