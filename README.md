@@ -1,6 +1,6 @@
 # TTC: Textual Type Classes
 
-[![Build Status](https://travis-ci.com/ExtremaIS/ttc-haskell.svg?branch=main)](https://travis-ci.com/ExtremaIS/ttc-haskell)
+[![GitHub CI](https://github.com/ExtremaIS/ttc-haskell/workflows/CI/badge.svg?branch=main)](https://github.com/ExtremaIS/ttc-haskell/actions)
 [![Hackage](https://img.shields.io/hackage/v/ttc.svg)](https://hackage.haskell.org/package/ttc)
 [![Stackage LTS](https://stackage.org/package/ttc/badge/lts)](https://stackage.org/package/ttc)
 [![Stackage Nightly](https://stackage.org/package/ttc/badge/nightly)](https://stackage.org/nightly/package/ttc)

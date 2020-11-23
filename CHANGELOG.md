@@ -29,6 +29,7 @@ following conventions:
 ### Non-Breaking
 
 * Rename Git default branch to `main`
+* Use GitHub Actions instead of Travis CI
 
 ## 0.3.0.0 (2020-11-03)
 

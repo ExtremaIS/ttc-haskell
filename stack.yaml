@@ -1,5 +1,1 @@
-resolver: lts-16.20
-
-packages:
-- .
-- ./examples
+stack-8.8.4.yaml
