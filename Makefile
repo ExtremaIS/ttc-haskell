@@ -67,6 +67,7 @@ clean-all: clean # clean package and remove artifacts
 > @rm -rf .stack-work
 > @rm -rf examples/.stack-work
 > @rm -rf build
+> @rm -rf dist-newstyle
 > @rm -f *.yaml.lock
 .PHONY: clean-all
 
