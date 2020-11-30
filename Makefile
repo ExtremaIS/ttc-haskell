@@ -241,46 +241,22 @@ test: # run tests, optionally for pattern P *
 >       --test-arguments '--pattern $(P)'
 .PHONY: test
 
-test-all: # run tests and build examples for all versions
-> $(eval CONFIG := $(shell \
-    test -f stack-nix-8.2.2.yaml \
-    && echo stack-nix-8.2.2.yaml \
-    || echo stack-8.2.2.yaml))
-> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
-> @make test-doc CONFIG=$(CONFIG)
-> @make examples CONFIG=$(CONFIG)
-> $(eval CONFIG := $(shell \
-    test -f stack-nix-8.4.4.yaml \
-    && echo stack-nix-8.4.4.yaml \
-    || echo stack-8.4.4.yaml))
-> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
-> @make test-doc CONFIG=$(CONFIG)
-> @make examples CONFIG=$(CONFIG)
-> $(eval CONFIG := $(shell \
-    test -f stack-nix-8.6.5.yaml \
-    && echo stack-nix-8.6.5.yaml \
-    || echo stack-8.6.5.yaml))
-> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
-> @make test-doc CONFIG=$(CONFIG)
-> @make examples CONFIG=$(CONFIG)
-> $(eval CONFIG := $(shell \
-    test -f stack-nix.yaml \
-    && echo stack-nix.yaml \
-    || echo stack.yaml))
-> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
-> @make test-doc CONFIG=$(CONFIG)
-> @make examples CONFIG=$(CONFIG)
-> $(eval STACK_NIX_PATH := $(shell \
-    test -f stack-nix-nightly.path \
-    && cat stack-nix-nightly.path \
-    || true))
-> @command -v hr >/dev/null 2>&1 && hr nightly || true
-> @test -f stack-nix-nightly.path \
->   && make test-doc RESOLVER=nightly STACK_NIX_PATH="$(STACK_NIX_PATH)" \
->   || make test-doc RESOLVER=nightly
-> @test -f stack-nix-nightly.path \
->   && make examples RESOLVER=nightly STACK_NIX_PATH="$(STACK_NIX_PATH)" \
->   || make examples RESOLVER=nightly
+test-all: # run tests and build examples for all configured Stackage releases
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.2.2.yaml" || true
+> @make test-doc CONFIG=stack-8.2.2.yaml
+> @make examples CONFIG=stack-8.2.2.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.4.4.yaml" || true
+> @make test-doc CONFIG=stack-8.4.4.yaml
+> @make examples CONFIG=stack-8.4.4.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.6.5.yaml" || true
+> @make test-doc CONFIG=stack-8.6.5.yaml
+> @make examples CONFIG=stack-8.6.5.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.8.4.yaml" || true
+> @make test-doc CONFIG=stack-8.8.4.yaml
+> @make examples CONFIG=stack-8.8.4.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.10.2.yaml" || true
+> @make test-doc CONFIG=stack-8.10.2.yaml
+> @make examples CONFIG=stack-8.10.2.yaml
 .PHONY: test-all
 
 test-doc: # run tests and build API documentation *
