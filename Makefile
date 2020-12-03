@@ -209,7 +209,15 @@ sdist: # create source tarball for Hackage
 source-git: # create source tarball of git TREE
 > $(eval TREE := "HEAD")
 > $(eval BRANCH := $(shell git rev-parse --abbrev-ref $(TREE)))
-> @test "${BRANCH}" = "main" || echo "WARNING: Not in main branch!" >&2
+> @test "$(BRANCH)" = "main" || echo "WARNING: Not in main branch!" >&2
+> $(eval DIRTY := $(shell git diff --shortstat | wc -l))
+> @test "$(DIRTY)" = "0" \
+>   || echo "WARNING: Not including non-committed changes!" >&2
+> $(eval UNTRACKED := $(shell \
+    git ls-files --other --directory --no-empty-directory --exclude-standard \
+    | wc -l))
+> @test "$(UNTRACKED)" = "0" \
+>   || echo "WARNING: Not including untracked files!" >&2
 > $(eval VERSION := $(shell \
     grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
 > @mkdir -p build
@@ -219,6 +227,14 @@ source-git: # create source tarball of git TREE
 .PHONY: source-git
 
 source-tar: # create source tarball using tar
+> $(eval DIRTY := $(shell git diff --shortstat | wc -l))
+> @test "$(DIRTY)" = "0" \
+>   || echo "WARNING: Including non-committed changes!" >&2
+> $(eval UNTRACKED := $(shell \
+    git ls-files --other --directory --no-empty-directory --exclude-standard \
+    | wc -l))
+> @test "$(UNTRACKED)" = "0" \
+>   || echo "WARNING: Including untracked files!" >&2
 > $(eval VERSION := $(shell \
     grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
 > @mkdir -p build
