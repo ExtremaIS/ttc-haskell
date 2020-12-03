@@ -574,7 +574,7 @@ parseWithRead
 parseWithRead invalidError = maybe (Left invalidError) Right . readMaybe . toS
 {-# INLINEABLE parseWithRead #-}
 
--- | Parse a value using the 'Read' instance, with 'String' error messages
+-- | Parse a value using the 'Read' instance, with 'Textual' error messages
 --
 -- The following English error message is returned:
 --
