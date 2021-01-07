@@ -2,7 +2,7 @@
 -- |
 -- Module      : Data.TTC.Instances
 -- Description : instances for basic data types
--- Copyright   : Copyright (c) 2019-2020 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2021 Travis Cardwell
 -- License     : MIT
 --
 -- This module defines TTC 'TTC.Render' and 'TTC.Parse' instances for some
