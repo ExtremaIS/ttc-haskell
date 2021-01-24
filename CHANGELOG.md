@@ -26,6 +26,10 @@ following conventions:
 
 ## Unreleased
 
+### Breaking
+
+* Add `renderTLB`, `renderBSB`, and `renderSBS` functions
+
 ### Non-Breaking
 
 * Rename Git default branch to `main`
