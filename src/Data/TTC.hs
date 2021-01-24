@@ -61,6 +61,9 @@ module Data.TTC
   , renderTL
   , renderBS
   , renderBSL
+  , renderTLB
+  , renderBSB
+  , renderSBS
     -- ** Render Utilities
   , renderWithShow
     -- * Parse
@@ -386,6 +389,21 @@ renderBS = render
 renderBSL :: Render a => a -> BSL.ByteString
 renderBSL = render
 {-# INLINE renderBSL #-}
+
+-- | Render to a @Text@ 'TLB.Builder'
+renderTLB :: Render a => a -> TLB.Builder
+renderTLB = TLB.fromLazyText . renderTL
+{-# INLINE renderTLB #-}
+
+-- | Render to a @ByteString@ 'BSB.Builder'
+renderBSB :: Render a => a -> BSB.Builder
+renderBSB = BSB.lazyByteString . renderBSL
+{-# INLINE renderBSB #-}
+
+-- | Render to a 'SBS.ShortByteString'
+renderSBS :: Render a => a -> SBS.ShortByteString
+renderSBS = SBS.toShort . renderBS
+{-# INLINE renderSBS #-}
 
 -- $RenderUtils
 

@@ -123,6 +123,12 @@ answerBS = "42"
 answerBSL :: BSL.ByteString
 answerBSL = "42"
 
+answerTLB :: TLB.Builder
+answerTLB = "42"
+
+answerSBS :: SBS.ShortByteString
+answerSBS = "42"
+
 answerZ :: Int
 answerZ = 42
 
@@ -394,6 +400,16 @@ testRenderBS = testCase "renderBS" $ answerBS @=? TTC.renderBS answer
 testRenderBSL :: TestTree
 testRenderBSL = testCase "renderBSL" $ answerBSL @=? TTC.renderBSL answer
 
+testRenderTLB :: TestTree
+testRenderTLB = testCase "renderTLB" $ answerTLB @=? TTC.renderTLB answer
+
+testRenderBSB :: TestTree
+testRenderBSB = testCase "renderBSB" $
+    answerBSL @=? BSB.toLazyByteString (TTC.renderBSB answer)
+
+testRenderSBS :: TestTree
+testRenderSBS = testCase "renderSBS" $ answerSBS @=? TTC.renderSBS answer
+
 testRenderWithShow :: TestTree
 testRenderWithShow = testGroup "renderWithShow"
     [ testCase "S" $ answerS @=? TTC.renderWithShow answerZ
@@ -657,6 +673,9 @@ tests = testGroup "Data.TTC"
         , testRenderTL
         , testRenderBS
         , testRenderBSL
+        , testRenderTLB
+        , testRenderBSB
+        , testRenderSBS
         , testRenderWithShow
         ]
     , testGroup "Parse"
