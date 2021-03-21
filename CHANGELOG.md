@@ -32,6 +32,7 @@ following conventions:
 
 ### Non-Breaking
 
+* Add `@since` annotations
 * Rename Git default branch to `main`
 * Use GitHub Actions instead of Travis CI
 

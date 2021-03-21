@@ -156,23 +156,37 @@ import qualified Data.Text.Lazy.Encoding as TLE
 -- writing instances.  Adding support for additional data types would require
 -- changing the class definition itself.  This is the price paid for having
 -- only one type variable instead of two.
+--
+-- @since 0.1.0.0
 class Textual t where
   -- | Convert to a 'String'
+  --
+  -- @since 0.1.0.0
   toS :: t -> String
 
   -- | Convert to strict 'T.Text'
+  --
+  -- @since 0.1.0.0
   toT :: t -> T.Text
 
   -- | Convert to lazy 'TL.Text'
+  --
+  -- @since 0.1.0.0
   toTL :: t -> TL.Text
 
   -- | Convert to a strict 'BS.ByteString'
+  --
+  -- @since 0.1.0.0
   toBS :: t -> BS.ByteString
 
   -- | Convert to a lazy 'BS.ByteString'
+  --
+  -- @since 0.1.0.0
   toBSL :: t -> BSL.ByteString
 
   -- | Convert between any supported textual data types
+  --
+  -- @since 0.1.0.0
   convert :: Textual t' => t' -> t
 
 instance Textual String where
@@ -258,26 +272,36 @@ instance Textual BSL.ByteString where
 -- in cases where the type is ambiguous.
 
 -- | Convert from a 'String'
+--
+-- @since 0.1.0.0
 fromS :: Textual t => String -> t
 fromS = convert
 {-# INLINE fromS #-}
 
 -- | Convert from strict 'T.Text'
+--
+-- @since 0.1.0.0
 fromT :: Textual t => T.Text -> t
 fromT = convert
 {-# INLINE fromT #-}
 
 -- | Convert from lazy 'TL.Text'
+--
+-- @since 0.1.0.0
 fromTL :: Textual t => TL.Text -> t
 fromTL = convert
 {-# INLINE fromTL #-}
 
 -- | Convert from a strict 'BS.ByteString'
+--
+-- @since 0.1.0.0
 fromBS :: Textual t => BS.ByteString -> t
 fromBS = convert
 {-# INLINE fromBS #-}
 
 -- | Convert from a lazy 'BSL.ByteString'
+--
+-- @since 0.1.0.0
 fromBSL :: Textual t => BSL.ByteString -> t
 fromBSL = convert
 {-# INLINE fromBSL #-}
@@ -289,26 +313,36 @@ fromBSL = convert
 -- definitions.
 
 -- | Convert an argument to a 'String'
+--
+-- @since 0.1.0.0
 asS :: Textual t => (String -> a) -> t -> a
 asS f = f . convert
 {-# INLINE asS #-}
 
 -- | Convert an argument to strict 'T.Text'
+--
+-- @since 0.1.0.0
 asT :: Textual t => (T.Text -> a) -> t -> a
 asT f = f . convert
 {-# INLINE asT #-}
 
 -- | Convert an argument to lazy 'TL.Text'
+--
+-- @since 0.1.0.0
 asTL :: Textual t => (TL.Text -> a) -> t -> a
 asTL f = f . convert
 {-# INLINE asTL #-}
 
 -- | Convert an argument to a strict 'BS.ByteString'
+--
+-- @since 0.1.0.0
 asBS :: Textual t => (BS.ByteString -> a) -> t -> a
 asBS f = f . convert
 {-# INLINE asBS #-}
 
 -- | Convert an argument to a lazy 'BSL.ByteString'
+--
+-- @since 0.1.0.0
 asBSL :: Textual t => (BSL.ByteString -> a) -> t -> a
 asBSL f = f . convert
 {-# INLINE asBSL #-}
@@ -323,26 +357,38 @@ asBSL f = f . convert
 -- * 'SBS.ShortByteString' (@SBS@)
 
 -- | Convert to a @Text@ 'TLB.Builder'
+--
+-- @since 0.1.0.0
 toTLB :: Textual t => t -> TLB.Builder
 toTLB = TLB.fromLazyText . convert
 
 -- | Convert from a @Text@ 'TLB.Builder'
+--
+-- @since 0.1.0.0
 fromTLB :: Textual t => TLB.Builder -> t
 fromTLB = convert . TLB.toLazyText
 
 -- | Convert to a @ByteString@ 'BSB.Builder'
+--
+-- @since 0.1.0.0
 toBSB :: Textual t => t -> BSB.Builder
 toBSB = BSB.lazyByteString . convert
 
 -- | Convert from a @ByteString@ 'BSB.Builder'
+--
+-- @since 0.1.0.0
 fromBSB :: Textual t => BSB.Builder -> t
 fromBSB = convert . BSB.toLazyByteString
 
 -- | Convert to a 'SBS.ShortByteString'
+--
+-- @since 0.1.0.0
 toSBS :: Textual t => t -> SBS.ShortByteString
 toSBS = SBS.toShort . convert
 
 -- | Convert from a 'SBS.ShortByteString'
+--
+-- @since 0.1.0.0
 fromSBS :: Textual t => SBS.ShortByteString -> t
 fromSBS = convert . SBS.fromShort
 
@@ -356,6 +402,8 @@ fromSBS = convert . SBS.fromShort
 -- basic data types are available in "Data.TTC.Instances".
 --
 -- See the @uname@ and @prompt@ example programs in the @examples@ directory.
+--
+-- @since 0.1.0.0
 class Render a where
   render :: Textual t => a -> t
 
@@ -366,41 +414,57 @@ class Render a where
 -- where the type is ambiguous.
 
 -- | Render to a 'String'
+--
+-- @since 0.1.0.0
 renderS :: Render a => a -> String
 renderS = render
 {-# INLINE renderS #-}
 
 -- | Render to strict 'T.Text'
+--
+-- @since 0.1.0.0
 renderT :: Render a => a -> T.Text
 renderT = render
 {-# INLINE renderT #-}
 
 -- | Render to lazy 'TL.Text'
+--
+-- @since 0.1.0.0
 renderTL :: Render a => a -> TL.Text
 renderTL = render
 {-# INLINE renderTL #-}
 
 -- | Render to a strict 'BS.ByteString'
+--
+-- @since 0.1.0.0
 renderBS :: Render a => a -> BS.ByteString
 renderBS = render
 {-# INLINE renderBS #-}
 
 -- | Render to a lazy 'BSL.ByteString'
+--
+-- @since 0.1.0.0
 renderBSL :: Render a => a -> BSL.ByteString
 renderBSL = render
 {-# INLINE renderBSL #-}
 
 -- | Render to a @Text@ 'TLB.Builder'
+--
+-- @since 0.4.0.0
 renderTLB :: Render a => a -> TLB.Builder
 renderTLB = TLB.fromLazyText . renderTL
 {-# INLINE renderTLB #-}
 
 -- | Render to a @ByteString@ 'BSB.Builder'
+--
+-- @since 0.4.0.0
 renderBSB :: Render a => a -> BSB.Builder
 renderBSB = BSB.lazyByteString . renderBSL
 {-# INLINE renderBSB #-}
 
 -- | Render to a 'SBS.ShortByteString'
+--
+-- @since 0.4.0.0
 renderSBS :: Render a => a -> SBS.ShortByteString
 renderSBS = SBS.toShort . renderBS
 {-# INLINE renderSBS #-}
@@ -408,6 +472,8 @@ renderSBS = SBS.toShort . renderBS
 -- $RenderUtils
 
 -- | Render a value to a textual data type using the 'Show' instance
+--
+-- @since 0.1.0.0
 renderWithShow :: (Show a, Textual t) => a -> t
 renderWithShow = convert . show
 {-# INLINE renderWithShow #-}
@@ -422,11 +488,15 @@ renderWithShow = convert . show
 -- basic data types are available in "Data.TTC.Instances".
 --
 -- See the @uname@ and @prompt@ example programs in the @examples@ directory.
+--
+-- @since 0.3.0.0
 class Parse a where
   parse :: (Textual t, Textual e) => t -> Either e a
 
 -- This function is equivalent to 'parse' with the error type fixed to
 -- 'String', used internally when the error is ignored.
+--
+-- @since 0.3.0.0
 parse' :: (Parse a, Textual t) => t -> Either String a
 parse' = parse
 {-# INLINE parse' #-}
@@ -438,26 +508,36 @@ parse' = parse
 -- where the type is ambiguous.
 
 -- | Parse from a 'String'
+--
+-- @since 0.3.0.0
 parseS :: (Parse a, Textual e) => String -> Either e a
 parseS = parse
 {-# INLINE parseS #-}
 
 -- | Parse from strict 'T.Text'
+--
+-- @since 0.3.0.0
 parseT :: (Parse a, Textual e) => T.Text -> Either e a
 parseT = parse
 {-# INLINE parseT #-}
 
 -- | Parse from lazy 'TL.Text'
+--
+-- @since 0.3.0.0
 parseTL :: (Parse a, Textual e) => TL.Text -> Either e a
 parseTL = parse
 {-# INLINE parseTL #-}
 
 -- | Parse from a strict 'BS.ByteString'
+--
+-- @since 0.3.0.0
 parseBS :: (Parse a, Textual e) => BS.ByteString -> Either e a
 parseBS = parse
 {-# INLINE parseBS #-}
 
 -- | Parse from a lazy 'BSL.ByteString'
+--
+-- @since 0.3.0.0
 parseBSL :: (Parse a, Textual e) => BSL.ByteString -> Either e a
 parseBSL = parse
 {-# INLINE parseBSL #-}
@@ -470,31 +550,43 @@ parseBSL = parse
 -- annotations in cases where the type is ambiguous.
 
 -- | Parse to a 'Maybe' type
+--
+-- @since 0.3.0.0
 parseMaybe :: (Parse a, Textual t) => t -> Maybe a
 parseMaybe = either (const Nothing) Just . parse'
 {-# INLINE parseMaybe #-}
 
 -- | Parse from a 'String' to a 'Maybe' type
+--
+-- @since 0.3.0.0
 parseMaybeS :: Parse a => String -> Maybe a
 parseMaybeS = parseMaybe
 {-# INLINE parseMaybeS #-}
 
 -- | Parse from strict 'T.Text' to a 'Maybe' type
+--
+-- @since 0.3.0.0
 parseMaybeT :: Parse a => T.Text -> Maybe a
 parseMaybeT = parseMaybe
 {-# INLINE parseMaybeT #-}
 
 -- | Parse from lazy 'TL.Text' to a 'Maybe' type
+--
+-- @since 0.3.0.0
 parseMaybeTL :: Parse a => TL.Text -> Maybe a
 parseMaybeTL = parseMaybe
 {-# INLINE parseMaybeTL #-}
 
 -- | Parse from a strict 'BS.ByteString' to a 'Maybe' type
+--
+-- @since 0.3.0.0
 parseMaybeBS :: Parse a => BS.ByteString -> Maybe a
 parseMaybeBS = parseMaybe
 {-# INLINE parseMaybeBS #-}
 
 -- | Parse from a lazy 'BSL.ByteString' to a 'Maybe' type
+--
+-- @since 0.3.0.0
 parseMaybeBSL :: Parse a => BSL.ByteString -> Maybe a
 parseMaybeBSL = parseMaybe
 {-# INLINE parseMaybeBSL #-}
@@ -508,31 +600,43 @@ parseMaybeBSL = parseMaybe
 -- in cases where the type is ambiguous.
 
 -- | Unsafely parse
+--
+-- @since 0.1.0.0
 parseUnsafe :: (Parse a, Textual t) => t -> a
 parseUnsafe = either (error . ("parseUnsafe: " ++)) id . parse
 {-# INLINE parseUnsafe #-}
 
 -- | Unsafely parse to a 'String'
+--
+-- @since 0.1.0.0
 parseUnsafeS :: Parse a => String -> a
 parseUnsafeS = parseUnsafe
 {-# INLINE parseUnsafeS #-}
 
 -- | Unsafely parse to strict 'T.Text'
+--
+-- @since 0.1.0.0
 parseUnsafeT :: Parse a => T.Text -> a
 parseUnsafeT = parseUnsafe
 {-# INLINE parseUnsafeT #-}
 
 -- | Unsafely parse to lazy 'TL.Text'
+--
+-- @since 0.1.0.0
 parseUnsafeTL :: Parse a => TL.Text -> a
 parseUnsafeTL = parseUnsafe
 {-# INLINE parseUnsafeTL #-}
 
 -- | Unsafely parse to a strict 'BS.ByteString'
+--
+-- @since 0.1.0.0
 parseUnsafeBS :: Parse a => BS.ByteString -> a
 parseUnsafeBS = parseUnsafe
 {-# INLINE parseUnsafeBS #-}
 
 -- | Unsafely parse to a lazy 'BSL.ByteString'
+--
+-- @since 0.1.0.0
 parseUnsafeBSL :: Parse a => BSL.ByteString -> a
 parseUnsafeBSL = parseUnsafe
 {-# INLINE parseUnsafeBSL #-}
@@ -545,6 +649,8 @@ parseUnsafeBSL = parseUnsafe
 -- the implementation uses a linear algorithm.
 --
 -- See the @enum@ example program in the @examples@ directory.
+--
+-- @since 0.1.0.0
 parseEnum
   :: (Bounded a, Enum a, Render a, Textual t)
   => Bool        -- ^ case-insensitive when 'True'
@@ -572,6 +678,8 @@ parseEnum allowCI allowPrefix invalidError ambiguousError t =
 --
 -- * \"invalid {name}\" when there are no matches
 -- * \"ambiguous {name}\" when there is more than one match
+--
+-- @since 0.1.0.0
 parseEnum'
   :: (Bounded a, Enum a, Render a, Textual t)
   => String           -- ^ name to include in error messages
@@ -584,6 +692,8 @@ parseEnum' name allowCI allowPrefix =
 {-# INLINEABLE parseEnum' #-}
 
 -- | Parse a value using the 'Read' instance
+--
+-- @since 0.1.0.0
 parseWithRead
   :: (Read a, Textual t)
   => e           -- ^ invalid input error
@@ -597,6 +707,8 @@ parseWithRead invalidError = maybe (Left invalidError) Right . readMaybe . toS
 -- The following English error message is returned:
 --
 -- * \"invalid {name}\" when the parse fails
+--
+-- @since 0.3.0.0
 parseWithRead'
   :: (Read a, Textual t, Textual e)
   => String      -- ^ name to include in error messages
@@ -606,6 +718,8 @@ parseWithRead' name = parseWithRead (fromS $ "invalid " ++ name)
 {-# INLINEABLE parseWithRead' #-}
 
 -- | Parse a value to a 'Maybe' type using the 'Read' instance
+--
+-- @since 0.3.0.0
 maybeParseWithRead
   :: (Read a, Textual t)
   => t           -- ^ textual input to parse
@@ -615,6 +729,8 @@ maybeParseWithRead = readMaybe . toS
 -- | Implement 'ReadS' using 'parseEnum'
 --
 -- This implementation expects all of the input to be consumed.
+--
+-- @since 0.1.0.0
 readsEnum
   :: (Bounded a, Enum a, Render a)
   => Bool  -- ^ case-insensitive when 'True'
@@ -629,6 +745,8 @@ readsEnum allowCI allowPrefix s =
 -- | Implement 'ReadS' using a 'Parse' instance
 --
 -- This implementation expects all of the input to be consumed.
+--
+-- @since 0.3.0.0
 readsWithParse
   :: Parse a
   => ReadS a
@@ -653,6 +771,8 @@ readsWithParse s = case parseMaybe s of
 --
 -- See the @valid@, @invalid@, and @lift@ example programs in the @examples@
 -- directory.
+--
+-- @since 0.1.0.0
 valid
   :: (Parse a, THS.Lift a)
   => String
@@ -677,6 +797,8 @@ valid s = case parse s of
 -- parse errors or use 'untypedValidOf' instead.
 --
 -- See the @validof@ example program in the @examples@ directory.
+--
+-- @since 0.1.0.0
 validOf
   :: Parse a
   => Proxy a
@@ -697,6 +819,8 @@ validOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
 -- parse errors or use 'mkUntypedValidOf' instead.
 --
 -- See the @mkvalid@ example program in the @examples@ directory.
+--
+-- @since 0.1.0.0
 mkValid
   :: String
   -> TH.Name
@@ -722,6 +846,8 @@ mkValid funName typeName = do
 -- required.
 --
 -- See the @uvalidof@ example program in the @examples@ directory.
+--
+-- @since 0.2.0.0
 untypedValidOf
   :: Parse a
   => Proxy a
@@ -737,6 +863,8 @@ untypedValidOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
 -- to write a 'Proxy' when defining constants.
 --
 -- See the @mkuvalid@ example program in the @examples@ directory.
+--
+-- @since 0.2.0.0
 mkUntypedValid
   :: String
   -> TH.Name
@@ -754,6 +882,8 @@ mkUntypedValid funName typeName = do
 -- | Make a @valid@ quasi-quoter using 'untypedValidOf' for the given type
 --
 -- See the @uvalidqq@ example program in the @examples@ directory.
+--
+-- @since 0.2.0.0
 mkUntypedValidQQ
   :: String
   -> TH.Name
