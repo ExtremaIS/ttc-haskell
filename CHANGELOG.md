@@ -29,6 +29,7 @@ following conventions:
 ### Breaking
 
 * Add `renderTLB`, `renderBSB`, and `renderSBS` functions
+* Use `Textual` error messages for `parseEnum'`
 
 ### Non-Breaking
 

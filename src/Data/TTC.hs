@@ -672,23 +672,26 @@ parseEnum allowCI allowPrefix invalidError ambiguousError t =
     match :: T.Text -> T.Text -> Bool
     match = if allowPrefix then T.isPrefixOf else (==)
 
--- | Parse a value in an enumeration, with 'String' error messages
+-- | Parse a value in an enumeration, with 'Textual' error messages
 --
 -- The following English error messages are returned:
 --
 -- * \"invalid {name}\" when there are no matches
 -- * \"ambiguous {name}\" when there is more than one match
 --
--- @since 0.1.0.0
+-- @since 0.4.0.0
 parseEnum'
-  :: (Bounded a, Enum a, Render a, Textual t)
-  => String           -- ^ name to include in error messages
-  -> Bool             -- ^ case-insensitive when 'True'
-  -> Bool             -- ^ accept unique prefixes when 'True'
-  -> t                -- ^ textual input to parse
-  -> Either String a  -- ^ error or parsed value
+  :: (Bounded a, Enum a, Render a, Textual t, Textual e)
+  => String      -- ^ name to include in error messages
+  -> Bool        -- ^ case-insensitive when 'True'
+  -> Bool        -- ^ accept unique prefixes when 'True'
+  -> t           -- ^ textual input to parse
+  -> Either e a  -- ^ error or parsed value
 parseEnum' name allowCI allowPrefix =
-    parseEnum allowCI allowPrefix ("invalid " ++ name) ("ambiguous " ++ name)
+    parseEnum
+      allowCI allowPrefix
+      (fromS $ "invalid " ++ name)
+      (fromS $ "ambiguous " ++ name)
 {-# INLINEABLE parseEnum' #-}
 
 -- | Parse a value using the 'Read' instance
