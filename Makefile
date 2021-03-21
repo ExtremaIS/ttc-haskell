@@ -64,6 +64,7 @@ clean: # clean package
 .PHONY: clean
 
 clean-all: clean # clean package and remove artifacts
+> @rm -rf .hie
 > @rm -rf .stack-work
 > @rm -rf examples/.stack-work
 > @rm -rf build
@@ -247,6 +248,11 @@ source-tar: # create source tarball using tar
 >   .
 > @rm -f build/.gitignore
 .PHONY: source-tar
+
+stan: # run stan static analysis
+> @command -v hr >/dev/null 2>&1 && hr -t || true
+> @stan
+.PHONY: stan
 
 test: # run tests, optionally for pattern P *
 > $(eval P := "")

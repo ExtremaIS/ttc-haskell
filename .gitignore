@@ -11,5 +11,8 @@ cabal.project.local~
 *.yaml.lock
 stack-nix*
 
+# stan
+/.hie/
+
 # vi
 .*.swp

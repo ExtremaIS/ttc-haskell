@@ -664,7 +664,7 @@ parseEnum allowCI allowPrefix invalidError ambiguousError t =
     in  case [v | v <- [minBound ..], t' `match` norm (render v)] of
           [v] -> Right v
           []  -> Left invalidError
-          _   -> Left ambiguousError
+          _vs -> Left ambiguousError
   where
     norm :: T.Text -> T.Text
     norm = if allowCI then T.toLower else id
