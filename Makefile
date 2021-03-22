@@ -251,6 +251,7 @@ source-tar: # create source tarball using tar
 
 stan: # run stan static analysis
 > @command -v hr >/dev/null 2>&1 && hr -t || true
+> @stack build --flag $(PACKAGE):write-hie
 > @stan
 .PHONY: stan
 
