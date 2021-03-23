@@ -8,7 +8,7 @@ on:
       - main
 
 jobs:
-  cabal:
+  latest-cabal:
     name: "Cabal: GHC ${{ matrix.ghc }}"
     runs-on: ubuntu-latest
     strategy:
@@ -56,3 +56,22 @@ jobs:
         run: stack test --system-ghc
         env:
           STACK_YAML: stack-${{ matrix.ghc }}.yaml
+
+  cabal:
+    name: "Cabal ${{ matrix.cabal }}: GHC 8.4.4"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        cabal: ['2.2.0.0', '2.4.0.0', '2.4.1.0', '3.0.0.0', '3.2.0.0']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup Haskell
+        uses: haskell/actions/setup@v1
+        with:
+          ghc-version: 8.4.4
+          cabal-version: ${{ matrix.cabal }}
+      - name: Build
+        run: cabal new-build --enable-tests --enable-benchmarks
+      - name: Test
+        run: cabal new-test --enable-tests
