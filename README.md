@@ -212,7 +212,7 @@ standard `IsString` type class (which provides the `fromString` function).
 * Hackage: <https://hackage.haskell.org/package/ttc>
 * Stackage: <https://stackage.org/package/ttc>
 * GitHub: <https://github.com/ExtremaIS/ttc-haskell>
-* Travis CI: <https://travis-ci.com/ExtremaIS/ttc-haskell>
+* GitHub Actions CI: <https://github.com/ExtremaIS/ttc-haskell/actions>
 
 ### Dependencies
 
