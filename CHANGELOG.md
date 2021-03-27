@@ -33,6 +33,7 @@ following conventions:
 
 ### Non-Breaking
 
+* Add support for GHC 9
 * Add `@since` annotations
 * Rename Git default branch to `main`
 * Use GitHub Actions instead of Travis CI

@@ -16,8 +16,13 @@
 -- @
 ------------------------------------------------------------------------------
 
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE TemplateHaskell #-}
+
+#if __GLASGOW_HASKELL__ >= 900
+{-# LANGUAGE ExplicitForAll #-}
+#endif
 
 module Data.TTC
   ( -- * Textual
@@ -100,6 +105,7 @@ module Data.TTC
   , readsEnum
   , readsWithParse
     -- ** Constant Validation
+    -- $ParseValid
   , valid
   , validOf
   , mkValid
@@ -259,6 +265,7 @@ instance Textual BSL.ByteString where
   {-# INLINE toBSL #-}
   {-# INLINE convert #-}
 
+------------------------------------------------------------------------------
 -- $TextualTo
 --
 -- These functions are equivalent to 'convert', but they specify the type
@@ -306,6 +313,7 @@ fromBSL :: Textual t => BSL.ByteString -> t
 fromBSL = convert
 {-# INLINE fromBSL #-}
 
+------------------------------------------------------------------------------
 -- $TextualAs
 --
 -- These functions are used to convert a 'Textual' argument of a function to a
@@ -347,6 +355,7 @@ asBSL :: Textual t => (BSL.ByteString -> a) -> t -> a
 asBSL f = f . convert
 {-# INLINE asBSL #-}
 
+------------------------------------------------------------------------------
 -- $TextualOther
 --
 -- These functions are used to convert to/from the following other textual
@@ -407,6 +416,7 @@ fromSBS = convert . SBS.fromShort
 class Render a where
   render :: Textual t => a -> t
 
+------------------------------------------------------------------------------
 -- $RenderSpecific
 --
 -- These functions are equivalent to 'render', but they specify the type being
@@ -469,6 +479,7 @@ renderSBS :: Render a => a -> SBS.ShortByteString
 renderSBS = SBS.toShort . renderBS
 {-# INLINE renderSBS #-}
 
+------------------------------------------------------------------------------
 -- $RenderUtils
 
 -- | Render a value to a textual data type using the 'Show' instance
@@ -501,6 +512,7 @@ parse' :: (Parse a, Textual t) => t -> Either String a
 parse' = parse
 {-# INLINE parse' #-}
 
+------------------------------------------------------------------------------
 -- $ParseSpecific
 --
 -- These functions are equivalent to 'parse', but they specify the type being
@@ -542,6 +554,7 @@ parseBSL :: (Parse a, Textual e) => BSL.ByteString -> Either e a
 parseBSL = parse
 {-# INLINE parseBSL #-}
 
+------------------------------------------------------------------------------
 -- $ParseMaybe
 --
 -- The 'parseMaybe' function parses to a 'Maybe' type instead of an 'Either'
@@ -591,6 +604,7 @@ parseMaybeBSL :: Parse a => BSL.ByteString -> Maybe a
 parseMaybeBSL = parseMaybe
 {-# INLINE parseMaybeBSL #-}
 
+------------------------------------------------------------------------------
 -- $ParseUnsafe
 --
 -- The 'parseUnsafe' function raises an exception on error instead of using an
@@ -641,6 +655,7 @@ parseUnsafeBSL :: Parse a => BSL.ByteString -> a
 parseUnsafeBSL = parseUnsafe
 {-# INLINE parseUnsafeBSL #-}
 
+------------------------------------------------------------------------------
 -- $ParseUtils
 
 -- | Parse a value in an enumeration
@@ -758,7 +773,26 @@ readsWithParse s = case parseMaybe s of
     Nothing -> []
 {-# INLINEABLE readsWithParse #-}
 
+------------------------------------------------------------------------------
 -- $ParseValid
+--
+-- The follow functions provide a number of ways to use a 'Parse' instance to
+-- validate constants at compile-time.
+--
+-- If you can use Template Haskell typed expressions in your project, use
+-- 'valid', 'mkValid', or 'validOf'.  Use 'valid' to define constants for
+-- types that have a 'THS.Lift' instance.  For types that do not have a
+-- 'THS.Lift' instance, use 'mkValid' to define a validation function for that
+-- type using a 'Proxy', or use 'validOf' to pass the 'Proxy' when defining
+-- constants.
+--
+-- Typed expressions were not supported in @haskell-src-exts <1.22.0@, which
+-- causes problems with old versions of @hlint@.  If the issue affects you,
+-- you may use 'mkUntypedValid', 'mkUntypedValidQQ', or 'untypedValidOf'
+-- instead of the above functions.  Use 'mkUntypedValid' to define a
+-- validation function for a type using a 'Proxy', or use 'untypedValidOf' to
+-- pass the 'Proxy' when defining constants.  Alternatively, use
+-- 'mkUntypedValidQQ' to define a validation quasi-quoter.
 
 -- | Validate a constant at compile-time using a 'Parse' instance
 --
@@ -767,15 +801,53 @@ readsWithParse s = case parseMaybe s of
 -- a 'THS.Lift' instance.  When this is inconvenient, use one of the
 -- alternative functions in this library.
 --
--- This function uses a typed expression.  Typed expressions were not
--- supported in @haskell-src-exts <1.22.0@, which caused problems with
--- @hlint@.  If the issue effects you, use @hlint -i "Parse error"@ to ignore
--- parse errors or use one of the alternative functions in this library.
+-- This function uses a Template Haskell typed expression.  Typed expressions
+-- were not supported in @haskell-src-exts <1.22.0@, which causes problems
+-- with old versions of @hlint@.  If the issue affects you, use
+-- @hlint -i "Parse error"@ to ignore parse errors or use one of the
+-- alternative functions in this library.
 --
--- See the @valid@, @invalid@, and @lift@ example programs in the @examples@
--- directory.
+-- Note that the typed Template Haskell API changed in GHC 9.  The type
+-- displayed in this documentation is determined by the version of GHC used to
+-- build the documentation.
+--
+-- The type of this function in GHC 9 or later is as follows:
+--
+-- @
+-- valid
+--   :: (MonadFail m, THS.Quote m, Parse a, THS.Lift a)
+--   => String
+--   -> THS.Code m a
+-- @
+--
+-- The type of this function in previous versions of GHC is as follows:
+--
+-- @
+-- valid
+--   :: (Parse a, THS.Lift a)
+--   => String
+--   -> TH.Q (TH.TExp a)
+-- @
+--
+-- This function is used the same way in all GHC versions.  See the @valid@,
+-- @invalid@, and @lift@ example programs in the @examples@ directory.  The
+-- following is example usage from the @valid@ example:
+--
+-- @
+-- sample :: Username
+-- sample = $$(TTC.valid "tcard")
+-- @
 --
 -- @since 0.1.0.0
+#if __GLASGOW_HASKELL__ >= 900
+valid
+  :: (MonadFail m, THS.Quote m, Parse a, THS.Lift a)
+  => String
+  -> THS.Code m a
+valid s = case parse s of
+    Right x -> [|| x ||]
+    Left err -> THS.Code . fail $ "Invalid constant: " ++ err
+#else
 valid
   :: (Parse a, THS.Lift a)
   => String
@@ -783,6 +855,7 @@ valid
 valid s = case parse s of
     Right x -> [|| x ||]
     Left err -> fail $ "Invalid constant: " ++ err
+#endif
 
 -- | Validate a constant at compile-time using a 'Parse' instance
 --
@@ -794,14 +867,56 @@ valid s = case parse s of
 -- run-time.  Since the result is not compiled in, no 'THS.Lift' instance is
 -- required.
 --
--- This function uses a typed expression.  Typed expressions were not
--- supported in @haskell-src-exts <1.22.0@, which caused problems with
--- @hlint@.  If the issue effects you, use @hlint -i "Parse error"@ to ignore
--- parse errors or use 'untypedValidOf' instead.
+-- This function uses a Template Haskell typed expression.  Typed expressions
+-- were not supported in @haskell-src-exts <1.22.0@, which causes problems
+-- with old versions of @hlint@.  If the issue affects you, use
+-- @hlint -i "Parse error"@ to ignore parse errors or use 'untypedValidOf'
+-- instead.
 --
--- See the @validof@ example program in the @examples@ directory.
+-- Note that the typed Template Haskell API changed in GHC 9.  The type
+-- displayed in this documentation is determined by the version of GHC used to
+-- build the documentation.
+--
+-- The type of this function in GHC 9 or later is as follows:
+--
+-- @
+-- validOf
+--   :: (MonadFail m, THS.Quote m, Parse a)
+--   => Proxy a
+--   -> String
+--   -> THS.Code m a
+-- @
+--
+-- The type of this function in previous versions of GHC is as follows:
+--
+-- @
+-- validOf
+--   :: Parse a
+--   => Proxy a
+--   -> String
+--   -> TH.Q (TH.TExp a)
+-- @
+--
+-- This function is used the same way in all GHC versions.  See the @validof@
+-- example program in the @examples@ directory.  The following is example
+-- usage from the @validof@ example:
+--
+-- @
+-- sample :: Username
+-- sample = $$(TTC.validOf (Proxy :: Proxy Username) "tcard")
+-- @
 --
 -- @since 0.1.0.0
+#if __GLASGOW_HASKELL__ >= 900
+validOf
+  :: (MonadFail m, THS.Quote m, Parse a)
+  => Proxy a
+  -> String
+  -> THS.Code m a
+validOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
+    Right{} -> [|| parseUnsafeS s ||]
+    Left err -> THS.Code . fail $ "Invalid constant: " ++ err
+#else
 validOf
   :: Parse a
   => Proxy a
@@ -810,18 +925,55 @@ validOf
 validOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
     Right{} -> [|| parseUnsafeS s ||]
     Left err -> fail $ "Invalid constant: " ++ err
+#endif
 
 -- | Make a @valid@ function using 'validOf' for the given type
 --
--- Create a @valid@ function in the module for a type in order to avoid having
--- to write a 'Proxy' when defining constants.
+-- Create a @valid@ function for a type in order to avoid having to write a
+-- 'Proxy' when defining constants.
 --
--- This function uses a typed expression.  Typed expressions were not
--- supported in @haskell-src-exts <1.22.0@, which caused problems with
--- @hlint@.  If the issue effects you, use @hlint -i "Parse error"@ to ignore
--- parse errors or use 'mkUntypedValidOf' instead.
+-- This function uses a Template Haskell typed expression.  Typed expressions
+-- were not supported in @haskell-src-exts <1.22.0@, which causes problems
+-- with old versions of @hlint@.  If the issue affects you, use
+-- @hlint -i "Parse error"@ to ignore parse errors or use 'mkUntypedValid'
+-- instead.
 --
--- See the @mkvalid@ example program in the @examples@ directory.
+-- Note that the typed Template Haskell API changed in GHC 9.  The type
+-- displayed in this documentation is determined by the version of GHC used to
+-- build the documentation.
+--
+-- The type of the created @valid@ function in GHC 9 or later is as follows:
+--
+-- @
+-- \$funName
+--   :: forall m. (MonadFail m, THS.Quote m)
+--   => String
+--   -> THS.Code m $resultType
+-- @
+--
+-- The type of the created @valid@ function in previous versions of GHC is as
+-- follows:
+--
+-- @
+-- \$funName
+--   :: String
+--   -> TH.Q (TH.TExp $resultType)
+-- @
+--
+-- This function is used the same way in all GHC versions.  See the @mkvalid@
+-- example program in the @examples@ directory.  The following is example
+-- usage from the @mkvalid@ example:
+--
+-- @
+-- \$(TTC.mkValid "valid" ''Username)
+-- @
+--
+-- The created @valid@ function can then be used as follows:
+--
+-- @
+-- sample :: Username
+-- sample = $$(Username.valid "tcard")
+-- @
 --
 -- @since 0.1.0.0
 mkValid
@@ -831,7 +983,15 @@ mkValid
 mkValid funName typeName = do
     let funName' = TH.mkName funName
         resultType = pure $ TH.ConT typeName
+#if __GLASGOW_HASKELL__ >= 900
+    funType <-
+      [t|
+        forall m . (MonadFail m, THS.Quote m) =>
+          String -> THS.Code m $resultType
+        |]
+#else
     funType <- [t| String -> TH.Q (TH.TExp $resultType) |]
+#endif
     body <- [| validOf (Proxy :: Proxy $resultType) |]
     return
       [ TH.SigD funName' funType
@@ -848,7 +1008,13 @@ mkValid funName typeName = do
 -- run-time.  Since the result is not compiled in, no 'THS.Lift' instance is
 -- required.
 --
--- See the @uvalidof@ example program in the @examples@ directory.
+-- See the @uvalidof@ example program in the @examples@ directory.  The
+-- following is example usage from the @uvalidof@ example:
+--
+-- @
+-- sample :: Username
+-- sample = $(TTC.untypedValidOf (Proxy :: Proxy Username) "tcard")
+-- @
 --
 -- @since 0.2.0.0
 untypedValidOf
@@ -862,10 +1028,22 @@ untypedValidOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
 
 -- | Make a @valid@ function using 'untypedValidOf' for the given type
 --
--- Create a @valid@ function in the module for a type in order to avoid having
--- to write a 'Proxy' when defining constants.
+-- Create a @valid@ function for a type in order to avoid having to write a
+-- 'Proxy' when defining constants.
 --
--- See the @mkuvalid@ example program in the @examples@ directory.
+-- See the @mkuvalid@ example program in the @examples@ directory.  The
+-- following is example usage from the @mkuvalid@ example:
+--
+-- @
+-- \$(TTC.mkUntypedValid "valid" ''Username)
+-- @
+--
+-- The created @valid@ function can then be used as follows:
+--
+-- @
+-- sample :: Username
+-- sample = $(Username.valid "tcard")
+-- @
 --
 -- @since 0.2.0.0
 mkUntypedValid
@@ -884,7 +1062,19 @@ mkUntypedValid funName typeName = do
 
 -- | Make a @valid@ quasi-quoter using 'untypedValidOf' for the given type
 --
--- See the @uvalidqq@ example program in the @examples@ directory.
+-- See the @uvalidqq@ example program in the @examples@ directory.  The
+-- following is example usage from the @uvalidqq@ example:
+--
+-- @
+-- \$(TTC.mkUntypedValidQQ "valid" ''Username)
+-- @
+--
+-- The created @valid@ function can then be used as follows:
+--
+-- @
+-- sample :: Username
+-- sample = [Username.valid|tcard|]
+-- @
 --
 -- @since 0.2.0.0
 mkUntypedValidQQ
