@@ -1,6 +1,6 @@
 # TTC: Textual Type Classes
 
-[![Build Status](https://travis-ci.com/ExtremaIS/ttc-haskell.svg?branch=master)](https://travis-ci.com/ExtremaIS/ttc-haskell)
+[![GitHub CI](https://github.com/ExtremaIS/ttc-haskell/workflows/CI/badge.svg?branch=main)](https://github.com/ExtremaIS/ttc-haskell/actions)
 [![Hackage](https://img.shields.io/hackage/v/ttc.svg)](https://hackage.haskell.org/package/ttc)
 [![Stackage LTS](https://stackage.org/package/ttc/badge/lts)](https://stackage.org/package/ttc)
 [![Stackage Nightly](https://stackage.org/package/ttc/badge/nightly)](https://stackage.org/nightly/package/ttc)
@@ -100,7 +100,7 @@ Here is an example instance for `Username`, implementing some restrictions:
 
 ```haskell
 instance TTC.Parse Username where
-  parse = TTC.asT $ \t-> first TTC.fromS $ do
+  parse = TTC.asT $ \t -> first TTC.fromS $ do
     unless (T.all isAsciiLower t) $ Left "username has invalid character(s)"
     let len = T.length t
     when (len < 3) $ Left "username has fewer than 3 characters"
@@ -212,7 +212,7 @@ standard `IsString` type class (which provides the `fromString` function).
 * Hackage: <https://hackage.haskell.org/package/ttc>
 * Stackage: <https://stackage.org/package/ttc>
 * GitHub: <https://github.com/ExtremaIS/ttc-haskell>
-* Travis CI: <https://travis-ci.com/ExtremaIS/ttc-haskell>
+* GitHub Actions CI: <https://github.com/ExtremaIS/ttc-haskell/actions>
 
 ### Dependencies
 
@@ -223,7 +223,7 @@ submit an issue.
 
 ### Releases
 
-All releases are tagged in the `master` branch.  Release tags are signed using
+All releases are tagged in the `main` branch.  Release tags are signed using
 the
 [`security@extrema.is` GPG key](http://keys.gnupg.net/pks/lookup?op=vindex&fingerprint=on&search=0x1D484E4B4705FADF).
 

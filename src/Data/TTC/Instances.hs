@@ -2,7 +2,7 @@
 -- |
 -- Module      : Data.TTC.Instances
 -- Description : instances for basic data types
--- Copyright   : Copyright (c) 2019-2020 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2021 Travis Cardwell
 -- License     : MIT
 --
 -- This module defines TTC 'TTC.Render' and 'TTC.Parse' instances for some
@@ -44,7 +44,7 @@ import qualified Data.TTC as TTC
 instance TTC.Parse Char where
   parse = TTC.asS $ \case
     [c] -> Right c
-    _ -> Left $ TTC.fromS "invalid Char"
+    _cs -> Left $ TTC.fromS "invalid Char"
 
 instance TTC.Render Char where
   render c = TTC.fromS [c]

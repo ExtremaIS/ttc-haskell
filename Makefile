@@ -64,9 +64,11 @@ clean: # clean package
 .PHONY: clean
 
 clean-all: clean # clean package and remove artifacts
+> @rm -rf .hie
 > @rm -rf .stack-work
 > @rm -rf examples/.stack-work
 > @rm -rf build
+> @rm -rf dist-newstyle
 > @rm -f *.yaml.lock
 .PHONY: clean-all
 
@@ -201,14 +203,22 @@ repl: # enter a REPL *
 
 sdist: # create source tarball for Hackage
 > $(eval BRANCH := $(shell git rev-parse --abbrev-ref HEAD))
-> @test "${BRANCH}" = "master" || $(call die,"not in master branch")
+> @test "${BRANCH}" = "main" || $(call die,"not in main branch")
 > @stack sdist
 .PHONY: sdist
 
 source-git: # create source tarball of git TREE
 > $(eval TREE := "HEAD")
 > $(eval BRANCH := $(shell git rev-parse --abbrev-ref $(TREE)))
-> @test "${BRANCH}" = "master" || echo "WARNING: Not in master branch!" >&2
+> @test "$(BRANCH)" = "main" || echo "WARNING: Not in main branch!" >&2
+> $(eval DIRTY := $(shell git diff --shortstat | wc -l))
+> @test "$(DIRTY)" = "0" \
+>   || echo "WARNING: Not including non-committed changes!" >&2
+> $(eval UNTRACKED := $(shell \
+    git ls-files --other --directory --no-empty-directory --exclude-standard \
+    | wc -l))
+> @test "$(UNTRACKED)" = "0" \
+>   || echo "WARNING: Not including untracked files!" >&2
 > $(eval VERSION := $(shell \
     grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
 > @mkdir -p build
@@ -218,6 +228,14 @@ source-git: # create source tarball of git TREE
 .PHONY: source-git
 
 source-tar: # create source tarball using tar
+> $(eval DIRTY := $(shell git diff --shortstat | wc -l))
+> @test "$(DIRTY)" = "0" \
+>   || echo "WARNING: Including non-committed changes!" >&2
+> $(eval UNTRACKED := $(shell \
+    git ls-files --other --directory --no-empty-directory --exclude-standard \
+    | wc -l))
+> @test "$(UNTRACKED)" = "0" \
+>   || echo "WARNING: Including untracked files!" >&2
 > $(eval VERSION := $(shell \
     grep '^version:' $(CABAL_FILE) | sed 's/^version: *//'))
 > @mkdir -p build
@@ -231,6 +249,12 @@ source-tar: # create source tarball using tar
 > @rm -f build/.gitignore
 .PHONY: source-tar
 
+stan: # run stan static analysis
+> @command -v hr >/dev/null 2>&1 && hr -t || true
+> @stack build --flag $(PACKAGE):write-hie
+> @stan
+.PHONY: stan
+
 test: # run tests, optionally for pattern P *
 > $(eval P := "")
 > @command -v hr >/dev/null 2>&1 && hr -t || true
@@ -240,46 +264,22 @@ test: # run tests, optionally for pattern P *
 >       --test-arguments '--pattern $(P)'
 .PHONY: test
 
-test-all: # run tests and build examples for all versions
-> $(eval CONFIG := $(shell \
-    test -f stack-nix-8.2.2.yaml \
-    && echo stack-nix-8.2.2.yaml \
-    || echo stack-8.2.2.yaml))
-> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
-> @make test-doc CONFIG=$(CONFIG)
-> @make examples CONFIG=$(CONFIG)
-> $(eval CONFIG := $(shell \
-    test -f stack-nix-8.4.4.yaml \
-    && echo stack-nix-8.4.4.yaml \
-    || echo stack-8.4.4.yaml))
-> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
-> @make test-doc CONFIG=$(CONFIG)
-> @make examples CONFIG=$(CONFIG)
-> $(eval CONFIG := $(shell \
-    test -f stack-nix-8.6.5.yaml \
-    && echo stack-nix-8.6.5.yaml \
-    || echo stack-8.6.5.yaml))
-> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
-> @make test-doc CONFIG=$(CONFIG)
-> @make examples CONFIG=$(CONFIG)
-> $(eval CONFIG := $(shell \
-    test -f stack-nix.yaml \
-    && echo stack-nix.yaml \
-    || echo stack.yaml))
-> @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true
-> @make test-doc CONFIG=$(CONFIG)
-> @make examples CONFIG=$(CONFIG)
-> $(eval STACK_NIX_PATH := $(shell \
-    test -f stack-nix-nightly.path \
-    && cat stack-nix-nightly.path \
-    || true))
-> @command -v hr >/dev/null 2>&1 && hr nightly || true
-> @test -f stack-nix-nightly.path \
->   && make test-doc RESOLVER=nightly STACK_NIX_PATH="$(STACK_NIX_PATH)" \
->   || make test-doc RESOLVER=nightly
-> @test -f stack-nix-nightly.path \
->   && make examples RESOLVER=nightly STACK_NIX_PATH="$(STACK_NIX_PATH)" \
->   || make examples RESOLVER=nightly
+test-all: # run tests and build examples for all configured Stackage releases
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.2.2.yaml" || true
+> @make test-doc CONFIG=stack-8.2.2.yaml
+> @make examples CONFIG=stack-8.2.2.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.4.4.yaml" || true
+> @make test-doc CONFIG=stack-8.4.4.yaml
+> @make examples CONFIG=stack-8.4.4.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.6.5.yaml" || true
+> @make test-doc CONFIG=stack-8.6.5.yaml
+> @make examples CONFIG=stack-8.6.5.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.8.4.yaml" || true
+> @make test-doc CONFIG=stack-8.8.4.yaml
+> @make examples CONFIG=stack-8.8.4.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.10.4.yaml" || true
+> @make test-doc CONFIG=stack-8.10.4.yaml
+> @make examples CONFIG=stack-8.10.4.yaml
 .PHONY: test-all
 
 test-doc: # run tests and build API documentation *
@@ -287,6 +287,11 @@ test-doc: # run tests and build API documentation *
 > @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
 >   --haddock --test --bench --no-run-benchmarks
 .PHONY: test-doc
+
+test-nightly: # run tests for the latest Stackage nightly release
+> @command -v hr >/dev/null 2>&1 && hr nightly || true
+> @make test RESOLVER=nightly
+.PHONY: test-nightly
 
 todo: # search for TODO items
 > @find . -type f \

@@ -24,6 +24,22 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 0.4.0.0 (2021-03-27)
+
+### Breaking
+
+* Add support for GHC 9
+* Add `renderTLB`, `renderBSB`, and `renderSBS` functions
+* Use `Textual` error messages for `parseEnum'`
+
+### Non-Breaking
+
+* Add `@since` annotations
+* Rename Git default branch to `main`
+* Use GitHub Actions instead of Travis CI
+* Add Cabal tests to GitHub Actions
+* Add [stan](https://hackage.haskell.org/package/stan) static analysis
+
 ## 0.3.0.0 (2020-11-03)
 
 ### Breaking

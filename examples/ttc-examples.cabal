@@ -10,7 +10,7 @@ homepage:       https://github.com/ExtremaIS/ttc-haskell#readme
 bug-reports:    https://github.com/ExtremaIS/ttc-haskell/issues
 author:         Travis Cardwell <travis.cardwell@extrema.is>
 maintainer:     Travis Cardwell <travis.cardwell@extrema.is>
-copyright:      Copyright (c) 2019-2020 Travis Cardwell
+copyright:      Copyright (c) 2019-2021 Travis Cardwell
 license:        MIT
 license-file:   LICENSE
 
