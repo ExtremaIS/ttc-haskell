@@ -83,6 +83,7 @@ clean-all: clean # clean package and remove artifacts
 > @rm -rf build
 > @rm -rf dist-newstyle
 > @rm -f *.yaml.lock
+> @rm -f cabal.project.local
 .PHONY: clean-all
 
 coverage: # run tests with code coverage *
