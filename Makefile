@@ -345,6 +345,7 @@ source-tar: # create source tarball using tar
 .PHONY: source-tar
 
 stan: hr
+stan: export STAN_USE_DEFAULT_CONFIG=True
 stan: # run stan static analysis
 ifeq ($(MODE), cabal)
 > @cabal v2-build -f write-hie
