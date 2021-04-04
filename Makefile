@@ -59,8 +59,8 @@ endef
 ##############################################################################
 # Rules
 
+build: hr
 build: # build package *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-build
 else
@@ -86,8 +86,8 @@ clean-all: clean # clean package and remove artifacts
 > @rm -f cabal.project.local
 .PHONY: clean-all
 
+coverage: hr
 coverage: # run tests with code coverage *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-test --enable-coverage --enable-tests --test-show-details=always
 else
@@ -96,8 +96,8 @@ else
 endif
 .PHONY: coverage
 
+doc-api: hr
 doc-api: # build API documentation *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-haddock
 else
@@ -105,8 +105,8 @@ else
 endif
 .PHONY: doc-api
 
+example-enum: hr
 example-enum: # build and run example-enum *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-run example-enum
 else
@@ -116,8 +116,8 @@ else
 endif
 .PHONY: example-enum
 
+example-invalid: hr
 example-invalid: # build example-invalid, which should fail *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-build ttc-examples -f example-invalid
 else
@@ -126,8 +126,8 @@ else
 endif
 .PHONY: example-invalid
 
+example-lift: hr
 example-lift: # build and run example-lift *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-run example-lift
 else
@@ -137,8 +137,8 @@ else
 endif
 .PHONY: example-lift
 
+example-mkvalid: hr
 example-mkvalid: # build and run example-mkvalid *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-run example-mkvalid
 else
@@ -148,8 +148,8 @@ else
 endif
 .PHONY: example-mkvalid
 
+example-mkuvalid: hr
 example-mkuvalid: # build and run example-mkuvalid *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-run example-mkuvalid
 else
@@ -159,8 +159,8 @@ else
 endif
 .PHONY: example-mkuvalid
 
+example-prompt: hr
 example-prompt: # build and run example-prompt *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-run example-prompt
 else
@@ -170,8 +170,8 @@ else
 endif
 .PHONY: example-prompt
 
+example-uname: hr
 example-uname: # build and run example-uname *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-run example-uname
 else
@@ -181,8 +181,8 @@ else
 endif
 .PHONY: example-uname
 
+example-uvalidof: hr
 example-uvalidof: # build and run example-uvalidof *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-run example-uvalidof
 else
@@ -192,8 +192,8 @@ else
 endif
 .PHONY: example-uvalidof
 
+example-uvalidqq: hr
 example-uvalidqq: # build and run example-uvalidqq *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-run example-uvalidqq
 else
@@ -203,8 +203,8 @@ else
 endif
 .PHONY: example-uvalidqq
 
+example-valid: hr
 example-valid: # build and run example-valid *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-run example-valid
 else
@@ -214,8 +214,8 @@ else
 endif
 .PHONY: example-valid
 
+example-validof: hr
 example-validof: # build and run example-validof *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-run example-validof
 else
@@ -225,8 +225,8 @@ else
 endif
 .PHONY: example-validof
 
+examples: hr
 examples: # build all buldable examples *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-build ttc-examples -f examples
 else
@@ -255,6 +255,10 @@ help: # show this help
 hlint: # run hlint on all Haskell source
 > @$(call hs_files) | xargs hlint
 .PHONY: hlint
+
+hr: #internal# display a horizontal rule
+> @command -v hr >/dev/null 2>&1 && hr -t || true
+.PHONY: hr
 
 hsgrep: # grep all Haskell source for expression E
 > $(eval E := "")
@@ -340,8 +344,8 @@ source-tar: # create source tarball using tar
 > @rm -f build/.gitignore
 .PHONY: source-tar
 
+stan: hr
 stan: # run stan static analysis
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-build -f write-hie
 else
@@ -350,9 +354,9 @@ endif
 > @stan
 .PHONY: stan
 
+test: hr
 test: # run tests, optionally for pattern P *
 > $(eval P := "")
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @test -z "$(P)" \
 >   && cabal v2-test --enable-tests --test-show-details=always \
@@ -387,8 +391,8 @@ test-all: # run tests and build examples for all configured Stackage releases
 > @make examples CONFIG=stack-9.0.1.yaml
 .PHONY: test-all
 
+test-doc: hr
 test-doc: # run tests and build API documentation *
-> @command -v hr >/dev/null 2>&1 && hr -t || true
 ifeq ($(MODE), cabal)
 > @cabal v2-test --enable-tests --test-show-details=always
 > @cabal v2-haddock
@@ -399,7 +403,6 @@ endif
 .PHONY: test-doc
 
 test-nightly: # run tests for the latest Stackage nightly release
-> @command -v hr >/dev/null 2>&1 && hr nightly || true
 > @make test RESOLVER=nightly
 .PHONY: test-nightly
 
