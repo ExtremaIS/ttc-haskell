@@ -38,7 +38,3 @@ parseJsonString expected = A.withText expected $ either fail pure . TTC.parse
 ```
 
 ## Project
-
-* Stackage links on Hackage
-    * <https://github.com/haskell/hackage-server/issues/921>
-    * <https://github.com/commercialhaskell/stackage/issues/5963>
