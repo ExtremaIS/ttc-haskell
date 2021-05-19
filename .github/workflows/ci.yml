@@ -62,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cabal: ['2.4.0.0', '2.4.1.0', '3.0.0.0', '3.2.0.0', '3.4.0.0']
+        cabal: ['2.4.1.0', '3.0.0.0', '3.2.0.0', '3.4.0.0']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
