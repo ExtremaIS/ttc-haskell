@@ -11,5 +11,5 @@ setup-info:
 resolver: nightly-2021-05-19
 
 packages:
-- .
-- ./examples
+  - .
+  - ./examples
