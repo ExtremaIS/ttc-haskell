@@ -740,8 +740,8 @@ parseWithRead' name = parseWithRead (fromS $ "invalid " ++ name)
 -- @since 0.3.0.0
 maybeParseWithRead
   :: (Read a, Textual t)
-  => t           -- ^ textual input to parse
-  -> Maybe a  -- ^ error or parsed value
+  => t        -- ^ textual input to parse
+  -> Maybe a  -- ^ parsed value or 'Nothing' if invalid
 maybeParseWithRead = readMaybe . toS
 
 -- | Implement 'ReadS' using 'parseEnum'
