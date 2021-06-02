@@ -7,12 +7,13 @@
 [![Stackage Nightly](https://stackage.org/package/ttc/badge/nightly)](https://stackage.org/nightly/package/ttc)
 
 * [Overview](#overview)
+    * [`Textual`](#textual)
     * [`Render`](#render)
     * [`Parse`](#parse)
-    * [`Textual`](#textual)
+    * [Constant Validation](#constant-validation)
 * [Related Work](#related-work)
     * [Rendering and Parsing](#rendering-and-parsing)
-    * [Constant Validation](#constant-validation)
+    * [Validating Constants](#validating-constants)
     * [String Type Conversion](#string-type-conversion)
 * [Project](#project)
     * [Links](#links)
@@ -23,15 +24,51 @@
 ## Overview
 
 TTC, an initialism of _Textual Type Classes_, is a library that provides
-`Render` and `Parse` type classes for conversion between data types and
-textual data types (strings).  Use the `Show` and `Read` type classes for
-debugging/development, and use the `Render` and `Parse` type classes for your
-own purposes.
+[`Render`](#render) and
+[`Parse`](#parse) type classes for conversion between data types and textual
+data types (strings).  Use the `Show` and `Read` type classes for
+debugging/development, and use the [`Render`](#render) and
+[`Parse`](#parse) type classes for your own purposes.  The library also
+provides a [`Textual`](#textual) type class for conversion between textual
+data types as well as functions for validating constants at compile-time.
 
-The following is a brief overview of the type classes provided by this
-library.  See the
-[API documentation on Hackage](https://hackage.haskell.org/package/ttc#modules)
-for details and the [`examples` directory](examples) for usage examples.
+This overview includes a brief introduction of the library.  The following
+resources are also available:
+
+* [API documentation][] is viewable on Hackage.
+* A [series of articles][] gives a guided tour of the library.
+    1. [Textual Type Class][]
+    2. [Render and Parse][]
+    3. [Validated Constants][]
+    4. [Best Practices][]
+* The [examples][] directory in the GitHub repository contains usage examples.
+
+[API documentation]: <https://hackage.haskell.org/package/ttc#modules>
+[series of articles]: <https://www.extrema.is/articles/ttc-textual-type-classes>
+[Textual Type Class]: <https://www.extrema.is/articles/ttc-textual-type-classes/textual-type-class>
+[Render and Parse]: <https://www.extrema.is/articles/ttc-textual-type-classes/render-and-parse>
+[Validated Constants]: <https://www.extrema.is/articles/ttc-textual-type-classes/validated-constants>
+[Best Practices]: <https://www.extrema.is/articles/ttc-textual-type-classes/best-practices>
+[examples]: <https://github.com/ExtremaIS/ttc-haskell/tree/main/examples>
+
+### `Textual`
+
+The `Textual` type class is used to convert between the following textual data
+types:
+
+* `String`
+* Strict `Text`
+* Lazy `Text`
+* Strict `ByteString`
+* Lazy `ByteString`
+
+Conversion between any of these types is direct; it is not done through a
+fixed textual data type (such as `String` or `Text`).  The key feature of this
+type class is that it has a single type variable, making it easy to write
+functions that accept arguments and/or returns values that may be any of the
+supported textual data types.
+
+For more details, see the [Textual Type Class][] article.
 
 ### `Render`
 
@@ -78,6 +115,8 @@ automatic:
 putStrLn $ "user not found: " ++ TTC.render uname
 ```
 
+For more details, see the [Render and Parse][] article.
+
 ### `Parse`
 
 The `Parse` type class parses a data type from a [`Textual`](#textual) data
@@ -117,38 +156,19 @@ case TTC.parse "tcard" :: Either String Username of
   Left err -> putStrLn $ "invalid username: " ++ err
 ```
 
-It is common to create data types that have "smart constructors" to ensure
-that all constructed values are valid.  If the `Username` constructor were
-exported, it would be possible to create values with arbitrary `Text`, such
-as `Username T.empty`, which is not a valid `Username`.  Smart constructors
-can be inconvenient when constructing constants, however, as neither runtime
-error handling nor failure are desired.  This library provides Template
-Haskell functions that use `Parse` instances to validate such constants at
-compile-time.
+For more details, see the [Render and Parse][] article.
 
-### `Textual`
+### Constant Validation
 
-The `Textual` type class is used to convert between the following textual data
-types:
+TTC provides functions to validate constants at compile-time, using Template
+Haskell.  For example, a `Username` constant can be defined as follows:
 
-* `String`
-* Strict `Text`
-* Lazy `Text`
-* Strict `ByteString`
-* Lazy `ByteString`
+```haskell
+user :: Username
+user = $$(TTC.valid "tcard")
+```
 
-Conversion between any of these types is direct; it is not done through a
-fixed textual data type (such as `String` or `Text`).  The key feature of this
-type class is that it has a single type variable, making it easy to write
-functions that accept arguments and/or returns values that may be any of the
-supported textual data types.
-
-Functions are provided to convert to/from the following other textual data
-types:
-
-* `Text` `Builder`
-* `ByteString` `Builder`
-* `ShortByteString`
+For more details, see the [Constant Validation][] article.
 
 ## Related Work
 
@@ -173,7 +193,7 @@ Harry Garrood has an interesting series of blog posts about type classes and
 * [Down with Show! Part 2: What's wrong with the Show type class](https://harry.garrood.me/blog/down-with-show-part-2/)
 * [Down with Show! Part 3: A replacement for Show](https://harry.garrood.me/blog/down-with-show-part-3/)
 
-### Constant Validation
+### Validating Constants
 
 The
 [validated-literals](https://hackage.haskell.org/package/validated-literals)
