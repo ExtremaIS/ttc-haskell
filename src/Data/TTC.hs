@@ -163,6 +163,9 @@ import qualified Data.Text.Lazy.Encoding as TLE
 -- changing the class definition itself.  This is the price paid for having
 -- only one type variable instead of two.
 --
+-- For more details, see the following article:
+-- <https://www.extrema.is/articles/ttc-textual-type-classes/textual-type-class>
+--
 -- @since 0.1.0.0
 class Textual t where
   -- | Convert to a 'String'
@@ -412,6 +415,9 @@ fromSBS = convert . SBS.fromShort
 --
 -- See the @uname@ and @prompt@ example programs in the @examples@ directory.
 --
+-- For more details, see the following article:
+-- <https://www.extrema.is/articles/ttc-textual-type-classes/render-and-parse>
+--
 -- @since 0.1.0.0
 class Render a where
   render :: Textual t => a -> t
@@ -499,6 +505,9 @@ renderWithShow = convert . show
 -- basic data types are available in "Data.TTC.Instances".
 --
 -- See the @uname@ and @prompt@ example programs in the @examples@ directory.
+--
+-- For more details, see the following article:
+-- <https://www.extrema.is/articles/ttc-textual-type-classes/render-and-parse>
 --
 -- @since 0.3.0.0
 class Parse a where
@@ -793,6 +802,9 @@ readsWithParse s = case parseMaybe s of
 -- validation function for a type using a 'Proxy', or use 'untypedValidOf' to
 -- pass the 'Proxy' when defining constants.  Alternatively, use
 -- 'mkUntypedValidQQ' to define a validation quasi-quoter.
+--
+-- For more details, see the following article:
+-- <https://www.extrema.is/articles/ttc-textual-type-classes/validated-constants>
 
 -- | Validate a constant at compile-time using a 'Parse' instance
 --
