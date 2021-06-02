@@ -168,7 +168,7 @@ user :: Username
 user = $$(TTC.valid "tcard")
 ```
 
-For more details, see the [Constant Validation][] article.
+For more details, see the [Validated Constants][] article.
 
 ## Related Work
 
