@@ -4,20 +4,6 @@
 
 ## Documentation
 
-Update README:
-
-* Rewrite to make it easier to understand, with more examples
-* Add links to TTC article series
-* Note that README links work on GitHub
-
-API documentation:
-
-* Add more examples
-
-Version `1.0.0.0` release notes:
-
-* GHC compatibility, with Stack instructions
-
 ## Examples
 
 `aeson` example:
