@@ -21,3 +21,7 @@ Links:
 * [GitHub](https://github.com/ExtremaIS/ttc-haskell)
 * [Hackage](https://hackage.haskell.org/package/ttc)
 * [Guided Tour](https://www.extrema.is/articles/ttc-textual-type-classes)
+
+----
+
+Post: <https://old.reddit.com/r/haskell/comments/nr2ext/ann_ttc1000_textual_type_classes/>
