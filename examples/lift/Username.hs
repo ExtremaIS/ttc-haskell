@@ -22,7 +22,7 @@
 -- The instance unpacks the 'Text' and stores an expression to pack the
 -- resulting 'String'.  Template Haskell is needed to splice in the
 -- application of 'T.pack'.  The @TemplateHaskellQuotes@ language extension,
--- availabe from GHC 8, is sufficient, and the @TemplateHaskell@ language
+-- available from GHC 8, is sufficient, and the @TemplateHaskell@ language
 -- extension is required in older versions.
 --
 -- Since the instance is an orphan, an @OPTIONS_GHC@ pragma is used to hide

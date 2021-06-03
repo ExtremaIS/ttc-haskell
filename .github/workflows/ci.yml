@@ -58,18 +58,18 @@ jobs:
           STACK_YAML: stack-${{ matrix.ghc }}.yaml
 
   cabal:
-    name: "Cabal ${{ matrix.cabal }}: GHC 8.4.4"
+    name: "Cabal ${{ matrix.cabal }}: GHC 8.2.2"
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        cabal: ['2.4.0.0', '2.4.1.0', '3.0.0.0', '3.2.0.0']
+        cabal: ['2.4.1.0', '3.0.0.0', '3.2.0.0', '3.4.0.0']
     steps:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Setup Haskell
         uses: haskell/actions/setup@v1
         with:
-          ghc-version: 8.4.4
+          ghc-version: 8.2.2
           cabal-version: ${{ matrix.cabal }}
       - name: Build
         run: cabal new-build --enable-tests --enable-benchmarks
