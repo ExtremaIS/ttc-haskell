@@ -32,6 +32,18 @@ own purposes.  The library also provides a `Textual` type class for conversion
 between textual data types as well as functions for validating constants at
 compile-time.
 
+Since a type may have at most one instance of a given type class, special care
+must be taken when defining type class instances in a shared library.  In
+particular, orphan instances should generally *not* be used in shared
+libraries since they prevent users of the libraries from writing their own
+instances.
+
+`Render` and `Parse` are best used with types that have canonical textual
+representations, such as textual identifiers.  When there is more than one way
+to create a textual representation, such as configurable formatting, using a
+normal function is probably more appropriate.  Such a function can make use of
+the `Textual` type class to support multiple textual data types.
+
 This overview includes a brief introduction of the library.  The following
 resources are also available:
 
