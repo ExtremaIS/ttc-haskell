@@ -26,6 +26,10 @@ following conventions:
 
 ## Unreleased
 
+### Non-Breaking
+
+* Add `HasCallStack` to unsafe functions
+
 ## 1.0.0.0 (2021-06-03)
 
 ### Non-Breaking

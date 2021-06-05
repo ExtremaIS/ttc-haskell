@@ -116,6 +116,7 @@ module Data.TTC
 
 -- https://hackage.haskell.org/package/base
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
+import GHC.Stack (HasCallStack)
 import Text.Read (readMaybe)
 
 -- https://hackage.haskell.org/package/bytestring
@@ -625,42 +626,42 @@ parseMaybeBSL = parseMaybe
 -- | Unsafely parse
 --
 -- @since 0.1.0.0
-parseUnsafe :: (Parse a, Textual t) => t -> a
+parseUnsafe :: (HasCallStack, Parse a, Textual t) => t -> a
 parseUnsafe = either (error . ("parseUnsafe: " ++)) id . parse
 {-# INLINE parseUnsafe #-}
 
 -- | Unsafely parse to a 'String'
 --
 -- @since 0.1.0.0
-parseUnsafeS :: Parse a => String -> a
+parseUnsafeS :: (HasCallStack, Parse a) => String -> a
 parseUnsafeS = parseUnsafe
 {-# INLINE parseUnsafeS #-}
 
 -- | Unsafely parse to strict 'T.Text'
 --
 -- @since 0.1.0.0
-parseUnsafeT :: Parse a => T.Text -> a
+parseUnsafeT :: (HasCallStack, Parse a) => T.Text -> a
 parseUnsafeT = parseUnsafe
 {-# INLINE parseUnsafeT #-}
 
 -- | Unsafely parse to lazy 'TL.Text'
 --
 -- @since 0.1.0.0
-parseUnsafeTL :: Parse a => TL.Text -> a
+parseUnsafeTL :: (HasCallStack, Parse a) => TL.Text -> a
 parseUnsafeTL = parseUnsafe
 {-# INLINE parseUnsafeTL #-}
 
 -- | Unsafely parse to a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
-parseUnsafeBS :: Parse a => BS.ByteString -> a
+parseUnsafeBS :: (HasCallStack, Parse a) => BS.ByteString -> a
 parseUnsafeBS = parseUnsafe
 {-# INLINE parseUnsafeBS #-}
 
 -- | Unsafely parse to a lazy 'BSL.ByteString'
 --
 -- @since 0.1.0.0
-parseUnsafeBSL :: Parse a => BSL.ByteString -> a
+parseUnsafeBSL :: (HasCallStack, Parse a) => BSL.ByteString -> a
 parseUnsafeBSL = parseUnsafe
 {-# INLINE parseUnsafeBSL #-}
 
