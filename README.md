@@ -24,13 +24,12 @@
 ## Overview
 
 TTC, an initialism of _Textual Type Classes_, is a library that provides
-[`Render`](#render) and
-[`Parse`](#parse) type classes for conversion between data types and textual
-data types (strings).  Use the `Show` and `Read` type classes for
-debugging/development, and use the [`Render`](#render) and
-[`Parse`](#parse) type classes for your own purposes.  The library also
-provides a [`Textual`](#textual) type class for conversion between textual
-data types as well as functions for validating constants at compile-time.
+`Render` and `Parse` type classes for conversion between data types and
+textual data types (strings).  Use the `Show` and `Read` type classes for
+debugging/development, and use the `Render` and `Parse` type classes for your
+own purposes.  The library also provides a `Textual` type class for conversion
+between textual data types as well as functions for validating constants at
+compile-time.
 
 This overview includes a brief introduction of the library.  The following
 resources are also available:
@@ -72,8 +71,7 @@ For more details, see the [Textual Type Class][] article.
 
 ### `Render`
 
-The `Render` type class renders a data type as a [`Textual`](#textual) data
-type:
+The `Render` type class renders a data type as a `Textual` data type:
 
 ```haskell
 class Render a where
@@ -119,8 +117,7 @@ For more details, see the [Render and Parse][] article.
 
 ### `Parse`
 
-The `Parse` type class parses a data type from a [`Textual`](#textual) data
-type:
+The `Parse` type class parses a data type from a `Textual` data type:
 
 ```haskell
 class Parse a where
