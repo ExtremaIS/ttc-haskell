@@ -15,6 +15,7 @@
     * [Rendering and Parsing](#rendering-and-parsing)
     * [Validating Constants](#validating-constants)
     * [String Type Conversion](#string-type-conversion)
+    * [Arbitrary Type Conversion](#arbitrary-type-conversion)
 * [Project](#project)
     * [Links](#links)
     * [Dependencies](#dependencies)
@@ -207,21 +208,45 @@ about implementing statically checked overloaded strings.
 
 There are a number of libraries that simplify conversion between string types.
 
-The
-[string-conversions](https://hackage.haskell.org/package/string-conversions)
-and [string-conv](https://hackage.haskell.org/package/string-conv) libraries
-have type classes with two type variables.  The primary benefit of this
-approach is that one can add support for any string type.
+The following libraries provide type classes with two type variables.  The
+primary benefit of this approach is that one can add support for any string
+type.  The drawback of this approach is that implementations of `Render` and
+`Parse` using such a type class would have to be done via a fixed type,
+resulting in unnecessary conversion when using other types.
 
-The [text-conversions](https://hackage.haskell.org/package/text-conversions)
-library converts between string types via the `Text` type, using `FromText`
-and `ToText` type classes.  This works well in most cases, but it not optimal
-when converting between `ByteString` types.
+* [string-conv](https://hackage.haskell.org/package/string-conv)
+* [string-conversions](https://hackage.haskell.org/package/string-conversions)
 
-The [textual](https://hackage.haskell.org/package/textual) library
-(deprecated) converts between string types via the `String` type, using a
-`Textual` type class (which provides a `toString` function) as well as the
-standard `IsString` type class (which provides the `fromString` function).
+The following library provide type classes with a single type variable, but
+conversion is done via a fixed type.
+
+* [hxt-regex-xmlschema](https://hackage.haskell.org/package/hxt-regex-xmlschema)
+  has a `StringLike` type class and does conversion via the `String` type
+* [ListLike](https://hackage.haskell.org/package/ListLike) has a `StringLike`
+  type class and does conversion via the `String` type
+* [monoid-subclasses](https://hackage.haskell.org/package/monoid-subclasses)
+  provides a `TextualMonoid` type class that provides an abstract API over
+  textual types, using `String` as the underlying type
+* [stringlike](https://hackage.haskell.org/package/stringlike) converts via
+  the `Text` type
+* [tagsoup](https://hackage.haskell.org/package/tagsoup) has a `StringLike`
+  type class that provides an abstract API over textual types and a
+  `castString` function that converts via the `String` type
+* [text-conversions](https://hackage.haskell.org/package/text-conversions)
+  converts via the `Text` type
+* [textual](https://hackage.haskell.org/package/textual) (deprecated)
+  converts via the `String` type
+
+### Arbitrary Type Conversion
+
+There are also a number of libraries that provide type classes for conversion
+between arbitrary types, including string types.
+
+* [basement](https://hackage.haskell.org/package/basement) provides type
+  classes for conversion that may fail as well as conversion that cannot fail
+* [convertible](https://hackage.haskell.org/package/convertible)
+* [witch](https://hackage.haskell.org/package/witch) provides type classes for
+  conversion that may fail as well as conversion that cannot fail
 
 ## Project
 
