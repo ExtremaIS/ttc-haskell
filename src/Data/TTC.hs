@@ -161,14 +161,17 @@ import qualified Data.Text.Lazy.Encoding as TLE
 -- where different behavior is required, process @ByteString@ values /before/
 -- using this class.
 --
--- The key feature of this type class is that it has a single type variable,
--- making it easy to write functions that accepts arguments and/or returns
--- values that may be any of the supported textual data types.
+-- This type class has two key features:
+--
+-- * Type conversion is /not/ done through a fixed type (such as 'String' or
+--   'T.Text').
+-- * It has a single type variable, making it easy to write functions that
+--   accept arguments and/or return values that may be any of the supported
+--   textual data types.
 --
 -- Note that support for additional data types cannot be implemented by
 -- writing instances.  Adding support for additional data types would require
--- changing the class definition itself.  This is the price paid for having
--- only one type variable instead of two.
+-- changing the class definition itself.
 --
 -- For more details, see the following article:
 -- <https://www.extrema.is/articles/ttc-textual-type-classes/textual-type-class>
