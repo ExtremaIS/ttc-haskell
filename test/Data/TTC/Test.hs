@@ -1,13 +1,18 @@
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
+
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Data.TTC.Test (tests) where
 
 -- https://hackage.haskell.org/package/base
 import Control.Exception (ErrorCall, Exception, evaluate, handle)
 import Control.Monad (when)
+import Data.Int (Int16, Int32, Int64, Int8)
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
+import Data.Word (Word16, Word32, Word64, Word8)
 import Text.Read (readMaybe)
 
 -- https://hackage.haskell.org/package/bytestring
@@ -33,6 +38,66 @@ import qualified Data.TTC as TTC
 -- (ttc:test)
 import qualified TestString
 import TestString (TestString(TestString))
+
+------------------------------------------------------------------------------
+-- $Instances
+
+instance TTC.Render Char
+instance TTC.Parse Char
+
+instance TTC.Render Double
+instance TTC.Parse Double
+
+instance TTC.Render Float
+instance TTC.Parse Float
+
+instance TTC.Render Int
+instance TTC.Parse Int
+
+instance TTC.Render Int8
+instance TTC.Parse Int8
+
+instance TTC.Render Int16
+instance TTC.Parse Int16
+
+instance TTC.Render Int32
+instance TTC.Parse Int32
+
+instance TTC.Render Int64
+instance TTC.Parse Int64
+
+instance TTC.Render Integer
+instance TTC.Parse Integer
+
+instance TTC.Render Word
+instance TTC.Parse Word
+
+instance TTC.Render Word8
+instance TTC.Parse Word8
+
+instance TTC.Render Word16
+instance TTC.Parse Word16
+
+instance TTC.Render Word32
+instance TTC.Parse Word32
+
+instance TTC.Render Word64
+instance TTC.Parse Word64
+
+instance TTC.Render String
+instance TTC.Parse String
+
+instance TTC.Render BSL.ByteString
+instance TTC.Parse BSL.ByteString
+
+instance TTC.Render BS.ByteString
+instance TTC.Parse BS.ByteString
+
+instance TTC.Render TL.Text
+instance TTC.Parse TL.Text
+
+instance TTC.Render T.Text
+instance TTC.Parse T.Text
 
 ------------------------------------------------------------------------------
 -- $HelperFunctions
@@ -385,6 +450,42 @@ testRender = testGroup "render"
     , testCase "BSL" $ answerBSL @=? TTC.render answer
     ]
 
+testRenderDefault :: TestTree
+testRenderDefault = testGroup "RenderDefault"
+    [ testCase "Char" $ "*" @=? TTC.renderS '*'
+    , let x = 3.14159 :: Double
+      in  testCase "Double" $ show x @=? TTC.renderS x
+    , let x = 3.14159 :: Float
+      in  testCase "Float" $ show x @=? TTC.renderS x
+    , let n = 42 :: Int
+      in  testCase "Int" $ show n @=? TTC.renderS n
+    , let n = 42 :: Int8
+      in  testCase "Int8" $ show n @=? TTC.renderS n
+    , let n = 42 :: Int16
+      in  testCase "Int16" $ show n @=? TTC.renderS n
+    , let n = 42 :: Int32
+      in  testCase "Int32" $ show n @=? TTC.renderS n
+    , let n = 42 :: Int64
+      in  testCase "Int64" $ show n @=? TTC.renderS n
+    , let n = 42 :: Integer
+      in  testCase "Integer" $ show n @=? TTC.renderS n
+    , let w = 42 :: Word
+      in  testCase "Word" $ show w @=? TTC.renderS w
+    , let w = 42 :: Word8
+      in  testCase "Word8" $ show w @=? TTC.renderS w
+    , let w = 42 :: Word16
+      in  testCase "Word16" $ show w @=? TTC.renderS w
+    , let w = 42 :: Word32
+      in  testCase "Word32" $ show w @=? TTC.renderS w
+    , let w = 42 :: Word64
+      in  testCase "Word64" $ show w @=? TTC.renderS w
+    , testCase "String" $ xS @=? TTC.renderS xS
+    , testCase "BSL.ByteString" $ xS @=? TTC.renderS xBSL
+    , testCase "BS.ByteString" $ xS @=? TTC.renderS xBS
+    , testCase "TL.Text" $ xS @=? TTC.renderS xTL
+    , testCase "T.Text" $ xS @=? TTC.renderS xT
+    ]
+
 testRenderS :: TestTree
 testRenderS = testCase "renderS" $ answerS @=? TTC.renderS answer
 
@@ -433,6 +534,119 @@ testParse = testGroup "parse"
         (TTC.parse ('-' : answerS) :: Either String PosInt)
     , testCase "invalid" $ Left "not an integer" @=?
         (TTC.parse ('a' : answerS) :: Either String PosInt)
+    ]
+
+testParseDefault :: TestTree
+testParseDefault = testGroup "ParseDefault"
+    [ let parse = TTC.parse :: String -> Either String Char
+      in  testGroup "Char"
+            [ testCase "OK" $ Right '*' @=? parse "*"
+            , testCase "empty" $ Left "invalid Char" @=? parse ""
+            , testCase "multiple" $ Left "invalid Char" @=? parse "**"
+            ]
+    , let parse = TTC.parse :: String -> Either String Double
+          s = show (3.14159 :: Double)
+      in  testGroup "Double"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Double" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String Float
+          s = show (3.14159 :: Float)
+      in  testGroup "Float"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Float" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String Int
+          s = show (42 :: Int)
+      in  testGroup "Int"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Int" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String Int8
+          s = show (42 :: Int8)
+      in  testGroup "Int8"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Int8" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String Int16
+          s = show (42 :: Int16)
+      in  testGroup "Int16"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Int16" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String Int32
+          s = show (42 :: Int32)
+      in  testGroup "Int32"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Int32" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String Int64
+          s = show (42 :: Int64)
+      in  testGroup "Int64"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Int64" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String Integer
+          s = show (42 :: Integer)
+      in  testGroup "Integer"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Integer" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String Word
+          s = show (42 :: Word)
+      in  testGroup "Word"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Word" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String Word8
+          s = show (42 :: Word8)
+      in  testGroup "Word8"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Word8" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String Word16
+          s = show (42 :: Word16)
+      in  testGroup "Word16"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Word16" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String Word32
+          s = show (42 :: Word32)
+      in  testGroup "Word32"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Word32" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String Word64
+          s = show (42 :: Word64)
+      in  testGroup "Word64"
+            [ testCase "OK" $ Right (read s) @=? parse s
+            , testCase "invalid" $ Left "invalid Word64" @=? parse "invalid"
+            ]
+    , let parse = TTC.parse :: String -> Either String String
+      in  testGroup "String"
+            [ testCase "empty" $ Right "" @=? parse ""
+            , testCase "nonempty" $ Right xS @=? parse xS
+            ]
+    , let parse = TTC.parse :: String -> Either String BSL.ByteString
+      in  testGroup "BSL.ByteString"
+            [ testCase "empty" $ Right BSL.empty @=? parse ""
+            , testCase "nonempty" $ Right xBSL @=? parse xS
+            ]
+    , let parse = TTC.parse :: String -> Either String BS.ByteString
+      in  testGroup "BS.ByteString"
+            [ testCase "empty" $ Right BS.empty @=? parse ""
+            , testCase "nonempty" $ Right xBS @=? parse xS
+            ]
+    , let parse = TTC.parse :: String -> Either String TL.Text
+      in  testGroup "TL.Text"
+            [ testCase "empty" $ Right TL.empty @=? parse ""
+            , testCase "nonempty" $ Right xTL @=? parse xS
+            ]
+    , let parse = TTC.parse :: String -> Either String T.Text
+      in  testGroup "T.Text"
+            [ testCase "empty" $ Right T.empty @=? parse ""
+            , testCase "nonempty" $ Right xT @=? parse xS
+            ]
     ]
 
 testParseS :: TestTree
@@ -668,6 +882,7 @@ tests = testGroup "Data.TTC"
         ]
     , testGroup "Render"
         [ testRender
+        , testRenderDefault
         , testRenderS
         , testRenderT
         , testRenderTL
@@ -680,6 +895,7 @@ tests = testGroup "Data.TTC"
         ]
     , testGroup "Parse"
         [ testParse
+        , testParseDefault
         , testParseS
         , testParseT
         , testParseTL

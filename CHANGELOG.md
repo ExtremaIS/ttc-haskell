@@ -26,6 +26,11 @@ following conventions:
 
 ## Unreleased
 
+### Breaking
+
+* Add `RenderDefault` and `ParseDefault` type classes and instances
+* Remove `Data.TTC.Instances`
+
 ### Non-Breaking
 
 * Add `HasCallStack` to unsafe functions

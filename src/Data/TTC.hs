@@ -17,7 +17,9 @@
 ------------------------------------------------------------------------------
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 #if __GLASGOW_HASKELL__ >= 900
@@ -59,6 +61,7 @@ module Data.TTC
   , fromSBS
     -- * Render
   , Render(..)
+  , RenderDefault(..)
     -- ** Rendering Specific Types
     -- $RenderSpecific
   , renderS
@@ -73,6 +76,7 @@ module Data.TTC
   , renderWithShow
     -- * Parse
   , Parse(..)
+  , ParseDefault(..)
     -- ** Parsing From Specific Types
     -- $ParseSpecific
   , parseS
@@ -115,7 +119,9 @@ module Data.TTC
   ) where
 
 -- https://hackage.haskell.org/package/base
+import Data.Int (Int16, Int32, Int64, Int8)
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
+import Data.Word (Word16, Word32, Word64, Word8)
 import GHC.Stack (HasCallStack)
 import Text.Read (readMaybe)
 
@@ -412,7 +418,18 @@ fromSBS = convert . SBS.fromShort
 --
 -- There are no default instances for the 'Render' type class, so that all
 -- instances can be customized per project when desired.  Instances for some
--- basic data types are available in "Data.TTC.Instances".
+-- basic data types are defined for the 'RenderDefault' type class, however,
+-- and you can load the 'Render' instance as follows:
+--
+-- @
+-- instance TTC.Render Int
+-- @
+--
+-- Since a type may have at most one instance of a given type class, special
+-- care must be taken when defining type class instances in a shared library.
+-- In particular, orphan instances should generally not be used in shared
+-- libraries since they prevent users of the libraries from writing their own
+-- instances.
 --
 -- See the @uname@ and @prompt@ example programs in the @examples@ directory.
 --
@@ -422,6 +439,78 @@ fromSBS = convert . SBS.fromShort
 -- @since 0.1.0.0
 class Render a where
   render :: Textual t => a -> t
+
+  default render :: (RenderDefault a, Textual t) => a -> t
+  render = renderDefault
+
+------------------------------------------------------------------------------
+
+-- | The 'RenderDefault' type class provides some default 'Render' instances.
+--
+-- * The 'Char' instance renders a single-character string.
+-- * Numeric type instances all render using the 'Show' instance.
+-- * Textual type instances all convert to the target 'Textual' data type.
+--
+-- @since 1.1.0.0
+class RenderDefault a where
+  renderDefault :: Textual t => a -> t
+
+instance RenderDefault Char where
+  renderDefault c = fromS [c]
+
+instance RenderDefault Double where
+  renderDefault = renderWithShow
+
+instance RenderDefault Float where
+  renderDefault = renderWithShow
+
+instance RenderDefault Int where
+  renderDefault = renderWithShow
+
+instance RenderDefault Int8 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Int16 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Int32 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Int64 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Integer where
+  renderDefault = renderWithShow
+
+instance RenderDefault Word where
+  renderDefault = renderWithShow
+
+instance RenderDefault Word8 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Word16 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Word32 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Word64 where
+  renderDefault = renderWithShow
+
+instance RenderDefault String where
+  renderDefault = fromS
+
+instance RenderDefault BSL.ByteString where
+  renderDefault = fromBSL
+
+instance RenderDefault BS.ByteString where
+  renderDefault = fromBS
+
+instance RenderDefault TL.Text where
+  renderDefault = fromTL
+
+instance RenderDefault T.Text where
+  renderDefault = fromT
 
 ------------------------------------------------------------------------------
 -- $RenderSpecific
@@ -503,7 +592,18 @@ renderWithShow = convert . show
 --
 -- There are no default instances for the 'Parse' type class, so that all
 -- instances can be customized per project when desired.  Instances for some
--- basic data types are available in "Data.TTC.Instances".
+-- basic data types are defined for the 'ParseDefault' type class, however,
+-- and you can load the 'Parse' instance as follows:
+--
+-- @
+-- instance TTC.Parse Int
+-- @
+--
+-- Since a type may have at most one instance of a given type class, special
+-- care must be taken when defining type class instances in a shared library.
+-- In particular, orphan instances should generally not be used in shared
+-- libraries since they prevent users of the libraries from writing their own
+-- instances.
 --
 -- See the @uname@ and @prompt@ example programs in the @examples@ directory.
 --
@@ -514,6 +614,9 @@ renderWithShow = convert . show
 class Parse a where
   parse :: (Textual t, Textual e) => t -> Either e a
 
+  default parse :: (Textual t, Textual e, ParseDefault a) => t -> Either e a
+  parse = parseDefault
+
 -- This function is equivalent to 'parse' with the error type fixed to
 -- 'String', used internally when the error is ignored.
 --
@@ -521,6 +624,77 @@ class Parse a where
 parse' :: (Parse a, Textual t) => t -> Either String a
 parse' = parse
 {-# INLINE parse' #-}
+
+------------------------------------------------------------------------------
+
+-- | The 'ParseDefault' type class provides some default 'Parse' instances.
+--
+-- * The 'Char' instance parses single-character strings.
+-- * Numeric type instances all parse using the 'Read' instance.
+-- * Textual type instances all convert from the source 'Textual' data type.
+--
+-- @since 1.1.0.0
+class ParseDefault a where
+  parseDefault :: (Textual t, Textual e) => t -> Either e a
+
+instance ParseDefault Char where
+  parseDefault = asS $ \case
+    [c] -> Right c
+    _cs -> Left $ fromS "invalid Char"
+
+instance ParseDefault Double where
+  parseDefault = parseWithRead' "Double"
+
+instance ParseDefault Float where
+  parseDefault = parseWithRead' "Float"
+
+instance ParseDefault Int where
+  parseDefault = parseWithRead' "Int"
+
+instance ParseDefault Int8 where
+  parseDefault = parseWithRead' "Int8"
+
+instance ParseDefault Int16 where
+  parseDefault = parseWithRead' "Int16"
+
+instance ParseDefault Int32 where
+  parseDefault = parseWithRead' "Int32"
+
+instance ParseDefault Int64 where
+  parseDefault = parseWithRead' "Int64"
+
+instance ParseDefault Integer where
+  parseDefault = parseWithRead' "Integer"
+
+instance ParseDefault Word where
+  parseDefault = parseWithRead' "Word"
+
+instance ParseDefault Word8 where
+  parseDefault = parseWithRead' "Word8"
+
+instance ParseDefault Word16 where
+  parseDefault = parseWithRead' "Word16"
+
+instance ParseDefault Word32 where
+  parseDefault = parseWithRead' "Word32"
+
+instance ParseDefault Word64 where
+  parseDefault = parseWithRead' "Word64"
+
+instance ParseDefault String where
+  parseDefault = Right . toS
+
+instance ParseDefault BSL.ByteString where
+  parseDefault = Right . toBSL
+
+instance ParseDefault BS.ByteString where
+  parseDefault = Right . toBS
+
+instance ParseDefault TL.Text where
+  parseDefault = Right . toTL
+
+instance ParseDefault T.Text where
+  parseDefault = Right . toT
 
 ------------------------------------------------------------------------------
 -- $ParseSpecific

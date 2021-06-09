@@ -2,7 +2,6 @@
 
 ## Functionality
 
-* [Orphan instances for core types](https://github.com/ExtremaIS/ttc-haskell/issues/1)
 * [Text Builder, ByteString Builder, ShortByteString support in Textual](https://github.com/ExtremaIS/ttc-haskell/issues/2)
 
 ## Documentation
