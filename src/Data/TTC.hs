@@ -17,7 +17,9 @@
 ------------------------------------------------------------------------------
 
 {-# LANGUAGE CPP #-}
+{-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
 
 #if __GLASGOW_HASKELL__ >= 900
@@ -33,69 +35,81 @@ module Data.TTC
   , toS
   , toT
   , toTL
+  , toTLB
   , toBS
   , toBSL
+  , toBSB
+  , toSBS
     -- ** \"From\" Conversions
     -- $TextualFrom
   , fromS
   , fromT
   , fromTL
+  , fromTLB
   , fromBS
   , fromBSL
+  , fromBSB
+  , fromSBS
     -- ** \"As\" Conversions
     -- $TextualAs
   , asS
   , asT
   , asTL
+  , asTLB
   , asBS
   , asBSL
-    -- ** Other Conversions
-    -- $TextualOther
-  , toTLB
-  , fromTLB
-  , toBSB
-  , fromBSB
-  , toSBS
-  , fromSBS
+  , asBSB
+  , asSBS
     -- * Render
   , Render(..)
+  , RenderDefault(..)
     -- ** Rendering Specific Types
     -- $RenderSpecific
   , renderS
   , renderT
   , renderTL
+  , renderTLB
   , renderBS
   , renderBSL
-  , renderTLB
   , renderBSB
   , renderSBS
     -- ** Render Utilities
   , renderWithShow
     -- * Parse
   , Parse(..)
+  , ParseDefault(..)
     -- ** Parsing From Specific Types
     -- $ParseSpecific
   , parseS
   , parseT
   , parseTL
+  , parseTLB
   , parseBS
   , parseBSL
+  , parseBSB
+  , parseSBS
     -- ** 'Maybe' Parsing
     -- $ParseMaybe
   , parseMaybe
   , parseMaybeS
   , parseMaybeT
   , parseMaybeTL
+  , parseMaybeTLB
   , parseMaybeBS
   , parseMaybeBSL
+  , parseMaybeBSB
+  , parseMaybeSBS
     -- ** Unsafe Parsing
     -- $ParseUnsafe
   , parseUnsafe
   , parseUnsafeS
   , parseUnsafeT
   , parseUnsafeTL
+  , parseUnsafeTLB
   , parseUnsafeBS
   , parseUnsafeBSL
+  , parseUnsafeBSB
+  , parseUnsafeSBS
     -- ** Parse Utilities
   , parseEnum
   , parseEnum'
@@ -115,7 +129,10 @@ module Data.TTC
   ) where
 
 -- https://hackage.haskell.org/package/base
+import Data.Int (Int16, Int32, Int64, Int8)
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
+import Data.Word (Word16, Word32, Word64, Word8)
+import GHC.Stack (HasCallStack)
 import Text.Read (readMaybe)
 
 -- https://hackage.haskell.org/package/bytestring
@@ -146,22 +163,28 @@ import qualified Data.Text.Lazy.Encoding as TLE
 -- * 'String' (@S@)
 -- * Strict 'T.Text' (@T@)
 -- * Lazy 'TL.Text' (@TL@)
+-- * @Text@ 'TLB.Builder' (@TLB@)
 -- * Strict 'BS.ByteString' (@BS@)
 -- * Lazy 'BSL.ByteString' (@BSL@)
+-- * @ByteString@ 'BSB.Builder' (@BSB@)
+-- * 'SBS.ShortByteString' (@SBS@)
 --
 -- @ByteString@ values are assumed to be UTF-8 encoded text.  Invalid bytes
 -- are replaced with the Unicode replacement character @U+FFFD@.  In cases
 -- where different behavior is required, process @ByteString@ values /before/
 -- using this class.
 --
--- The key feature of this type class is that it has a single type variable,
--- making it easy to write functions that accepts arguments and/or returns
--- values that may be any of the supported textual data types.
+-- This type class has two key features:
+--
+-- * Type conversion is /not/ done through a fixed type (such as 'String' or
+--   'T.Text').
+-- * It has a single type variable, making it easy to write functions that
+--   accept arguments and/or return values that may be any of the supported
+--   textual data types.
 --
 -- Note that support for additional data types cannot be implemented by
 -- writing instances.  Adding support for additional data types would require
--- changing the class definition itself.  This is the price paid for having
--- only one type variable instead of two.
+-- changing the class definition itself.
 --
 -- For more details, see the following article:
 -- <https://www.extrema.is/articles/ttc-textual-type-classes/textual-type-class>
@@ -183,6 +206,11 @@ class Textual t where
   -- @since 0.1.0.0
   toTL :: t -> TL.Text
 
+  -- | Convert to a @Text@ 'TLB.Builder'
+  --
+  -- @since 1.1.0.0
+  toTLB :: t -> TLB.Builder
+
   -- | Convert to a strict 'BS.ByteString'
   --
   -- @since 0.1.0.0
@@ -193,6 +221,16 @@ class Textual t where
   -- @since 0.1.0.0
   toBSL :: t -> BSL.ByteString
 
+  -- | Convert to a @ByteString@ 'BSB.Builder'
+  --
+  -- @since 1.1.0.0
+  toBSB :: t -> BSB.Builder
+
+  -- | Convert to a 'SBS.ShortByteString'
+  --
+  -- @since 1.1.0.0
+  toSBS :: t -> SBS.ShortByteString
+
   -- | Convert between any supported textual data types
   --
   -- @since 0.1.0.0
@@ -202,70 +240,165 @@ instance Textual String where
   toS = id
   toT = T.pack
   toTL = TL.pack
+  toTLB = TLB.fromString
   toBS = TE.encodeUtf8 . T.pack
   toBSL = TLE.encodeUtf8 . TL.pack
+  toBSB = BSB.byteString . TE.encodeUtf8 . T.pack
+  toSBS = SBS.toShort . TE.encodeUtf8 . T.pack
   convert = toS
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
   {-# INLINE convert #-}
 
 instance Textual T.Text where
   toS = T.unpack
   toT = id
   toTL = TL.fromStrict
+  toTLB = TLB.fromText
   toBS = TE.encodeUtf8
   toBSL = TLE.encodeUtf8 . TL.fromStrict
+  toBSB = BSB.byteString . TE.encodeUtf8
+  toSBS = SBS.toShort . TE.encodeUtf8
   convert = toT
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
   {-# INLINE convert #-}
 
 instance Textual TL.Text where
   toS = TL.unpack
   toT = TL.toStrict
   toTL = id
+  toTLB = TLB.fromLazyText
   toBS = BSL.toStrict . TLE.encodeUtf8
   toBSL = TLE.encodeUtf8
+  toBSB = BSB.lazyByteString . TLE.encodeUtf8
+  toSBS = SBS.toShort . BSL.toStrict . TLE.encodeUtf8
   convert = toTL
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
+  {-# INLINE convert #-}
+
+instance Textual TLB.Builder where
+  toS = TL.unpack . TLB.toLazyText
+  toT = TL.toStrict . TLB.toLazyText
+  toTL = TLB.toLazyText
+  toTLB = id
+  toBS = BSL.toStrict . TLE.encodeUtf8 . TLB.toLazyText
+  toBSL = TLE.encodeUtf8 . TLB.toLazyText
+  toBSB = BSB.lazyByteString . TLE.encodeUtf8 . TLB.toLazyText
+  toSBS = SBS.toShort . BSL.toStrict . TLE.encodeUtf8 . TLB.toLazyText
+  convert = toTLB
+  {-# INLINE toS #-}
+  {-# INLINE toT #-}
+  {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
+  {-# INLINE toBS #-}
+  {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
   {-# INLINE convert #-}
 
 instance Textual BS.ByteString where
   toS = T.unpack . TE.decodeUtf8With TEE.lenientDecode
   toT = TE.decodeUtf8With TEE.lenientDecode
   toTL = TLE.decodeUtf8With TEE.lenientDecode . BSL.fromStrict
+  toTLB = TLB.fromText . TE.decodeUtf8With TEE.lenientDecode
   toBS = id
   toBSL = BSL.fromStrict
+  toBSB = BSB.byteString
+  toSBS = SBS.toShort
   convert = toBS
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
   {-# INLINE convert #-}
 
 instance Textual BSL.ByteString where
   toS = TL.unpack . TLE.decodeUtf8With TEE.lenientDecode
   toT = TL.toStrict . TLE.decodeUtf8With TEE.lenientDecode
   toTL = TLE.decodeUtf8With TEE.lenientDecode
+  toTLB = TLB.fromLazyText . TLE.decodeUtf8With TEE.lenientDecode
   toBS = BSL.toStrict
   toBSL = id
+  toBSB = BSB.lazyByteString
+  toSBS = SBS.toShort . BSL.toStrict
   convert = toBSL
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
+  {-# INLINE convert #-}
+
+instance Textual BSB.Builder where
+  toS =
+    TL.unpack . TLE.decodeUtf8With TEE.lenientDecode . BSB.toLazyByteString
+  toT =
+    TL.toStrict . TLE.decodeUtf8With TEE.lenientDecode . BSB.toLazyByteString
+  toTL = TLE.decodeUtf8With TEE.lenientDecode . BSB.toLazyByteString
+  toTLB
+    = TLB.fromLazyText
+    . TLE.decodeUtf8With TEE.lenientDecode
+    . BSB.toLazyByteString
+  toBS = BSL.toStrict . BSB.toLazyByteString
+  toBSL = BSB.toLazyByteString
+  toBSB = id
+  toSBS = SBS.toShort . BSL.toStrict . BSB.toLazyByteString
+  convert = toBSB
+  {-# INLINE toS #-}
+  {-# INLINE toT #-}
+  {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
+  {-# INLINE toBS #-}
+  {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
+  {-# INLINE convert #-}
+
+instance Textual SBS.ShortByteString where
+  toS = T.unpack . TE.decodeUtf8With TEE.lenientDecode . SBS.fromShort
+  toT = TE.decodeUtf8With TEE.lenientDecode . SBS.fromShort
+  toTL = TLE.decodeUtf8With TEE.lenientDecode . BSL.fromStrict . SBS.fromShort
+  toTLB = TLB.fromText . TE.decodeUtf8With TEE.lenientDecode . SBS.fromShort
+  toBS = SBS.fromShort
+  toBSL = BSL.fromStrict . SBS.fromShort
+  toBSB = BSB.byteString . SBS.fromShort
+  toSBS = id
+  convert = toSBS
+  {-# INLINE toS #-}
+  {-# INLINE toT #-}
+  {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
+  {-# INLINE toBS #-}
+  {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
   {-# INLINE convert #-}
 
 ------------------------------------------------------------------------------
@@ -302,6 +435,13 @@ fromTL :: Textual t => TL.Text -> t
 fromTL = convert
 {-# INLINE fromTL #-}
 
+-- | Convert from a @Text@ 'TLB.Builder'
+--
+-- @since 1.1.0.0
+fromTLB :: Textual t => TLB.Builder -> t
+fromTLB = convert
+{-# INLINE fromTLB #-}
+
 -- | Convert from a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
@@ -315,6 +455,20 @@ fromBS = convert
 fromBSL :: Textual t => BSL.ByteString -> t
 fromBSL = convert
 {-# INLINE fromBSL #-}
+
+-- | Convert from a @ByteString@ 'TLB.Builder'
+--
+-- @since 1.1.0.0
+fromBSB :: Textual t => BSB.Builder -> t
+fromBSB = convert
+{-# INLINE fromBSB #-}
+
+-- | Convert from a 'SBS.ShortByteString'
+--
+-- @since 1.1.0.0
+fromSBS :: Textual t => SBS.ShortByteString -> t
+fromSBS = convert
+{-# INLINE fromSBS #-}
 
 ------------------------------------------------------------------------------
 -- $TextualAs
@@ -344,6 +498,13 @@ asTL :: Textual t => (TL.Text -> a) -> t -> a
 asTL f = f . convert
 {-# INLINE asTL #-}
 
+-- | Convert an argument to a @Text@ 'TLB.Builder'
+--
+-- @since 1.1.0.0
+asTLB :: Textual t => (TLB.Builder -> a) -> t -> a
+asTLB f = f . convert
+{-# INLINE asTLB #-}
+
 -- | Convert an argument to a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
@@ -358,51 +519,19 @@ asBSL :: Textual t => (BSL.ByteString -> a) -> t -> a
 asBSL f = f . convert
 {-# INLINE asBSL #-}
 
-------------------------------------------------------------------------------
--- $TextualOther
+-- | Convert an argument to a @ByteString@ 'TLB.Builder'
 --
--- These functions are used to convert to/from the following other textual
--- data types:
---
--- * @Text@ 'TLB.Builder' (@TLB@)
--- * @ByteString@ 'BSB.Builder' (@BSB@)
--- * 'SBS.ShortByteString' (@SBS@)
+-- @since 1.1.0.0
+asBSB :: Textual t => (BSB.Builder -> a ) -> t -> a
+asBSB f = f . convert
+{-# INLINE asBSB #-}
 
--- | Convert to a @Text@ 'TLB.Builder'
+-- | Convert an argument to a 'SBS.ShortByteString'
 --
--- @since 0.1.0.0
-toTLB :: Textual t => t -> TLB.Builder
-toTLB = TLB.fromLazyText . convert
-
--- | Convert from a @Text@ 'TLB.Builder'
---
--- @since 0.1.0.0
-fromTLB :: Textual t => TLB.Builder -> t
-fromTLB = convert . TLB.toLazyText
-
--- | Convert to a @ByteString@ 'BSB.Builder'
---
--- @since 0.1.0.0
-toBSB :: Textual t => t -> BSB.Builder
-toBSB = BSB.lazyByteString . convert
-
--- | Convert from a @ByteString@ 'BSB.Builder'
---
--- @since 0.1.0.0
-fromBSB :: Textual t => BSB.Builder -> t
-fromBSB = convert . BSB.toLazyByteString
-
--- | Convert to a 'SBS.ShortByteString'
---
--- @since 0.1.0.0
-toSBS :: Textual t => t -> SBS.ShortByteString
-toSBS = SBS.toShort . convert
-
--- | Convert from a 'SBS.ShortByteString'
---
--- @since 0.1.0.0
-fromSBS :: Textual t => SBS.ShortByteString -> t
-fromSBS = convert . SBS.fromShort
+-- @since 1.1.0.0
+asSBS :: Textual t => (SBS.ShortByteString -> a) -> t -> a
+asSBS f = f . convert
+{-# INLINE asSBS #-}
 
 ------------------------------------------------------------------------------
 -- $Render
@@ -411,7 +540,18 @@ fromSBS = convert . SBS.fromShort
 --
 -- There are no default instances for the 'Render' type class, so that all
 -- instances can be customized per project when desired.  Instances for some
--- basic data types are available in "Data.TTC.Instances".
+-- basic data types are defined for the 'RenderDefault' type class, however,
+-- and you can load the 'Render' instance as follows:
+--
+-- @
+-- instance TTC.Render Int
+-- @
+--
+-- Since a type may have at most one instance of a given type class, special
+-- care must be taken when defining type class instances in a shared library.
+-- In particular, orphan instances should generally not be used in shared
+-- libraries since they prevent users of the libraries from writing their own
+-- instances.
 --
 -- See the @uname@ and @prompt@ example programs in the @examples@ directory.
 --
@@ -421,6 +561,78 @@ fromSBS = convert . SBS.fromShort
 -- @since 0.1.0.0
 class Render a where
   render :: Textual t => a -> t
+
+  default render :: (RenderDefault a, Textual t) => a -> t
+  render = renderDefault
+
+------------------------------------------------------------------------------
+
+-- | The 'RenderDefault' type class provides some default 'Render' instances.
+--
+-- * The 'Char' instance renders a single-character string.
+-- * Numeric type instances all render using the 'Show' instance.
+-- * Textual type instances all convert to the target 'Textual' data type.
+--
+-- @since 1.1.0.0
+class RenderDefault a where
+  renderDefault :: Textual t => a -> t
+
+instance RenderDefault Char where
+  renderDefault c = fromS [c]
+
+instance RenderDefault Double where
+  renderDefault = renderWithShow
+
+instance RenderDefault Float where
+  renderDefault = renderWithShow
+
+instance RenderDefault Int where
+  renderDefault = renderWithShow
+
+instance RenderDefault Int8 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Int16 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Int32 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Int64 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Integer where
+  renderDefault = renderWithShow
+
+instance RenderDefault Word where
+  renderDefault = renderWithShow
+
+instance RenderDefault Word8 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Word16 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Word32 where
+  renderDefault = renderWithShow
+
+instance RenderDefault Word64 where
+  renderDefault = renderWithShow
+
+instance RenderDefault String where
+  renderDefault = fromS
+
+instance RenderDefault BSL.ByteString where
+  renderDefault = fromBSL
+
+instance RenderDefault BS.ByteString where
+  renderDefault = fromBS
+
+instance RenderDefault TL.Text where
+  renderDefault = fromTL
+
+instance RenderDefault T.Text where
+  renderDefault = fromT
 
 ------------------------------------------------------------------------------
 -- $RenderSpecific
@@ -450,6 +662,13 @@ renderTL :: Render a => a -> TL.Text
 renderTL = render
 {-# INLINE renderTL #-}
 
+-- | Render to a @Text@ 'TLB.Builder'
+--
+-- @since 0.4.0.0
+renderTLB :: Render a => a -> TLB.Builder
+renderTLB = render
+{-# INLINE renderTLB #-}
+
 -- | Render to a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
@@ -464,25 +683,18 @@ renderBSL :: Render a => a -> BSL.ByteString
 renderBSL = render
 {-# INLINE renderBSL #-}
 
--- | Render to a @Text@ 'TLB.Builder'
---
--- @since 0.4.0.0
-renderTLB :: Render a => a -> TLB.Builder
-renderTLB = TLB.fromLazyText . renderTL
-{-# INLINE renderTLB #-}
-
 -- | Render to a @ByteString@ 'BSB.Builder'
 --
 -- @since 0.4.0.0
 renderBSB :: Render a => a -> BSB.Builder
-renderBSB = BSB.lazyByteString . renderBSL
+renderBSB = render
 {-# INLINE renderBSB #-}
 
 -- | Render to a 'SBS.ShortByteString'
 --
 -- @since 0.4.0.0
 renderSBS :: Render a => a -> SBS.ShortByteString
-renderSBS = SBS.toShort . renderBS
+renderSBS = render
 {-# INLINE renderSBS #-}
 
 ------------------------------------------------------------------------------
@@ -502,7 +714,18 @@ renderWithShow = convert . show
 --
 -- There are no default instances for the 'Parse' type class, so that all
 -- instances can be customized per project when desired.  Instances for some
--- basic data types are available in "Data.TTC.Instances".
+-- basic data types are defined for the 'ParseDefault' type class, however,
+-- and you can load the 'Parse' instance as follows:
+--
+-- @
+-- instance TTC.Parse Int
+-- @
+--
+-- Since a type may have at most one instance of a given type class, special
+-- care must be taken when defining type class instances in a shared library.
+-- In particular, orphan instances should generally not be used in shared
+-- libraries since they prevent users of the libraries from writing their own
+-- instances.
 --
 -- See the @uname@ and @prompt@ example programs in the @examples@ directory.
 --
@@ -513,6 +736,9 @@ renderWithShow = convert . show
 class Parse a where
   parse :: (Textual t, Textual e) => t -> Either e a
 
+  default parse :: (Textual t, Textual e, ParseDefault a) => t -> Either e a
+  parse = parseDefault
+
 -- This function is equivalent to 'parse' with the error type fixed to
 -- 'String', used internally when the error is ignored.
 --
@@ -520,6 +746,77 @@ class Parse a where
 parse' :: (Parse a, Textual t) => t -> Either String a
 parse' = parse
 {-# INLINE parse' #-}
+
+------------------------------------------------------------------------------
+
+-- | The 'ParseDefault' type class provides some default 'Parse' instances.
+--
+-- * The 'Char' instance parses single-character strings.
+-- * Numeric type instances all parse using the 'Read' instance.
+-- * Textual type instances all convert from the source 'Textual' data type.
+--
+-- @since 1.1.0.0
+class ParseDefault a where
+  parseDefault :: (Textual t, Textual e) => t -> Either e a
+
+instance ParseDefault Char where
+  parseDefault = asS $ \case
+    [c] -> Right c
+    _cs -> Left $ fromS "invalid Char"
+
+instance ParseDefault Double where
+  parseDefault = parseWithRead' "Double"
+
+instance ParseDefault Float where
+  parseDefault = parseWithRead' "Float"
+
+instance ParseDefault Int where
+  parseDefault = parseWithRead' "Int"
+
+instance ParseDefault Int8 where
+  parseDefault = parseWithRead' "Int8"
+
+instance ParseDefault Int16 where
+  parseDefault = parseWithRead' "Int16"
+
+instance ParseDefault Int32 where
+  parseDefault = parseWithRead' "Int32"
+
+instance ParseDefault Int64 where
+  parseDefault = parseWithRead' "Int64"
+
+instance ParseDefault Integer where
+  parseDefault = parseWithRead' "Integer"
+
+instance ParseDefault Word where
+  parseDefault = parseWithRead' "Word"
+
+instance ParseDefault Word8 where
+  parseDefault = parseWithRead' "Word8"
+
+instance ParseDefault Word16 where
+  parseDefault = parseWithRead' "Word16"
+
+instance ParseDefault Word32 where
+  parseDefault = parseWithRead' "Word32"
+
+instance ParseDefault Word64 where
+  parseDefault = parseWithRead' "Word64"
+
+instance ParseDefault String where
+  parseDefault = Right . toS
+
+instance ParseDefault BSL.ByteString where
+  parseDefault = Right . toBSL
+
+instance ParseDefault BS.ByteString where
+  parseDefault = Right . toBS
+
+instance ParseDefault TL.Text where
+  parseDefault = Right . toTL
+
+instance ParseDefault T.Text where
+  parseDefault = Right . toT
 
 ------------------------------------------------------------------------------
 -- $ParseSpecific
@@ -549,6 +846,13 @@ parseTL :: (Parse a, Textual e) => TL.Text -> Either e a
 parseTL = parse
 {-# INLINE parseTL #-}
 
+-- | Parse from a @Text@ 'TLB.Builder'
+--
+-- @since 1.1.0.0
+parseTLB :: (Parse a, Textual e) => TLB.Builder -> Either e a
+parseTLB = parse
+{-# INLINE parseTLB #-}
+
 -- | Parse from a strict 'BS.ByteString'
 --
 -- @since 0.3.0.0
@@ -562,6 +866,20 @@ parseBS = parse
 parseBSL :: (Parse a, Textual e) => BSL.ByteString -> Either e a
 parseBSL = parse
 {-# INLINE parseBSL #-}
+
+-- | Parse from a @ByteString@ 'BSB.Builder'
+--
+-- @since 1.1.0.0
+parseBSB :: (Parse a, Textual e) => BSB.Builder -> Either e a
+parseBSB = parse
+{-# INLINE parseBSB #-}
+
+-- | Parse from a 'SBS.ShortByteString'
+--
+-- @since 1.1.0.0
+parseSBS :: (Parse a, Textual e) => SBS.ShortByteString -> Either e a
+parseSBS = parse
+{-# INLINE parseSBS #-}
 
 ------------------------------------------------------------------------------
 -- $ParseMaybe
@@ -599,6 +917,13 @@ parseMaybeTL :: Parse a => TL.Text -> Maybe a
 parseMaybeTL = parseMaybe
 {-# INLINE parseMaybeTL #-}
 
+-- | Parse from a @Text@ 'TLB.Builder' to a 'Maybe' type
+--
+-- @since 1.1.0.0
+parseMaybeTLB :: Parse a => TLB.Builder -> Maybe a
+parseMaybeTLB = parseMaybe
+{-# INLINE parseMaybeTLB #-}
+
 -- | Parse from a strict 'BS.ByteString' to a 'Maybe' type
 --
 -- @since 0.3.0.0
@@ -613,6 +938,20 @@ parseMaybeBSL :: Parse a => BSL.ByteString -> Maybe a
 parseMaybeBSL = parseMaybe
 {-# INLINE parseMaybeBSL #-}
 
+-- | Parse from a @ByteString@ 'BSB.Builder' to a 'Maybe' type
+--
+-- @since 1.1.0.0
+parseMaybeBSB :: Parse a => BSB.Builder -> Maybe a
+parseMaybeBSB = parseMaybe
+{-# INLINE parseMaybeBSB #-}
+
+-- | Parse from a 'SBS.ShortByteString' to a 'Maybe' type
+--
+-- @since 1.1.0.0
+parseMaybeSBS :: Parse a => SBS.ShortByteString -> Maybe a
+parseMaybeSBS = parseMaybe
+{-# INLINE parseMaybeSBS #-}
+
 ------------------------------------------------------------------------------
 -- $ParseUnsafe
 --
@@ -625,44 +964,65 @@ parseMaybeBSL = parseMaybe
 -- | Unsafely parse
 --
 -- @since 0.1.0.0
-parseUnsafe :: (Parse a, Textual t) => t -> a
+parseUnsafe :: (HasCallStack, Parse a, Textual t) => t -> a
 parseUnsafe = either (error . ("parseUnsafe: " ++)) id . parse
 {-# INLINE parseUnsafe #-}
 
 -- | Unsafely parse to a 'String'
 --
 -- @since 0.1.0.0
-parseUnsafeS :: Parse a => String -> a
+parseUnsafeS :: (HasCallStack, Parse a) => String -> a
 parseUnsafeS = parseUnsafe
 {-# INLINE parseUnsafeS #-}
 
 -- | Unsafely parse to strict 'T.Text'
 --
 -- @since 0.1.0.0
-parseUnsafeT :: Parse a => T.Text -> a
+parseUnsafeT :: (HasCallStack, Parse a) => T.Text -> a
 parseUnsafeT = parseUnsafe
 {-# INLINE parseUnsafeT #-}
 
 -- | Unsafely parse to lazy 'TL.Text'
 --
 -- @since 0.1.0.0
-parseUnsafeTL :: Parse a => TL.Text -> a
+parseUnsafeTL :: (HasCallStack, Parse a) => TL.Text -> a
 parseUnsafeTL = parseUnsafe
 {-# INLINE parseUnsafeTL #-}
+
+-- | Unsafely parse to a @Text@ 'TLB.Builder'
+--
+-- @since 1.1.0.0
+parseUnsafeTLB :: (HasCallStack, Parse a) => TLB.Builder -> a
+parseUnsafeTLB = parseUnsafe
+{-# INLINE parseUnsafeTLB #-}
 
 -- | Unsafely parse to a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
-parseUnsafeBS :: Parse a => BS.ByteString -> a
+parseUnsafeBS :: (HasCallStack, Parse a) => BS.ByteString -> a
 parseUnsafeBS = parseUnsafe
 {-# INLINE parseUnsafeBS #-}
 
 -- | Unsafely parse to a lazy 'BSL.ByteString'
 --
 -- @since 0.1.0.0
-parseUnsafeBSL :: Parse a => BSL.ByteString -> a
+parseUnsafeBSL :: (HasCallStack, Parse a) => BSL.ByteString -> a
 parseUnsafeBSL = parseUnsafe
 {-# INLINE parseUnsafeBSL #-}
+
+-- | Unsafely parse to a @ByteString@ 'BSB.Builder'
+--
+-- @since 1.1.0.0
+parseUnsafeBSB :: (HasCallStack, Parse a) => BSB.Builder -> a
+parseUnsafeBSB = parseUnsafe
+{-# INLINE parseUnsafeBSB #-}
+
+-- | Unsafely parse to a 'SBS.ShortByteString'
+--
+-- @since 1.1.0.0
+parseUnsafeSBS :: (HasCallStack, Parse a) => SBS.ShortByteString -> a
+parseUnsafeSBS = parseUnsafe
+{-# INLINE parseUnsafeSBS #-}
 
 ------------------------------------------------------------------------------
 -- $ParseUtils

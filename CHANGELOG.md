@@ -24,6 +24,20 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 1.1.0.0 (2021-06-10)
+
+### Breaking
+
+* Add `Textual` `TLB.Builder` instance and related functions
+* Add `Textual` `BSB.Builder` instance and related functions
+* Add `Textual` `SBS.ShortByteString` instance and related functions
+* Add `RenderDefault` and `ParseDefault` type classes and instances
+* Remove `Data.TTC.Instances`
+
+### Non-Breaking
+
+* Add `HasCallStack` to unsafe functions
+
 ## 1.0.0.0 (2021-06-03)
 
 ### Non-Breaking

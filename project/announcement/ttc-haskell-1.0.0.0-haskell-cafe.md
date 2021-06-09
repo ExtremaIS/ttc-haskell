@@ -1,4 +1,6 @@
-Title: [ANN] ttc-1.0.0.0 - Textual Type Classes
+From: Travis Cardwell <travis.cardwell@extrema.is>
+To: Haskell Cafe <haskell-cafe@haskell.org>
+Subject: [ANN] ttc-1.0.0.0 - Textual Type Classes
 
 I am happy to announce the 1.0 release of TTC (Textual Type Classes).
 
@@ -18,6 +20,14 @@ The library provides the following functionality:
 
 Links:
 
-* [GitHub](https://github.com/ExtremaIS/ttc-haskell)
-* [Hackage](https://hackage.haskell.org/package/ttc)
-* [Guided Tour](https://www.extrema.is/articles/ttc-textual-type-classes)
+* GitHub: https://github.com/ExtremaIS/ttc-haskell
+* Hackage: https://hackage.haskell.org/package/ttc
+* Guided Tour: https://www.extrema.is/articles/ttc-textual-type-classes
+
+Best regards,
+
+Travis
+
+----
+
+Post: <https://mail.haskell.org/pipermail/haskell-cafe/2021-June/134046.html>

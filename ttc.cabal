@@ -1,5 +1,5 @@
 name:           ttc
-version:        1.0.0.0
+version:        1.1.0.0
 category:       Data, Text
 synopsis:       Textual Type Classes
 description:
@@ -41,7 +41,6 @@ library
   hs-source-dirs: src
   exposed-modules:
       Data.TTC
-    , Data.TTC.Instances
   build-depends:
       base >=4.7 && <5
     , bytestring >=0.10.8 && <0.12
@@ -61,7 +60,6 @@ test-suite ttc-test
   main-is: Spec.hs
   other-modules:
       Data.TTC.Test
-    , Data.TTC.Instances.Test
     , TestString
   build-depends:
       base

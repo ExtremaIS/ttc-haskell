@@ -15,6 +15,7 @@
     * [Rendering and Parsing](#rendering-and-parsing)
     * [Validating Constants](#validating-constants)
     * [String Type Conversion](#string-type-conversion)
+    * [Arbitrary Type Conversion](#arbitrary-type-conversion)
 * [Project](#project)
     * [Links](#links)
     * [Dependencies](#dependencies)
@@ -24,13 +25,24 @@
 ## Overview
 
 TTC, an initialism of _Textual Type Classes_, is a library that provides
-[`Render`](#render) and
-[`Parse`](#parse) type classes for conversion between data types and textual
-data types (strings).  Use the `Show` and `Read` type classes for
-debugging/development, and use the [`Render`](#render) and
-[`Parse`](#parse) type classes for your own purposes.  The library also
-provides a [`Textual`](#textual) type class for conversion between textual
-data types as well as functions for validating constants at compile-time.
+`Render` and `Parse` type classes for conversion between data types and
+textual data types (strings).  Use the `Show` and `Read` type classes for
+debugging/development, and use the `Render` and `Parse` type classes for your
+own purposes.  The library also provides a `Textual` type class for conversion
+between textual data types as well as functions for validating constants at
+compile-time.
+
+Since a type may have at most one instance of a given type class, special care
+must be taken when defining type class instances in a shared library.  In
+particular, orphan instances should generally *not* be used in shared
+libraries since they prevent users of the libraries from writing their own
+instances.
+
+`Render` and `Parse` are best used with types that have canonical textual
+representations, such as textual identifiers.  When there is more than one way
+to create a textual representation, such as configurable formatting, using a
+normal function is probably more appropriate.  Such a function can make use of
+the `Textual` type class to support multiple textual data types.
 
 This overview includes a brief introduction of the library.  The following
 resources are also available:
@@ -59,21 +71,25 @@ types:
 * `String`
 * Strict `Text`
 * Lazy `Text`
+* `Text` `Builder`
 * Strict `ByteString`
 * Lazy `ByteString`
+* `ByteString` `Builder`
+* `ShortByteString`
 
-Conversion between any of these types is direct; it is not done through a
-fixed textual data type (such as `String` or `Text`).  The key feature of this
-type class is that it has a single type variable, making it easy to write
-functions that accept arguments and/or returns values that may be any of the
-supported textual data types.
+This type class has two key features:
+
+* Type conversion is *not* done through a fixed type (such as `String` or
+  `Text`).
+* It has a single type variable, making it easy to write functions that
+  accept arguments and/or return values that may be any of the supported
+  textual data types.
 
 For more details, see the [Textual Type Class][] article.
 
 ### `Render`
 
-The `Render` type class renders a data type as a [`Textual`](#textual) data
-type:
+The `Render` type class renders a data type as a `Textual` data type:
 
 ```haskell
 class Render a where
@@ -119,8 +135,7 @@ For more details, see the [Render and Parse][] article.
 
 ### `Parse`
 
-The `Parse` type class parses a data type from a [`Textual`](#textual) data
-type:
+The `Parse` type class parses a data type from a `Textual` data type:
 
 ```haskell
 class Parse a where
@@ -210,21 +225,45 @@ about implementing statically checked overloaded strings.
 
 There are a number of libraries that simplify conversion between string types.
 
-The
-[string-conversions](https://hackage.haskell.org/package/string-conversions)
-and [string-conv](https://hackage.haskell.org/package/string-conv) libraries
-have type classes with two type variables.  The primary benefit of this
-approach is that one can add support for any string type.
+The following libraries provide type classes with two type variables.  The
+primary benefit of this approach is that one can add support for any string
+type.  The drawback of this approach is that implementations of `Render` and
+`Parse` using such a type class would have to be done via a fixed type,
+resulting in unnecessary conversion when using other types.
 
-The [text-conversions](https://hackage.haskell.org/package/text-conversions)
-library converts between string types via the `Text` type, using `FromText`
-and `ToText` type classes.  This works well in most cases, but it not optimal
-when converting between `ByteString` types.
+* [string-conv](https://hackage.haskell.org/package/string-conv)
+* [string-conversions](https://hackage.haskell.org/package/string-conversions)
 
-The [textual](https://hackage.haskell.org/package/textual) library
-(deprecated) converts between string types via the `String` type, using a
-`Textual` type class (which provides a `toString` function) as well as the
-standard `IsString` type class (which provides the `fromString` function).
+The following library provide type classes with a single type variable, but
+conversion is done via a fixed type.
+
+* [hxt-regex-xmlschema](https://hackage.haskell.org/package/hxt-regex-xmlschema)
+  has a `StringLike` type class and does conversion via the `String` type
+* [ListLike](https://hackage.haskell.org/package/ListLike) has a `StringLike`
+  type class and does conversion via the `String` type
+* [monoid-subclasses](https://hackage.haskell.org/package/monoid-subclasses)
+  provides a `TextualMonoid` type class that provides an abstract API over
+  textual types, using `String` as the underlying type
+* [stringlike](https://hackage.haskell.org/package/stringlike) converts via
+  the `Text` type
+* [tagsoup](https://hackage.haskell.org/package/tagsoup) has a `StringLike`
+  type class that provides an abstract API over textual types and a
+  `castString` function that converts via the `String` type
+* [text-conversions](https://hackage.haskell.org/package/text-conversions)
+  converts via the `Text` type
+* [textual](https://hackage.haskell.org/package/textual) (deprecated)
+  converts via the `String` type
+
+### Arbitrary Type Conversion
+
+There are also a number of libraries that provide type classes for conversion
+between arbitrary types, including string types.
+
+* [basement](https://hackage.haskell.org/package/basement) provides type
+  classes for conversion that may fail as well as conversion that cannot fail
+* [convertible](https://hackage.haskell.org/package/convertible)
+* [witch](https://hackage.haskell.org/package/witch) provides type classes for
+  conversion that may fail as well as conversion that cannot fail
 
 ## Project
 
