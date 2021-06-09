@@ -296,6 +296,26 @@ instance Textual TL.Text where
   {-# INLINE toSBS #-}
   {-# INLINE convert #-}
 
+instance Textual TLB.Builder where
+  toS = TL.unpack . TLB.toLazyText
+  toT = TL.toStrict . TLB.toLazyText
+  toTL = TLB.toLazyText
+  toTLB = id
+  toBS = BSL.toStrict . TLE.encodeUtf8 . TLB.toLazyText
+  toBSL = TLE.encodeUtf8 . TLB.toLazyText
+  toBSB = BSB.lazyByteString . TLE.encodeUtf8 . TLB.toLazyText
+  toSBS = SBS.toShort . BSL.toStrict . TLE.encodeUtf8 . TLB.toLazyText
+  convert = toTLB
+  {-# INLINE toS #-}
+  {-# INLINE toT #-}
+  {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
+  {-# INLINE toBS #-}
+  {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
+  {-# INLINE convert #-}
+
 instance Textual BS.ByteString where
   toS = T.unpack . TE.decodeUtf8With TEE.lenientDecode
   toT = TE.decodeUtf8With TEE.lenientDecode
@@ -326,26 +346,6 @@ instance Textual BSL.ByteString where
   toBSB = BSB.lazyByteString
   toSBS = SBS.toShort . BSL.toStrict
   convert = toBSL
-  {-# INLINE toS #-}
-  {-# INLINE toT #-}
-  {-# INLINE toTL #-}
-  {-# INLINE toTLB #-}
-  {-# INLINE toBS #-}
-  {-# INLINE toBSL #-}
-  {-# INLINE toBSB #-}
-  {-# INLINE toSBS #-}
-  {-# INLINE convert #-}
-
-instance Textual TLB.Builder where
-  toS = TL.unpack . TLB.toLazyText
-  toT = TL.toStrict . TLB.toLazyText
-  toTL = TLB.toLazyText
-  toTLB = id
-  toBS = BSL.toStrict . TLE.encodeUtf8 . TLB.toLazyText
-  toBSL = TLE.encodeUtf8 . TLB.toLazyText
-  toBSB = BSB.lazyByteString . TLE.encodeUtf8 . TLB.toLazyText
-  toSBS = SBS.toShort . BSL.toStrict . TLE.encodeUtf8 . TLB.toLazyText
-  convert = toTLB
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
