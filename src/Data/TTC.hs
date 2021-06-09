@@ -35,30 +35,31 @@ module Data.TTC
   , toS
   , toT
   , toTL
+  , toTLB
   , toBS
   , toBSL
+  , toBSB
+  , toSBS
     -- ** \"From\" Conversions
     -- $TextualFrom
   , fromS
   , fromT
   , fromTL
+  , fromTLB
   , fromBS
   , fromBSL
+  , fromBSB
+  , fromSBS
     -- ** \"As\" Conversions
     -- $TextualAs
   , asS
   , asT
   , asTL
+  , asTLB
   , asBS
   , asBSL
-    -- ** Other Conversions
-    -- $TextualOther
-  , toTLB
-  , fromTLB
-  , toBSB
-  , fromBSB
-  , toSBS
-  , fromSBS
+  , asBSB
+  , asSBS
     -- * Render
   , Render(..)
   , RenderDefault(..)
@@ -67,9 +68,9 @@ module Data.TTC
   , renderS
   , renderT
   , renderTL
+  , renderTLB
   , renderBS
   , renderBSL
-  , renderTLB
   , renderBSB
   , renderSBS
     -- ** Render Utilities
@@ -82,24 +83,33 @@ module Data.TTC
   , parseS
   , parseT
   , parseTL
+  , parseTLB
   , parseBS
   , parseBSL
+  , parseBSB
+  , parseSBS
     -- ** 'Maybe' Parsing
     -- $ParseMaybe
   , parseMaybe
   , parseMaybeS
   , parseMaybeT
   , parseMaybeTL
+  , parseMaybeTLB
   , parseMaybeBS
   , parseMaybeBSL
+  , parseMaybeBSB
+  , parseMaybeSBS
     -- ** Unsafe Parsing
     -- $ParseUnsafe
   , parseUnsafe
   , parseUnsafeS
   , parseUnsafeT
   , parseUnsafeTL
+  , parseUnsafeTLB
   , parseUnsafeBS
   , parseUnsafeBSL
+  , parseUnsafeBSB
+  , parseUnsafeSBS
     -- ** Parse Utilities
   , parseEnum
   , parseEnum'
@@ -153,8 +163,11 @@ import qualified Data.Text.Lazy.Encoding as TLE
 -- * 'String' (@S@)
 -- * Strict 'T.Text' (@T@)
 -- * Lazy 'TL.Text' (@TL@)
+-- * @Text@ 'TLB.Builder' (@TLB@)
 -- * Strict 'BS.ByteString' (@BS@)
 -- * Lazy 'BSL.ByteString' (@BSL@)
+-- * @ByteString@ 'BSB.Builder' (@BSB@)
+-- * 'SBS.ShortByteString' (@SBS@)
 --
 -- @ByteString@ values are assumed to be UTF-8 encoded text.  Invalid bytes
 -- are replaced with the Unicode replacement character @U+FFFD@.  In cases
@@ -193,6 +206,11 @@ class Textual t where
   -- @since 0.1.0.0
   toTL :: t -> TL.Text
 
+  -- | Convert to a @Text@ 'TLB.Builder'
+  --
+  -- @since 1.1.0.0
+  toTLB :: t -> TLB.Builder
+
   -- | Convert to a strict 'BS.ByteString'
   --
   -- @since 0.1.0.0
@@ -203,6 +221,16 @@ class Textual t where
   -- @since 0.1.0.0
   toBSL :: t -> BSL.ByteString
 
+  -- | Convert to a @ByteString@ 'BSB.Builder'
+  --
+  -- @since 1.1.0.0
+  toBSB :: t -> BSB.Builder
+
+  -- | Convert to a 'SBS.ShortByteString'
+  --
+  -- @since 1.1.0.0
+  toSBS :: t -> SBS.ShortByteString
+
   -- | Convert between any supported textual data types
   --
   -- @since 0.1.0.0
@@ -212,70 +240,165 @@ instance Textual String where
   toS = id
   toT = T.pack
   toTL = TL.pack
+  toTLB = TLB.fromString
   toBS = TE.encodeUtf8 . T.pack
   toBSL = TLE.encodeUtf8 . TL.pack
+  toBSB = BSB.byteString . TE.encodeUtf8 . T.pack
+  toSBS = SBS.toShort . TE.encodeUtf8 . T.pack
   convert = toS
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
   {-# INLINE convert #-}
 
 instance Textual T.Text where
   toS = T.unpack
   toT = id
   toTL = TL.fromStrict
+  toTLB = TLB.fromText
   toBS = TE.encodeUtf8
   toBSL = TLE.encodeUtf8 . TL.fromStrict
+  toBSB = BSB.byteString . TE.encodeUtf8
+  toSBS = SBS.toShort . TE.encodeUtf8
   convert = toT
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
   {-# INLINE convert #-}
 
 instance Textual TL.Text where
   toS = TL.unpack
   toT = TL.toStrict
   toTL = id
+  toTLB = TLB.fromLazyText
   toBS = BSL.toStrict . TLE.encodeUtf8
   toBSL = TLE.encodeUtf8
+  toBSB = BSB.lazyByteString . TLE.encodeUtf8
+  toSBS = SBS.toShort . BSL.toStrict . TLE.encodeUtf8
   convert = toTL
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
   {-# INLINE convert #-}
 
 instance Textual BS.ByteString where
   toS = T.unpack . TE.decodeUtf8With TEE.lenientDecode
   toT = TE.decodeUtf8With TEE.lenientDecode
   toTL = TLE.decodeUtf8With TEE.lenientDecode . BSL.fromStrict
+  toTLB = TLB.fromText . TE.decodeUtf8With TEE.lenientDecode
   toBS = id
   toBSL = BSL.fromStrict
+  toBSB = BSB.byteString
+  toSBS = SBS.toShort
   convert = toBS
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
   {-# INLINE convert #-}
 
 instance Textual BSL.ByteString where
   toS = TL.unpack . TLE.decodeUtf8With TEE.lenientDecode
   toT = TL.toStrict . TLE.decodeUtf8With TEE.lenientDecode
   toTL = TLE.decodeUtf8With TEE.lenientDecode
+  toTLB = TLB.fromLazyText . TLE.decodeUtf8With TEE.lenientDecode
   toBS = BSL.toStrict
   toBSL = id
+  toBSB = BSB.lazyByteString
+  toSBS = SBS.toShort . BSL.toStrict
   convert = toBSL
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
+  {-# INLINE convert #-}
+
+instance Textual TLB.Builder where
+  toS = TL.unpack . TLB.toLazyText
+  toT = TL.toStrict . TLB.toLazyText
+  toTL = TLB.toLazyText
+  toTLB = id
+  toBS = BSL.toStrict . TLE.encodeUtf8 . TLB.toLazyText
+  toBSL = TLE.encodeUtf8 . TLB.toLazyText
+  toBSB = BSB.lazyByteString . TLE.encodeUtf8 . TLB.toLazyText
+  toSBS = SBS.toShort . BSL.toStrict . TLE.encodeUtf8 . TLB.toLazyText
+  convert = toTLB
+  {-# INLINE toS #-}
+  {-# INLINE toT #-}
+  {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
+  {-# INLINE toBS #-}
+  {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
+  {-# INLINE convert #-}
+
+instance Textual BSB.Builder where
+  toS =
+    TL.unpack . TLE.decodeUtf8With TEE.lenientDecode . BSB.toLazyByteString
+  toT =
+    TL.toStrict . TLE.decodeUtf8With TEE.lenientDecode . BSB.toLazyByteString
+  toTL = TLE.decodeUtf8With TEE.lenientDecode . BSB.toLazyByteString
+  toTLB
+    = TLB.fromLazyText
+    . TLE.decodeUtf8With TEE.lenientDecode
+    . BSB.toLazyByteString
+  toBS = BSL.toStrict . BSB.toLazyByteString
+  toBSL = BSB.toLazyByteString
+  toBSB = id
+  toSBS = SBS.toShort . BSL.toStrict . BSB.toLazyByteString
+  convert = toBSB
+  {-# INLINE toS #-}
+  {-# INLINE toT #-}
+  {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
+  {-# INLINE toBS #-}
+  {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
+  {-# INLINE convert #-}
+
+instance Textual SBS.ShortByteString where
+  toS = T.unpack . TE.decodeUtf8With TEE.lenientDecode . SBS.fromShort
+  toT = TE.decodeUtf8With TEE.lenientDecode . SBS.fromShort
+  toTL = TLE.decodeUtf8With TEE.lenientDecode . BSL.fromStrict . SBS.fromShort
+  toTLB = TLB.fromText . TE.decodeUtf8With TEE.lenientDecode . SBS.fromShort
+  toBS = SBS.fromShort
+  toBSL = BSL.fromStrict . SBS.fromShort
+  toBSB = BSB.byteString . SBS.fromShort
+  toSBS = id
+  convert = toSBS
+  {-# INLINE toS #-}
+  {-# INLINE toT #-}
+  {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
+  {-# INLINE toBS #-}
+  {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
   {-# INLINE convert #-}
 
 ------------------------------------------------------------------------------
@@ -312,6 +435,13 @@ fromTL :: Textual t => TL.Text -> t
 fromTL = convert
 {-# INLINE fromTL #-}
 
+-- | Convert from a @Text@ 'TLB.Builder'
+--
+-- @since 1.1.0.0
+fromTLB :: Textual t => TLB.Builder -> t
+fromTLB = convert
+{-# INLINE fromTLB #-}
+
 -- | Convert from a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
@@ -325,6 +455,20 @@ fromBS = convert
 fromBSL :: Textual t => BSL.ByteString -> t
 fromBSL = convert
 {-# INLINE fromBSL #-}
+
+-- | Convert from a @ByteString@ 'TLB.Builder'
+--
+-- @since 1.1.0.0
+fromBSB :: Textual t => BSB.Builder -> t
+fromBSB = convert
+{-# INLINE fromBSB #-}
+
+-- | Convert from a 'SBS.ShortByteString'
+--
+-- @since 1.1.0.0
+fromSBS :: Textual t => SBS.ShortByteString -> t
+fromSBS = convert
+{-# INLINE fromSBS #-}
 
 ------------------------------------------------------------------------------
 -- $TextualAs
@@ -354,6 +498,13 @@ asTL :: Textual t => (TL.Text -> a) -> t -> a
 asTL f = f . convert
 {-# INLINE asTL #-}
 
+-- | Convert an argument to a @Text@ 'TLB.Builder'
+--
+-- @since 1.1.0.0
+asTLB :: Textual t => (TLB.Builder -> a) -> t -> a
+asTLB f = f . convert
+{-# INLINE asTLB #-}
+
 -- | Convert an argument to a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
@@ -368,51 +519,19 @@ asBSL :: Textual t => (BSL.ByteString -> a) -> t -> a
 asBSL f = f . convert
 {-# INLINE asBSL #-}
 
-------------------------------------------------------------------------------
--- $TextualOther
+-- | Convert an argument to a @ByteString@ 'TLB.Builder'
 --
--- These functions are used to convert to/from the following other textual
--- data types:
---
--- * @Text@ 'TLB.Builder' (@TLB@)
--- * @ByteString@ 'BSB.Builder' (@BSB@)
--- * 'SBS.ShortByteString' (@SBS@)
+-- @since 1.1.0.0
+asBSB :: Textual t => (BSB.Builder -> a ) -> t -> a
+asBSB f = f . convert
+{-# INLINE asBSB #-}
 
--- | Convert to a @Text@ 'TLB.Builder'
+-- | Convert an argument to a 'SBS.ShortByteString'
 --
--- @since 0.1.0.0
-toTLB :: Textual t => t -> TLB.Builder
-toTLB = TLB.fromLazyText . convert
-
--- | Convert from a @Text@ 'TLB.Builder'
---
--- @since 0.1.0.0
-fromTLB :: Textual t => TLB.Builder -> t
-fromTLB = convert . TLB.toLazyText
-
--- | Convert to a @ByteString@ 'BSB.Builder'
---
--- @since 0.1.0.0
-toBSB :: Textual t => t -> BSB.Builder
-toBSB = BSB.lazyByteString . convert
-
--- | Convert from a @ByteString@ 'BSB.Builder'
---
--- @since 0.1.0.0
-fromBSB :: Textual t => BSB.Builder -> t
-fromBSB = convert . BSB.toLazyByteString
-
--- | Convert to a 'SBS.ShortByteString'
---
--- @since 0.1.0.0
-toSBS :: Textual t => t -> SBS.ShortByteString
-toSBS = SBS.toShort . convert
-
--- | Convert from a 'SBS.ShortByteString'
---
--- @since 0.1.0.0
-fromSBS :: Textual t => SBS.ShortByteString -> t
-fromSBS = convert . SBS.fromShort
+-- @since 1.1.0.0
+asSBS :: Textual t => (SBS.ShortByteString -> a) -> t -> a
+asSBS f = f . convert
+{-# INLINE asSBS #-}
 
 ------------------------------------------------------------------------------
 -- $Render
@@ -543,6 +662,13 @@ renderTL :: Render a => a -> TL.Text
 renderTL = render
 {-# INLINE renderTL #-}
 
+-- | Render to a @Text@ 'TLB.Builder'
+--
+-- @since 0.4.0.0
+renderTLB :: Render a => a -> TLB.Builder
+renderTLB = render
+{-# INLINE renderTLB #-}
+
 -- | Render to a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
@@ -557,25 +683,18 @@ renderBSL :: Render a => a -> BSL.ByteString
 renderBSL = render
 {-# INLINE renderBSL #-}
 
--- | Render to a @Text@ 'TLB.Builder'
---
--- @since 0.4.0.0
-renderTLB :: Render a => a -> TLB.Builder
-renderTLB = TLB.fromLazyText . renderTL
-{-# INLINE renderTLB #-}
-
 -- | Render to a @ByteString@ 'BSB.Builder'
 --
 -- @since 0.4.0.0
 renderBSB :: Render a => a -> BSB.Builder
-renderBSB = BSB.lazyByteString . renderBSL
+renderBSB = render
 {-# INLINE renderBSB #-}
 
 -- | Render to a 'SBS.ShortByteString'
 --
 -- @since 0.4.0.0
 renderSBS :: Render a => a -> SBS.ShortByteString
-renderSBS = SBS.toShort . renderBS
+renderSBS = render
 {-# INLINE renderSBS #-}
 
 ------------------------------------------------------------------------------
@@ -727,6 +846,13 @@ parseTL :: (Parse a, Textual e) => TL.Text -> Either e a
 parseTL = parse
 {-# INLINE parseTL #-}
 
+-- | Parse from a @Text@ 'TLB.Builder'
+--
+-- @since 1.1.0.0
+parseTLB :: (Parse a, Textual e) => TLB.Builder -> Either e a
+parseTLB = parse
+{-# INLINE parseTLB #-}
+
 -- | Parse from a strict 'BS.ByteString'
 --
 -- @since 0.3.0.0
@@ -740,6 +866,20 @@ parseBS = parse
 parseBSL :: (Parse a, Textual e) => BSL.ByteString -> Either e a
 parseBSL = parse
 {-# INLINE parseBSL #-}
+
+-- | Parse from a @ByteString@ 'BSB.Builder'
+--
+-- @since 1.1.0.0
+parseBSB :: (Parse a, Textual e) => BSB.Builder -> Either e a
+parseBSB = parse
+{-# INLINE parseBSB #-}
+
+-- | Parse from a 'SBS.ShortByteString'
+--
+-- @since 1.1.0.0
+parseSBS :: (Parse a, Textual e) => SBS.ShortByteString -> Either e a
+parseSBS = parse
+{-# INLINE parseSBS #-}
 
 ------------------------------------------------------------------------------
 -- $ParseMaybe
@@ -777,6 +917,13 @@ parseMaybeTL :: Parse a => TL.Text -> Maybe a
 parseMaybeTL = parseMaybe
 {-# INLINE parseMaybeTL #-}
 
+-- | Parse from a @Text@ 'TLB.Builder' to a 'Maybe' type
+--
+-- @since 1.1.0.0
+parseMaybeTLB :: Parse a => TLB.Builder -> Maybe a
+parseMaybeTLB = parseMaybe
+{-# INLINE parseMaybeTLB #-}
+
 -- | Parse from a strict 'BS.ByteString' to a 'Maybe' type
 --
 -- @since 0.3.0.0
@@ -790,6 +937,20 @@ parseMaybeBS = parseMaybe
 parseMaybeBSL :: Parse a => BSL.ByteString -> Maybe a
 parseMaybeBSL = parseMaybe
 {-# INLINE parseMaybeBSL #-}
+
+-- | Parse from a @ByteString@ 'BSB.Builder' to a 'Maybe' type
+--
+-- @since 1.1.0.0
+parseMaybeBSB :: Parse a => BSB.Builder -> Maybe a
+parseMaybeBSB = parseMaybe
+{-# INLINE parseMaybeBSB #-}
+
+-- | Parse from a 'SBS.ShortByteString' to a 'Maybe' type
+--
+-- @since 1.1.0.0
+parseMaybeSBS :: Parse a => SBS.ShortByteString -> Maybe a
+parseMaybeSBS = parseMaybe
+{-# INLINE parseMaybeSBS #-}
 
 ------------------------------------------------------------------------------
 -- $ParseUnsafe
@@ -828,6 +989,13 @@ parseUnsafeTL :: (HasCallStack, Parse a) => TL.Text -> a
 parseUnsafeTL = parseUnsafe
 {-# INLINE parseUnsafeTL #-}
 
+-- | Unsafely parse to a @Text@ 'TLB.Builder'
+--
+-- @since 1.1.0.0
+parseUnsafeTLB :: (HasCallStack, Parse a) => TLB.Builder -> a
+parseUnsafeTLB = parseUnsafe
+{-# INLINE parseUnsafeTLB #-}
+
 -- | Unsafely parse to a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
@@ -841,6 +1009,20 @@ parseUnsafeBS = parseUnsafe
 parseUnsafeBSL :: (HasCallStack, Parse a) => BSL.ByteString -> a
 parseUnsafeBSL = parseUnsafe
 {-# INLINE parseUnsafeBSL #-}
+
+-- | Unsafely parse to a @ByteString@ 'BSB.Builder'
+--
+-- @since 1.1.0.0
+parseUnsafeBSB :: (HasCallStack, Parse a) => BSB.Builder -> a
+parseUnsafeBSB = parseUnsafe
+{-# INLINE parseUnsafeBSB #-}
+
+-- | Unsafely parse to a 'SBS.ShortByteString'
+--
+-- @since 1.1.0.0
+parseUnsafeSBS :: (HasCallStack, Parse a) => SBS.ShortByteString -> a
+parseUnsafeSBS = parseUnsafe
+{-# INLINE parseUnsafeSBS #-}
 
 ------------------------------------------------------------------------------
 -- $ParseUtils

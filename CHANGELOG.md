@@ -28,6 +28,9 @@ following conventions:
 
 ### Breaking
 
+* Add `Textual` `TLB.Builder` instance and related functions
+* Add `Textual` `BSB.Builder` instance and related functions
+* Add `Textual` `SBS.ShortByteString` instance and related functions
 * Add `RenderDefault` and `ParseDefault` type classes and instances
 * Remove `Data.TTC.Instances`
 

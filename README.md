@@ -71,14 +71,19 @@ types:
 * `String`
 * Strict `Text`
 * Lazy `Text`
+* `Text` `Builder`
 * Strict `ByteString`
 * Lazy `ByteString`
+* `ByteString` `Builder`
+* `ShortByteString`
 
-Conversion between any of these types is direct; it is not done through a
-fixed textual data type (such as `String` or `Text`).  The key feature of this
-type class is that it has a single type variable, making it easy to write
-functions that accept arguments and/or returns values that may be any of the
-supported textual data types.
+This type class has two key features:
+
+* Type conversion is *not* done through a fixed type (such as `String` or
+  `Text`).
+* It has a single type variable, making it easy to write functions that
+  accept arguments and/or return values that may be any of the supported
+  textual data types.
 
 For more details, see the [Textual Type Class][] article.
 

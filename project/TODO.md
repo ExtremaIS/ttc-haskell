@@ -2,8 +2,6 @@
 
 ## Functionality
 
-* [Text Builder, ByteString Builder, ShortByteString support in Textual](https://github.com/ExtremaIS/ttc-haskell/issues/2)
-
 ## Documentation
 
 ## Examples
