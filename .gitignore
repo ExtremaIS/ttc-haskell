@@ -16,3 +16,6 @@ stack-nix*
 
 # vi
 .*.swp
+
+# nix
+result*
