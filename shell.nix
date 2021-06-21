@@ -7,4 +7,8 @@ in
   pkgs.haskell.packages.${compiler}.developPackage {
     root = gitIgnore [./.gitignore] ./.;
     name = "ttc";
+    modifier = drv:
+      pkgs.haskell.lib.addBuildTools drv (with pkgs.haskellPackages;
+        [ cabal-install
+        ]);
   }
