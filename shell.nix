@@ -52,8 +52,7 @@ let
       else import <nixpkgs> {}
     else nixpkgs;
 
-  # Git ignore functionality must use a recent revision.  The revision for the
-  # default compiler is used.
+  # Git ignore functionality must use the most recent revision.
   gitIgnore = (
     import (nixpkgsTarball nixpkgsRevs.ghc901) {}
   ).nix-gitignore.gitignoreSourcePure;
