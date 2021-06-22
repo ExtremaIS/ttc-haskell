@@ -11,8 +11,8 @@
 #     $ nix-shell --argstr compiler ghc901
 
 { # This string argument specifies the compiler (example: "ghc8104").  When
-  # not specified, the default compiler (configured below) is used.
-  compiler ? null
+  # not specified, the default compiler is used.
+  compiler ? "ghc8104"
   # This path argument specifies the packages to use.  When not specified, a
   # working revision for the selected compiler is used.  When a working
   # revision for the selected compiler is not defined (below), the packages
@@ -21,9 +21,6 @@
 }:
 
 let
-
-  # This string defines the default compiler version.
-  defaultCompiler = "ghc8104";
 
   # This set defines working revisions for supported compiler versions.
   nixpkgsRevs = {
@@ -41,14 +38,11 @@ let
       url = "https://github.com/NixOS/nixpkgs/archive/${rev}.tar.gz";
     };
 
-  # The compiler is explicitly specified or the default.
-  compiler' = if isNull compiler then defaultCompiler else compiler;
-
   # Packages are explicitly specified, those for the revision defined for the
   # selected compiler, or those configured on the filesystem.
   pkgs = if isNull nixpkgs
-    then if nixpkgsRevs ? ${compiler'}
-      then import (nixpkgsTarball nixpkgsRevs.${compiler'}) {}
+    then if nixpkgsRevs ? ${compiler}
+      then import (nixpkgsTarball nixpkgsRevs.${compiler}) {}
       else import <nixpkgs> {}
     else nixpkgs;
 
@@ -63,7 +57,7 @@ in
 
   # Configure the development environment for the package using the selected
   # packages and compiler.
-  pkgs.haskell.packages.${compiler'}.developPackage {
+  pkgs.haskell.packages.${compiler}.developPackage {
     root = gitIgnore [./.gitignore] ./.;
     name = "ttc";
     modifier = drv:
