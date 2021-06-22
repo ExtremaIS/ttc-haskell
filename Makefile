@@ -84,6 +84,7 @@ clean-all: clean # clean package and remove artifacts
 > @rm -rf dist-newstyle
 > @rm -f *.yaml.lock
 > @rm -f cabal.project.local
+> @rm -f result*
 .PHONY: clean-all
 
 coverage: hr

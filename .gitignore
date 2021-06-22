@@ -6,6 +6,9 @@ cabal.project.local
 cabal.project.local~
 /dist-newstyle/
 
+# nix
+result*
+
 # stack
 .stack-work
 *.yaml.lock
