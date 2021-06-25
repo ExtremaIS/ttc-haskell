@@ -24,6 +24,12 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 1.1.0.1 (2021-06-25)
+
+### Non-Breaking
+
+* Refactor Nix configuration
+
 ## 1.1.0.0 (2021-06-10)
 
 ### Breaking
