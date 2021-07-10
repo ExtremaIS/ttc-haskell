@@ -166,7 +166,8 @@ import qualified Data.Text.Lazy.Encoding as TLE
 -- * @Text@ 'TLB.Builder' (@TLB@)
 -- * Strict 'BS.ByteString' (@BS@)
 -- * Lazy 'BSL.ByteString' (@BSL@)
--- * @ByteString@ 'BSB.Builder' (@BSB@)
+-- * @ByteString@ 'BSB.Builder' (@BSB@) (Note: @Data.Binary.Builder@
+--   re-exports this type, so TTC can be used with @binary@ as well.)
 -- * 'SBS.ShortByteString' (@SBS@)
 --
 -- @ByteString@ values are assumed to be UTF-8 encoded text.  Invalid bytes
