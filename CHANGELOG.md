@@ -24,6 +24,13 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 1.1.0.2 (2021-08-23)
+
+### Non-Breaking
+
+* Bump `template-haskell` dependency version upper bound
+* Add CPP macro around `BSB.Builder` `Show` instance in test code
+
 ## 1.1.0.1 (2021-06-25)
 
 ### Non-Breaking

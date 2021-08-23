@@ -74,7 +74,7 @@ types:
 * `Text` `Builder`
 * Strict `ByteString`
 * Lazy `ByteString`
-* `ByteString` `Builder`
+* `ByteString` `Builder` (and `Data.Binary.Builder`)
 * `ShortByteString`
 
 This type class has two key features:
