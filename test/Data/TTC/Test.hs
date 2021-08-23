@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
@@ -105,8 +106,10 @@ instance TTC.Parse T.Text
 instance Eq BSB.Builder where
   x == y = BSB.toLazyByteString x == BSB.toLazyByteString y
 
+#if !MIN_VERSION_bytestring(0,11,1)
 instance Show BSB.Builder where
   show = show . BSB.toLazyByteString
+#endif
 
 ------------------------------------------------------------------------------
 -- $HelperFunctions
