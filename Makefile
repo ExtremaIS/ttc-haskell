@@ -385,9 +385,9 @@ test-all: # run tests and build examples for all configured Stackage releases
 > @command -v hr >/dev/null 2>&1 && hr "stack-8.8.4.yaml" || true
 > @make test-doc CONFIG=stack-8.8.4.yaml
 > @make examples CONFIG=stack-8.8.4.yaml
-> @command -v hr >/dev/null 2>&1 && hr "stack-8.10.6.yaml" || true
-> @make test-doc CONFIG=stack-8.10.6.yaml
-> @make examples CONFIG=stack-8.10.6.yaml
+> @command -v hr >/dev/null 2>&1 && hr "stack-8.10.7.yaml" || true
+> @make test-doc CONFIG=stack-8.10.7.yaml
+> @make examples CONFIG=stack-8.10.7.yaml
 > @command -v hr >/dev/null 2>&1 && hr "stack-9.0.1.yaml" || true
 > @make test-doc CONFIG=stack-9.0.1.yaml
 > @make examples CONFIG=stack-9.0.1.yaml
