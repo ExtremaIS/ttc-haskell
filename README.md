@@ -210,6 +210,15 @@ Harry Garrood has an interesting series of blog posts about type classes and
 
 ### Validating Constants
 
+The [qq-literals](https://hackage.haskell.org/package/qq-literals) library
+creates a `QuasiQuoter` from a parse function of type
+`String -> Either String a`.  The functionality is similar to TTC's
+`mkUntypedValidQQ` function.  The `mkUntypedValidQQ` function allows the user
+to choose the name of the `QuasiQuoter` because a name like `valid` is
+preferred when used via a qualified import while a name like `username` may be
+preferred when not using qualified imports.  Note that `mkUntypedValidQQ` also
+splices in an explicit type signature.
+
 The
 [validated-literals](https://hackage.haskell.org/package/validated-literals)
 library has a `Validate` type class that is similar to `TTC.Parse` but
