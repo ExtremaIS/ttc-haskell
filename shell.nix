@@ -26,7 +26,7 @@ let
   nixpkgsRevs = {
     ghc901  = "b7d0ebd8f898c9a4b55653d2fefd12319f1bc3cf";
     ghc8107 = "b7d0ebd8f898c9a4b55653d2fefd12319f1bc3cf";
-    ghc884  = "c92ca95afb5043bc6faa0d526460584eccff2277";
+    ghc884  = "b7d0ebd8f898c9a4b55653d2fefd12319f1bc3cf";
     ghc865  = "2d9888f61c80f28b09d64f5e39d0ba02e3923057";
     ghc844  = "6a80140fdf2157d1a5500a04c87033c0dcd6bf9b";
     ghc822  = "6a80140fdf2157d1a5500a04c87033c0dcd6bf9b";
