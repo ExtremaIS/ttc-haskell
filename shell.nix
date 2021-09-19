@@ -10,9 +10,9 @@
 #
 #     $ nix-shell --argstr compiler ghc901
 
-{ # This string argument specifies the compiler (example: "ghc8104").  When
+{ # This string argument specifies the compiler (example: "ghc8107").  When
   # not specified, the default compiler is used.
-  compiler ? "ghc8104"
+  compiler ? "ghc8107"
   # This path argument specifies the packages to use.  When not specified, a
   # working revision for the selected compiler is used.  When a working
   # revision for the selected compiler is not defined (below), the packages
@@ -24,8 +24,8 @@ let
 
   # This set defines working revisions for supported compiler versions.
   nixpkgsRevs = {
-    ghc901  = "4d4fdc329285e0d0c1c1a2b65947d651b8ba6b29";
-    ghc8104 = "c92ca95afb5043bc6faa0d526460584eccff2277";
+    ghc901  = "b7d0ebd8f898c9a4b55653d2fefd12319f1bc3cf";
+    ghc8107 = "b7d0ebd8f898c9a4b55653d2fefd12319f1bc3cf";
     ghc884  = "c92ca95afb5043bc6faa0d526460584eccff2277";
     ghc865  = "2d9888f61c80f28b09d64f5e39d0ba02e3923057";
     ghc844  = "6a80140fdf2157d1a5500a04c87033c0dcd6bf9b";

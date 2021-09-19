@@ -9,6 +9,6 @@
   ttc-ghc-844 = import ./shell.nix { compiler = "ghc844"; };
   ttc-ghc-865 = import ./shell.nix { compiler = "ghc865"; };
   ttc-ghc-884 = import ./shell.nix { compiler = "ghc884"; };
-  ttc-ghc-8104 = import ./shell.nix { compiler = "ghc8104"; };
+  ttc-ghc-8107 = import ./shell.nix { compiler = "ghc8107"; };
   ttc-ghc-901 = import ./shell.nix { compiler = "ghc901"; };
 }
