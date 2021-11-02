@@ -201,6 +201,10 @@ a uniform usage of textual data types, `Display` only provides functions for
 rendering to `Text` and a builder format.  It does not have a type class
 similar to `TTC.Parse`.
 
+The [text-display](https://hackage.haskell.org/package/text-display) library
+defines a `Display` type class intended to render user-facing text.  It uses a
+`Builder` type internally and renders to a `Text` value.
+
 Harry Garrood has an interesting series of blog posts about type classes and
 `Show`:
 
