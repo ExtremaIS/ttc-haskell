@@ -21,24 +21,29 @@ MAKEFLAGS += --warn-undefined-variables
 
 .DEFAULT_GOAL := build
 
-NIX_PATH_ARGS :=
-ifneq ($(origin STACK_NIX_PATH), undefined)
-  NIX_PATH_ARGS := "--nix-path=$(STACK_NIX_PATH)"
-endif
-
-RESOLVER_ARGS :=
-ifneq ($(origin RESOLVER), undefined)
-  RESOLVER_ARGS := "--resolver" "$(RESOLVER)"
-endif
-
-STACK_YAML_ARGS :=
-ifneq ($(origin CONFIG), undefined)
-  STACK_YAML_ARGS := "--stack-yaml" "$(CONFIG)"
-endif
-
-MODE := stack
 ifneq ($(origin CABAL), undefined)
   MODE := cabal
+  CABAL_ARGS :=
+  ifneq ($(origin PROJECT_FILE), undefined)
+    CABAL_ARGS += "--project-file=$(PROJECT_FILE)"
+  else
+    PROJECT_FILE := cabal-$(shell ghc --version | sed 's/.* //').project
+    ifneq (,$(wildcard $(PROJECT_FILE)))
+      CABAL_ARGS += "--project-file=$(PROJECT_FILE)"
+    endif
+  endif
+else
+  MODE := stack
+  STACK_ARGS :=
+  ifneq ($(origin CONFIG), undefined)
+    STACK_ARGS += --stack-yaml "$(CONFIG)"
+  endif
+  ifneq ($(origin RESOLVER), undefined)
+    STACK_ARGS += --resolver "$(RESOLVER)"
+  endif
+  ifneq ($(origin STACK_NIX_PATH), undefined)
+    STACK_ARGS += "--nix-path=$(STACK_NIX_PATH)"
+  endif
 endif
 
 ##############################################################################
@@ -62,9 +67,9 @@ endef
 build: hr
 build: # build package *
 ifeq ($(MODE), cabal)
-> @cabal v2-build
+> cabal v2-build $(CABAL_ARGS)
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
+> stack build $(STACK_ARGS)
 endif
 .PHONY: build
 
@@ -76,10 +81,10 @@ else
 endif
 .PHONY: clean
 
-clean-all: clean # clean package and remove artifacts
+clean-all: clean
+clean-all: # clean package and remove artifacts
 > @rm -rf .hie
-> @rm -rf .stack-work
-> @rm -rf examples/.stack-work
+> @rm -rf .stack-work examples/.stack-work
 > @rm -rf build
 > @rm -rf dist-newstyle
 > @rm -f *.yaml.lock
@@ -90,149 +95,138 @@ clean-all: clean # clean package and remove artifacts
 coverage: hr
 coverage: # run tests with code coverage *
 ifeq ($(MODE), cabal)
-> @cabal v2-test --enable-coverage --enable-tests --test-show-details=always
+> cabal v2-test --enable-coverage --enable-tests --test-show-details=always \
+>   $(CABAL_ARGS)
 else
-> @stack test --coverage $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
-> @stack hpc report .
+> stack test --coverage $(STACK_ARGS)
+> stack hpc report .
 endif
 .PHONY: coverage
 
 doc-api: hr
 doc-api: # build API documentation *
 ifeq ($(MODE), cabal)
-> @cabal v2-haddock
+> cabal v2-haddock $(CABAL_ARGS)
 else
-> @stack haddock $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
+> stack haddock $(STACK_ARGS)
 endif
 .PHONY: doc-api
 
 example-enum: hr
 example-enum: # build and run example-enum *
 ifeq ($(MODE), cabal)
-> @cabal v2-run example-enum
+> cabal v2-run $(CABAL_ARGS) example-enum
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --flag ttc-examples:example-enum
-> @stack exec example-enum
+> stack build $(STACK_ARGS) --flag ttc-examples:example-enum
+> stack exec example-enum
 endif
 .PHONY: example-enum
 
 example-invalid: hr
 example-invalid: # build example-invalid, which should fail *
 ifeq ($(MODE), cabal)
-> @cabal v2-build ttc-examples -f example-invalid
+> cabal v2-build $(CABAL_ARGS) ttc-examples -f example-invalid
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --flag ttc-examples:example-invalid
+> stack build $(STACK_ARGS) --flag ttc-examples:example-invalid
 endif
 .PHONY: example-invalid
 
 example-lift: hr
 example-lift: # build and run example-lift *
 ifeq ($(MODE), cabal)
-> @cabal v2-run example-lift
+> cabal v2-run $(CABAL_ARGS) example-lift
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --flag ttc-examples:example-lift
-> @stack exec example-lift
+> stack build $(STACK_ARGS) --flag ttc-examples:example-lift
+> stack exec example-lift
 endif
 .PHONY: example-lift
 
 example-mkvalid: hr
 example-mkvalid: # build and run example-mkvalid *
 ifeq ($(MODE), cabal)
-> @cabal v2-run example-mkvalid
+> cabal v2-run $(CABAL_ARGS) example-mkvalid
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --flag ttc-examples:example-mkvalid
-> @stack exec example-mkvalid
+> stack build $(STACK_ARGS) --flag ttc-examples:example-mkvalid
+> stack exec example-mkvalid
 endif
 .PHONY: example-mkvalid
 
 example-mkuvalid: hr
 example-mkuvalid: # build and run example-mkuvalid *
 ifeq ($(MODE), cabal)
-> @cabal v2-run example-mkuvalid
+> cabal v2-run $(CABAL_ARGS) example-mkuvalid
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --flag ttc-examples:example-mkuvalid
-> @stack exec example-mkuvalid
+> stack build $(STACK_ARGS) --flag ttc-examples:example-mkuvalid
+> stack exec example-mkuvalid
 endif
 .PHONY: example-mkuvalid
 
 example-prompt: hr
 example-prompt: # build and run example-prompt *
 ifeq ($(MODE), cabal)
-> @cabal v2-run example-prompt
+> cabal v2-run $(CABAL_ARGS) example-prompt
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --flag ttc-examples:example-prompt
-> @stack exec example-prompt
+> stack build $(STACK_ARGS) --flag ttc-examples:example-prompt
+> stack exec example-prompt
 endif
 .PHONY: example-prompt
 
 example-uname: hr
 example-uname: # build and run example-uname *
 ifeq ($(MODE), cabal)
-> @cabal v2-run example-uname
+> cabal v2-run $(CABAL_ARGS) example-uname
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --flag ttc-examples:example-uname
-> @stack exec example-uname
+> stack build $(STACK_ARGS) --flag ttc-examples:example-uname
+> stack exec example-uname
 endif
 .PHONY: example-uname
 
 example-uvalidof: hr
 example-uvalidof: # build and run example-uvalidof *
 ifeq ($(MODE), cabal)
-> @cabal v2-run example-uvalidof
+> cabal v2-run $(CABAL_ARGS) example-uvalidof
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --flag ttc-examples:example-uvalidof
-> @stack exec example-uvalidof
+> stack build $(STACK_ARGS) --flag ttc-examples:example-uvalidof
+> stack exec example-uvalidof
 endif
 .PHONY: example-uvalidof
 
 example-uvalidqq: hr
 example-uvalidqq: # build and run example-uvalidqq *
 ifeq ($(MODE), cabal)
-> @cabal v2-run example-uvalidqq
+> cabal v2-run $(CABAL_ARGS) example-uvalidqq
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --flag ttc-examples:example-uvalidqq
-> @stack exec example-uvalidqq
+> stack build $(STACK_ARGS) --flag ttc-examples:example-uvalidqq
+> stack exec example-uvalidqq
 endif
 .PHONY: example-uvalidqq
 
 example-valid: hr
 example-valid: # build and run example-valid *
 ifeq ($(MODE), cabal)
-> @cabal v2-run example-valid
+> cabal v2-run $(CABAL_ARGS) example-valid
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --flag ttc-examples:example-valid
-> @stack exec example-valid
+> stack build $(STACK_ARGS) --flag ttc-examples:example-valid
+> stack exec example-valid
 endif
 .PHONY: example-valid
 
 example-validof: hr
 example-validof: # build and run example-validof *
 ifeq ($(MODE), cabal)
-> @cabal v2-run example-validof
+> cabal v2-run $(CABAL_ARGS) example-validof
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --flag ttc-examples:example-validof
-> @stack exec example-validof
+> stack build $(STACK_ARGS) --flag ttc-examples:example-validof
+> stack exec example-validof
 endif
 .PHONY: example-validof
 
 examples: hr
 examples: # build all buldable examples *
 ifeq ($(MODE), cabal)
-> @cabal v2-build ttc-examples -f examples
+> cabal v2-build $(CABAL_ARGS) ttc-examples -f examples
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --flag ttc-examples:examples
+> stack build $(STACK_ARGS) --flag ttc-examples:examples
 endif
 .PHONY: examples
 
@@ -247,10 +241,11 @@ help: # show this help
 >   | sed 's/^\([^:]\+\):[^#]*# \(.*\)/make \1\t\2/' \
 >   | column -t -s $$'\t'
 > @echo
-> @echo "* Use STACK_NIX_PATH to specify a Nix path."
-> @echo "* Use RESOLVER to specify a resolver."
-> @echo "* Use CONFIG to specify a Stack configuration file."
-> @echo "* Use CABAL to use Cabal instead of Stack."
+> @echo "* Set CABAL to use Cabal instead of Stack."
+> @echo "* Set CONFIG to specify a Stack configuration file."
+> @echo "* Set PROJECT_FILE to specify a cabal.project file."
+> @echo "* Set RESOLVER to specify a Stack resolver."
+> @echo "* Set STACK_NIX_PATH to specify a Stack Nix path."
 .PHONY: help
 
 hlint: # run hlint on all Haskell source
@@ -287,9 +282,9 @@ recent: # show N most recently modified files
 
 repl: # enter a REPL *
 ifeq ($(MODE), cabal)
-> @cabal repl
+> cabal repl $(CABAL_ARGS)
 else
-> @stack exec ghci $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS)
+> stack exec ghci $(STACK_ARGS)
 endif
 .PHONY: repl
 
@@ -362,17 +357,20 @@ test: # run tests, optionally for pattern P *
 ifeq ($(MODE), cabal)
 > @test -z "$(P)" \
 >   && cabal v2-test --enable-tests --test-show-details=always \
+>       $(CABAL_ARGS) \
 >   || cabal v2-test --enable-tests --test-show-details=always \
->       --test-option '--pattern=$(P)'
+>       --test-option '--pattern=$(P)' $(CABAL_ARGS)
 else
 > @test -z "$(P)" \
->   && stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   || stack test $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->       --test-arguments '--pattern $(P)'
+>   && stack test $(STACK_ARGS) \
+>   || stack test $(STACK_ARGS) --test-arguments '--pattern $(P)'
 endif
 .PHONY: test
 
 test-all: # run tests and build examples for all configured Stackage releases
+ifeq ($(MODE), cabal)
+> $(call die,"test-all not supported in CABAL mode")
+endif
 > @command -v hr >/dev/null 2>&1 && hr "stack-8.2.2.yaml" || true
 > @make test-doc CONFIG=stack-8.2.2.yaml
 > @make examples CONFIG=stack-8.2.2.yaml
@@ -399,15 +397,17 @@ test-all: # run tests and build examples for all configured Stackage releases
 test-doc: hr
 test-doc: # run tests and build API documentation *
 ifeq ($(MODE), cabal)
-> @cabal v2-test --enable-tests --test-show-details=always
-> @cabal v2-haddock
+> @cabal v2-test --enable-tests --test-show-details=always $(CABAL_ARGS)
+> @cabal v2-haddock $(CABAL_ARGS)
 else
-> @stack build $(RESOLVER_ARGS) $(STACK_YAML_ARGS) $(NIX_PATH_ARGS) \
->   --haddock --test --bench --no-run-benchmarks
+> @stack build $(STACK_ARGS) --haddock --test --bench --no-run-benchmarks
 endif
 .PHONY: test-doc
 
 test-nightly: # run tests for the latest Stackage nightly release
+ifeq ($(MODE), cabal)
+> $(call die,"test-nightly not supported in CABAL mode")
+endif
 > @make test RESOLVER=nightly
 .PHONY: test-nightly
 
