@@ -5,6 +5,14 @@ PACKAGE    := ttc
 CABAL_FILE := $(PACKAGE).cabal
 PROJECT    := $(PACKAGE)-haskell
 
+STACK_TEST_CONFIGS += stack-8.2.2.yaml
+STACK_TEST_CONFIGS += stack-8.4.4.yaml
+STACK_TEST_CONFIGS += stack-8.6.5.yaml
+STACK_TEST_CONFIGS += stack-8.8.4.yaml
+STACK_TEST_CONFIGS += stack-8.10.7.yaml
+STACK_TEST_CONFIGS += stack-9.0.1.yaml
+STACK_TEST_CONFIGS += stack-9.2.1.yaml
+
 ##############################################################################
 # Make configuration
 
@@ -59,6 +67,11 @@ endef
 
 define hs_files
   find . -not -path '*/\.*' -type f -name '*.hs'
+endef
+
+define newline
+
+
 endef
 
 ##############################################################################
@@ -369,29 +382,13 @@ endif
 
 test-all: # run tests and build examples for all configured Stackage releases
 ifeq ($(MODE), cabal)
-> $(call die,"test-all not supported in CABAL mode")
+> $(error test-all not supported in CABAL mode)
 endif
-> @command -v hr >/dev/null 2>&1 && hr "stack-8.2.2.yaml" || true
-> @make test-doc CONFIG=stack-8.2.2.yaml
-> @make examples CONFIG=stack-8.2.2.yaml
-> @command -v hr >/dev/null 2>&1 && hr "stack-8.4.4.yaml" || true
-> @make test-doc CONFIG=stack-8.4.4.yaml
-> @make examples CONFIG=stack-8.4.4.yaml
-> @command -v hr >/dev/null 2>&1 && hr "stack-8.6.5.yaml" || true
-> @make test-doc CONFIG=stack-8.6.5.yaml
-> @make examples CONFIG=stack-8.6.5.yaml
-> @command -v hr >/dev/null 2>&1 && hr "stack-8.8.4.yaml" || true
-> @make test-doc CONFIG=stack-8.8.4.yaml
-> @make examples CONFIG=stack-8.8.4.yaml
-> @command -v hr >/dev/null 2>&1 && hr "stack-8.10.7.yaml" || true
-> @make test-doc CONFIG=stack-8.10.7.yaml
-> @make examples CONFIG=stack-8.10.7.yaml
-> @command -v hr >/dev/null 2>&1 && hr "stack-9.0.1.yaml" || true
-> @make test-doc CONFIG=stack-9.0.1.yaml
-> @make examples CONFIG=stack-9.0.1.yaml
-> @command -v hr >/dev/null 2>&1 && hr "stack-9.2.1.yaml" || true
-> @make test-doc CONFIG=stack-9.2.1.yaml
-> @make examples CONFIG=stack-9.2.1.yaml
+> $(foreach CONFIG,$(STACK_TEST_CONFIGS), \
+    @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true $(newline) \
+    @make test-doc CONFIG=$(CONFIG) $(newline) \
+    @make examples CONFIG=$(CONFIG) $(newline) \
+  )
 .PHONY: test-all
 
 test-doc: hr
@@ -406,7 +403,7 @@ endif
 
 test-nightly: # run tests for the latest Stackage nightly release
 ifeq ($(MODE), cabal)
-> $(call die,"test-nightly not supported in CABAL mode")
+> $(error test-nightly not supported in CABAL mode)
 endif
 > @make test RESOLVER=nightly
 .PHONY: test-nightly
