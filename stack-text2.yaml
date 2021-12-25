@@ -1,0 +1,23 @@
+resolver: ghc-9.2
+
+packages:
+  - .
+  - ./examples
+
+extra-deps:
+  - ansi-terminal-0.11.1
+  - ansi-wl-pprint-0.6.9
+  - call-stack-0.4.0
+  - clock-0.8.2
+  - colour-2.3.6
+  - optparse-applicative-0.16.1.0
+  - tagged-0.8.6.1
+  - tasty-1.4.2.1
+  - tasty-hunit-0.10.0.3
+  - text-2.0
+  - transformers-0.5.6.2
+  - transformers-compat-0.7.1
+  - unbounded-delays-0.1.1.1
+  - wcwidth-0.0.2
+
+allow-newer: true
