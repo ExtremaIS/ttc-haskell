@@ -201,6 +201,10 @@ a uniform usage of textual data types, `Display` only provides functions for
 rendering to `Text` and a builder format.  It does not have a type class
 similar to `TTC.Parse`.
 
+The [text-display](https://hackage.haskell.org/package/text-display) library
+defines a `Display` type class intended to render user-facing text.  It uses a
+`Builder` type internally and renders to a `Text` value.
+
 Harry Garrood has an interesting series of blog posts about type classes and
 `Show`:
 
@@ -209,6 +213,15 @@ Harry Garrood has an interesting series of blog posts about type classes and
 * [Down with Show! Part 3: A replacement for Show](https://harry.garrood.me/blog/down-with-show-part-3/)
 
 ### Validating Constants
+
+The [qq-literals](https://hackage.haskell.org/package/qq-literals) library
+creates a `QuasiQuoter` from a parse function of type
+`String -> Either String a`.  The functionality is similar to TTC's
+`mkUntypedValidQQ` function.  The `mkUntypedValidQQ` function allows the user
+to choose the name of the `QuasiQuoter` because a name like `valid` is
+preferred when used via a qualified import while a name like `username` may be
+preferred when not using qualified imports.  Note that `mkUntypedValidQQ` also
+splices in an explicit type signature.
 
 The
 [validated-literals](https://hackage.haskell.org/package/validated-literals)
