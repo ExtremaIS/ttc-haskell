@@ -300,6 +300,10 @@ hssloc: # count lines of Haskell source
 > @$(call hs_files) | xargs wc -l | tail -n 1 | sed 's/^ *\([0-9]*\).*$$/\1/'
 .PHONY: hssloc
 
+ignored: # list files ignored by git
+> @git ls-files . --ignored --exclude-standard --others
+.PHONY: ignored
+
 recent: # show N most recently modified files
 > $(eval N := "10")
 > @find . -not -path '*/\.*' -type f -printf '%T+ %p\n' \
@@ -397,7 +401,7 @@ test-all: # run all configured tests and build examples
 ifeq ($(MODE), cabal)
 > $(foreach GHC_VERSION,$(CABAL_TEST_GHC_VERSIONS), \
     @command -v hr >/dev/null 2>&1 && hr $(GHC_VERSION) || true $(newline) \
-    @make test GHC_VERSION=$(GHC_VERSION) $(newline) \
+    @make test-doc GHC_VERSION=$(GHC_VERSION) $(newline) \
     @make examples GHC_VERSION=$(GHC_VERSION) $(newline) \
   )
 else
