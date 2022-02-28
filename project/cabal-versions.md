@@ -8,6 +8,7 @@ GHC requirements:
 * [GHC 8.8.4](https://www.haskell.org/ghc/download_ghc_8_8_4.html) Cabal 3.0
 * [GHC 8.10.4](https://www.haskell.org/ghc/download_ghc_8_10_4.html) Cabal 3.2
 * [GHC 9.0.1](https://www.haskell.org/ghc/download_ghc_9_0_1.html) Cabal 3.4
+* [GHC 9.2.1](https://www.haskell.org/ghc/download_ghc_9_2_1.html) Cabal 3.6
 
 [GibHub Actions Versions](https://github.com/haskell/actions/blob/main/setup/src/versions.json):
 
