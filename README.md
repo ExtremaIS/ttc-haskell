@@ -18,7 +18,7 @@
     * [Arbitrary Type Conversion](#arbitrary-type-conversion)
 * [Project](#project)
     * [Links](#links)
-    * [Dependencies](#dependencies)
+    * [Tags](#tags)
     * [Contribution](#contribution)
     * [License](#license)
 
@@ -287,14 +287,7 @@ between arbitrary types, including string types.
 * GitHub: <https://github.com/ExtremaIS/ttc-haskell>
 * GitHub Actions CI: <https://github.com/ExtremaIS/ttc-haskell/actions>
 
-### Dependencies
-
-Dependency version bounds are strictly specified according to what versions
-have been tested.  If upper bounds need to be bumped when a new package is
-released or the package has been tested with earlier versions, feel free to
-submit an issue.
-
-### Releases
+### Tags
 
 All releases are tagged in the `main` branch.  Release tags are signed using
 the
