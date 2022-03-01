@@ -1,5 +1,5 @@
 name:           ttc
-version:        1.1.1.0
+version:        1.1.1.1
 category:       Data, Text
 synopsis:       Textual Type Classes
 description:
@@ -11,7 +11,7 @@ homepage:       https://github.com/ExtremaIS/ttc-haskell#readme
 bug-reports:    https://github.com/ExtremaIS/ttc-haskell/issues
 author:         Travis Cardwell <travis.cardwell@extrema.is>
 maintainer:     Travis Cardwell <travis.cardwell@extrema.is>
-copyright:      Copyright (c) 2019-2021 Travis Cardwell
+copyright:      Copyright (c) 2019-2022 Travis Cardwell
 license:        MIT
 license-file:   LICENSE
 
@@ -23,7 +23,7 @@ tested-with:
    || ==8.6.5
    || ==8.8.4
    || ==8.10.7
-   || ==9.0.1
+   || ==9.0.2
    || ==9.2.1
 
 extra-source-files:

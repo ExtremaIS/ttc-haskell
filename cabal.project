@@ -1,3 +1,3 @@
 packages:
-    ./
-    examples/
+    ./ttc.cabal
+    examples/ttc-examples.cabal
