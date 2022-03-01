@@ -26,6 +26,10 @@ following conventions:
 
 ## Unreleased
 
+### Non-Breaking
+
+* Refactor `Makefile`
+
 ## 1.1.1.0 (2021-12-25)
 
 ### Non-Breaking
