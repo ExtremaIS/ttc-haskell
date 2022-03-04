@@ -8,7 +8,7 @@ extra-deps:
   - ansi-terminal-0.11.1
   - ansi-wl-pprint-0.6.9
   - binary-0.8.9.0
-  - bytestring-0.11.2.0
+  - bytestring-0.11.3.0
   - call-stack-0.4.0
   - clock-0.8.2
   - colour-2.3.6
