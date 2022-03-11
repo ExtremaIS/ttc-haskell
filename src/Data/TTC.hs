@@ -111,6 +111,7 @@ module Data.TTC
   , parseUnsafeBSB
   , parseUnsafeSBS
     -- ** Parse With A Single Error Message
+    -- $ParseWithASingleErrorMessage
   , withError
   , withErrorS
   , withErrorT
@@ -121,6 +122,7 @@ module Data.TTC
   , withErrorBSB
   , withErrorSBS
     -- ** Parse With An Error Prefix
+    -- $ParseWithAnErrorPrefix
   , prefixError
   , prefixErrorS
   , prefixErrorT
@@ -1052,7 +1054,10 @@ parseUnsafeSBS = parseUnsafe
 -- The 'withError' function takes an error message and a 'Maybe' value.  It
 -- returns a 'Parse' result: the error when the 'Maybe' value is 'Nothing', or
 -- the value inside the 'Just'.  This provides a convenient way to return the
--- same error message for any parse error.
+-- same error message for any parse error.  The rest of the functions are
+-- equivalent to 'withError', but they specify the type of the error message.
+-- Use them to avoid having to write type annotations in cases where the type
+-- is ambiguous.
 
 -- | Create a 'Parse' result from a 'Textual' error message and a 'Maybe'
 -- value
@@ -1164,7 +1169,9 @@ withErrorSBS = withError
 -- $ParseWithAnErrorPrefix
 --
 -- The 'prefixError' function adds a common prefix to error messages of a
--- 'Parse' result.
+-- 'Parse' result.  The rest of the functions are equivalent to 'prefixError',
+-- but they specify the type of the error message.  Use them to avoid having
+-- to write type annotations in cases where the type is ambiguous.
 
 -- | Add a prefix to 'Textual' error messages of a 'Parse' result
 --
