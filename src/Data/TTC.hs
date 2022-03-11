@@ -110,9 +110,20 @@ module Data.TTC
   , parseUnsafeBSL
   , parseUnsafeBSB
   , parseUnsafeSBS
-    -- ** Parse Utilities
+    -- ** Parse With A Single Error Message
+  , maybe
+  , maybeS
+  , maybeT
+  , maybeTL
+  , maybeTLB
+  , maybeBS
+  , maybeBSL
+  , maybeBSB
+  , maybeSBS
+    -- ** Parse Enums
   , parseEnum
   , parseEnum'
+    -- ** Read Instances
   , parseWithRead
   , parseWithRead'
   , maybeParseWithRead
@@ -133,6 +144,8 @@ import Data.Int (Int16, Int32, Int64, Int8)
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
 import Data.Word (Word16, Word32, Word64, Word8)
 import GHC.Stack (HasCallStack)
+import qualified Prelude
+import Prelude hiding (maybe)
 import Text.Read (readMaybe)
 
 -- https://hackage.haskell.org/package/bytestring
@@ -1026,7 +1039,121 @@ parseUnsafeSBS = parseUnsafe
 {-# INLINE parseUnsafeSBS #-}
 
 ------------------------------------------------------------------------------
--- $ParseUtils
+-- $ParseWithASingleErrorMessage
+--
+-- The 'maybe' function takes an error message and a 'Maybe' value.  It
+-- returns a 'Parse' result: the error when the 'Maybe' value is 'Nothing', or
+-- the value inside the 'Just'.  This provides a convenient way to return the
+-- same error message for any parse error.
+
+-- | Create a 'Parse' result from a 'Textual' error message and a 'Maybe'
+-- value
+--
+-- @since 1.2.0.0
+maybe
+  :: (Textual e', Textual e)
+  => e'
+  -> Maybe a
+  -> Either e a
+maybe err = Prelude.maybe (Left $ convert err) Right
+{-# INLINE maybe #-}
+
+-- | Create a 'Parse' result from a 'String' error message and a 'Maybe' value
+--
+-- @since 1.2.0.0
+maybeS
+  :: Textual e
+  => String
+  -> Maybe a
+  -> Either e a
+maybeS = maybe
+{-# INLINE maybeS #-}
+
+-- | Create a 'Parse' result from a 'T.Text' error message and a 'Maybe' value
+--
+-- @since 1.2.0.0
+maybeT
+  :: Textual e
+  => T.Text
+  -> Maybe a
+  -> Either e a
+maybeT = maybe
+{-# INLINE maybeT #-}
+
+-- | Create a 'Parse' result from a 'TL.Text' error message and a 'Maybe'
+-- value
+--
+-- @since 1.2.0.0
+maybeTL
+  :: Textual e
+  => TL.Text
+  -> Maybe a
+  -> Either e a
+maybeTL = maybe
+{-# INLINE maybeTL #-}
+
+-- | Create a 'Parse' result from a 'TLB.Builder' error message and a 'Maybe'
+-- value
+--
+-- @since 1.2.0.0
+maybeTLB
+  :: Textual e
+  => TLB.Builder
+  -> Maybe a
+  -> Either e a
+maybeTLB = maybe
+{-# INLINE maybeTLB #-}
+
+-- | Create a 'Parse' result from a 'BS.ByteString' error message and a
+-- 'Maybe' value
+--
+-- @since 1.2.0.0
+maybeBS
+  :: Textual e
+  => BS.ByteString
+  -> Maybe a
+  -> Either e a
+maybeBS = maybe
+{-# INLINE maybeBS #-}
+
+-- | Create a 'Parse' result from a 'BSL.ByteString' error message and a
+-- 'Maybe' value
+--
+-- @since 1.2.0.0
+maybeBSL
+  :: Textual e
+  => BSL.ByteString
+  -> Maybe a
+  -> Either e a
+maybeBSL = maybe
+{-# INLINE maybeBSL #-}
+
+-- | Create a 'Parse' result from a 'BSB.Builder' error message and a
+-- 'Maybe' value
+--
+-- @since 1.2.0.0
+maybeBSB
+  :: Textual e
+  => BSB.Builder
+  -> Maybe a
+  -> Either e a
+maybeBSB = maybe
+{-# INLINE maybeBSB #-}
+
+-- | Create a 'Parse' result from a 'SBS.ShortByteString' error message and a
+-- 'Maybe' value
+--
+-- @since 1.2.0.0
+maybeSBS
+  :: Textual e
+  => SBS.ShortByteString
+  -> Maybe a
+  -> Either e a
+maybeSBS = maybe
+{-# INLINE maybeSBS #-}
+
+------------------------------------------------------------------------------
+-- $ParseEnums
 
 -- | Parse a value in an enumeration
 --
@@ -1079,6 +1206,9 @@ parseEnum' name allowCI allowPrefix =
       (fromS $ "ambiguous " ++ name)
 {-# INLINEABLE parseEnum' #-}
 
+------------------------------------------------------------------------------
+-- $ReadInstanced
+
 -- | Parse a value using the 'Read' instance
 --
 -- @since 0.1.0.0
@@ -1087,7 +1217,8 @@ parseWithRead
   => e           -- ^ invalid input error
   -> t           -- ^ textual input to parse
   -> Either e a  -- ^ error or parsed value
-parseWithRead invalidError = maybe (Left invalidError) Right . readMaybe . toS
+parseWithRead invalidError =
+    Prelude.maybe (Left invalidError) Right . readMaybe . toS
 {-# INLINEABLE parseWithRead #-}
 
 -- | Parse a value using the 'Read' instance, with 'Textual' error messages

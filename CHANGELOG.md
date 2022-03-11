@@ -26,6 +26,10 @@ following conventions:
 
 ## Unreleased
 
+### Breaking
+
+* Add `maybe` functions
+
 ## 1.1.1.1 (2022-03-01)
 
 ### Non-Breaking
