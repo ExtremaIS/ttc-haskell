@@ -1021,60 +1021,33 @@ testParseUnsafeSBS = testCase "parseUnsafeSBS" $
 
 testMaybe :: TestTree
 testMaybe = testGroup "maybe"
-    [ testGroup "S"
-        [ testCase "OK" $ Right answer @=?
-            (TTC.maybeS undefined (Just answer) :: Either T.Text PosInt)
-        , testCase "error" $ Left "err" @=?
-            (TTC.maybeS "err" Nothing :: Either T.Text PosInt)
-        ]
-    , testGroup "T"
-        [ testCase "OK" $ Right answer @=?
-            (TTC.maybeT undefined (Just answer) :: Either String PosInt)
-        , testCase "error" $ Left "err" @=?
-            (TTC.maybeT "err" Nothing :: Either String PosInt)
-        ]
-    , testGroup "TL"
-        [ testCase "OK" $ Right answer @=?
-            (TTC.maybeTL undefined (Just answer) :: Either String PosInt)
-        , testCase "error" $ Left "err" @=?
-            (TTC.maybeTL "err" Nothing :: Either String PosInt)
-        ]
-    , testGroup "TLB"
-        [ testCase "OK" $ Right answer @=?
-            (TTC.maybeTLB undefined (Just answer) :: Either String PosInt)
-        , testCase "error" $ Left "err" @=?
-            (TTC.maybeTLB "err" Nothing :: Either String PosInt)
-        ]
-    , testGroup "BS"
-        [ testCase "OK" $ Right answer @=?
-            (TTC.maybeBS undefined (Just answer) :: Either String PosInt)
-        , testCase "error" $ Left "err" @=?
-            (TTC.maybeBS "err" Nothing :: Either String PosInt)
-        ]
-    , testGroup "BSL"
-        [ testCase "OK" $ Right answer @=?
-            (TTC.maybeBSL undefined (Just answer) :: Either String PosInt)
-        , testCase "error" $ Left "err" @=?
-            (TTC.maybeBSL "err" Nothing :: Either String PosInt)
-        ]
-    , testGroup "BSB"
-        [ testCase "OK" $ Right answer @=?
-            (TTC.maybeBSB undefined (Just answer) :: Either String PosInt)
-        , testCase "error" $ Left "err" @=?
-            (TTC.maybeBSB "err" Nothing :: Either String PosInt)
-        ]
-    , testGroup "SBS"
-        [ testCase "OK" $ Right answer @=?
-            (TTC.maybeSBS undefined (Just answer) :: Either String PosInt)
-        , testCase "error" $ Left "err" @=?
-            (TTC.maybeSBS "err" Nothing :: Either String PosInt)
-        ]
+    [ testCase "OK" $ Right answer @=?
+        (TTC.maybe undefString (Just answer) :: Either T.Text PosInt)
+    , testCase "S" $ Left "err" @=?
+        (TTC.maybeS "err" Nothing :: Either T.Text PosInt)
+    , testCase "T" $ Left "err" @=?
+        (TTC.maybeT "err" Nothing :: Either String PosInt)
+    , testCase "TL" $ Left "err" @=?
+        (TTC.maybeTL "err" Nothing :: Either String PosInt)
+    , testCase "TLB" $ Left "err" @=?
+        (TTC.maybeTLB "err" Nothing :: Either String PosInt)
+    , testCase "BS" $ Left "err" @=?
+        (TTC.maybeBS "err" Nothing :: Either String PosInt)
+    , testCase "BSL" $ Left "err" @=?
+        (TTC.maybeBSL "err" Nothing :: Either String PosInt)
+    , testCase "BSB" $ Left "err" @=?
+        (TTC.maybeBSB "err" Nothing :: Either String PosInt)
+    , testCase "SBS" $ Left "err" @=?
+        (TTC.maybeSBS "err" Nothing :: Either String PosInt)
     ]
+  where
+    undefString :: String
+    undefString = undefined
 
 testPrefixError :: TestTree
 testPrefixError = testGroup "prefixError"
     [ testCase "OK" $ Right answer @=?
-        (TTC.prefixError prefixS (Right answer) :: Either String PosInt)
+        (TTC.prefixError undefString (Right answer) :: Either String PosInt)
     , testCase "S" $ Left err @=?
         (TTC.prefixErrorS "error: " (Left "uh-oh") :: Either String PosInt)
     , testCase "T" $ Left err @=?
@@ -1093,11 +1066,9 @@ testPrefixError = testGroup "prefixError"
         (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
     ]
   where
-    err :: String
+    undefString, err :: String
+    undefString = undefined
     err = "error: uh-oh"
-
-    prefixS :: String
-    prefixS = "error: "
 
 testParseWithRead :: TestTree
 testParseWithRead = testGroup "parseWithRead"
