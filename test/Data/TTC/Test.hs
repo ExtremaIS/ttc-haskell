@@ -1071,6 +1071,34 @@ testMaybe = testGroup "maybe"
         ]
     ]
 
+testPrefixError :: TestTree
+testPrefixError = testGroup "prefixError"
+    [ testCase "OK" $ Right answer @=?
+        (TTC.prefixError prefixS (Right answer) :: Either String PosInt)
+    , testCase "S" $ Left err @=?
+        (TTC.prefixErrorS "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "T" $ Left err @=?
+        (TTC.prefixErrorT "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "TL" $ Left err @=?
+        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "TLB" $ Left err @=?
+        (TTC.prefixErrorTLB "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "BS" $ Left err @=?
+        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "BSL" $ Left err @=?
+        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "BSB" $ Left err @=?
+        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "SBS" $ Left err @=?
+        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
+    ]
+  where
+    err :: String
+    err = "error: uh-oh"
+
+    prefixS :: String
+    prefixS = "error: "
+
 testParseWithRead :: TestTree
 testParseWithRead = testGroup "parseWithRead"
     [ testCase "S" $ Right answerZ @=? TTC.parseWithRead IntInvalid answerS
@@ -1279,6 +1307,7 @@ tests = testGroup "Data.TTC"
         , testParseUnsafeBSB
         , testParseUnsafeSBS
         , testMaybe
+        , testPrefixError
         , testParseWithRead
         , testParseWithRead'
         , testMaybeParseWithRead

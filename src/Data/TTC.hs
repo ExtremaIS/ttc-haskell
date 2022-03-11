@@ -120,6 +120,16 @@ module Data.TTC
   , maybeBSL
   , maybeBSB
   , maybeSBS
+    -- ** Parse With An Error Prefix
+  , prefixError
+  , prefixErrorS
+  , prefixErrorT
+  , prefixErrorTL
+  , prefixErrorTLB
+  , prefixErrorBS
+  , prefixErrorBSL
+  , prefixErrorBSB
+  , prefixErrorSBS
     -- ** Parse Enums
   , parseEnum
   , parseEnum'
@@ -1151,6 +1161,111 @@ maybeSBS
   -> Either e a
 maybeSBS = maybe
 {-# INLINE maybeSBS #-}
+
+------------------------------------------------------------------------------
+-- $ParseWithAnErrorPrefix
+--
+-- The 'prefixError' function adds a common prefix to error messages of a
+-- 'Parse' result.
+
+-- | Add a prefix to 'Textual' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixError
+  :: (Monoid e', Textual e', Textual e)
+  => e'
+  -> Either e' a
+  -> Either e a
+prefixError prefix = either (Left . convert . mappend prefix) Right
+{-# INLINE prefixError #-}
+
+-- | Add a prefix to 'String' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorS
+  :: Textual e
+  => String
+  -> Either String a
+  -> Either e a
+prefixErrorS = prefixError
+{-# INLINE prefixErrorS #-}
+
+-- | Add a prefix to 'T.Text' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorT
+  :: Textual e
+  => T.Text
+  -> Either T.Text a
+  -> Either e a
+prefixErrorT = prefixError
+{-# INLINE prefixErrorT #-}
+
+-- | Add a prefix to 'TL.Text' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorTL
+  :: Textual e
+  => TL.Text
+  -> Either TL.Text a
+  -> Either e a
+prefixErrorTL = prefixError
+{-# INLINE prefixErrorTL #-}
+
+-- | Add a prefix to 'TLB.Builder' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorTLB
+  :: Textual e
+  => TLB.Builder
+  -> Either TLB.Builder a
+  -> Either e a
+prefixErrorTLB = prefixError
+{-# INLINE prefixErrorTLB #-}
+
+-- | Add a prefix to 'BS.ByteString' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorBS
+  :: Textual e
+  => BS.ByteString
+  -> Either BS.ByteString a
+  -> Either e a
+prefixErrorBS = prefixError
+{-# INLINE prefixErrorBS #-}
+
+-- | Add a prefix to 'BSL.ByteString' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorBSL
+  :: Textual e
+  => BSL.ByteString
+  -> Either BSL.ByteString a
+  -> Either e a
+prefixErrorBSL = prefixError
+{-# INLINE prefixErrorBSL #-}
+
+-- | Add a prefix to 'BSB.Builder' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorBSB
+  :: Textual e
+  => BSB.Builder
+  -> Either BSB.Builder a
+  -> Either e a
+prefixErrorBSB = prefixError
+{-# INLINE prefixErrorBSB #-}
+
+-- | Add a prefix to 'SBS.ShortByteString' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorSBS
+  :: Textual e
+  => SBS.ShortByteString
+  -> Either SBS.ShortByteString a
+  -> Either e a
+prefixErrorSBS = prefixError
+{-# INLINE prefixErrorSBS #-}
 
 ------------------------------------------------------------------------------
 -- $ParseEnums
