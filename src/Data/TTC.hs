@@ -111,15 +111,15 @@ module Data.TTC
   , parseUnsafeBSB
   , parseUnsafeSBS
     -- ** Parse With A Single Error Message
-  , maybe
-  , maybeS
-  , maybeT
-  , maybeTL
-  , maybeTLB
-  , maybeBS
-  , maybeBSL
-  , maybeBSB
-  , maybeSBS
+  , withError
+  , withErrorS
+  , withErrorT
+  , withErrorTL
+  , withErrorTLB
+  , withErrorBS
+  , withErrorBSL
+  , withErrorBSB
+  , withErrorSBS
     -- ** Parse With An Error Prefix
   , prefixError
   , prefixErrorS
@@ -154,8 +154,6 @@ import Data.Int (Int16, Int32, Int64, Int8)
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
 import Data.Word (Word16, Word32, Word64, Word8)
 import GHC.Stack (HasCallStack)
-import qualified Prelude
-import Prelude hiding (maybe)
 import Text.Read (readMaybe)
 
 -- https://hackage.haskell.org/package/bytestring
@@ -1051,7 +1049,7 @@ parseUnsafeSBS = parseUnsafe
 ------------------------------------------------------------------------------
 -- $ParseWithASingleErrorMessage
 --
--- The 'maybe' function takes an error message and a 'Maybe' value.  It
+-- The 'withError' function takes an error message and a 'Maybe' value.  It
 -- returns a 'Parse' result: the error when the 'Maybe' value is 'Nothing', or
 -- the value inside the 'Just'.  This provides a convenient way to return the
 -- same error message for any parse error.
@@ -1060,107 +1058,107 @@ parseUnsafeSBS = parseUnsafe
 -- value
 --
 -- @since 1.2.0.0
-maybe
+withError
   :: (Textual e', Textual e)
   => e'
   -> Maybe a
   -> Either e a
-maybe err = Prelude.maybe (Left $ convert err) Right
-{-# INLINE maybe #-}
+withError err = maybe (Left $ convert err) Right
+{-# INLINE withError #-}
 
 -- | Create a 'Parse' result from a 'String' error message and a 'Maybe' value
 --
 -- @since 1.2.0.0
-maybeS
+withErrorS
   :: Textual e
   => String
   -> Maybe a
   -> Either e a
-maybeS = maybe
-{-# INLINE maybeS #-}
+withErrorS = withError
+{-# INLINE withErrorS #-}
 
 -- | Create a 'Parse' result from a 'T.Text' error message and a 'Maybe' value
 --
 -- @since 1.2.0.0
-maybeT
+withErrorT
   :: Textual e
   => T.Text
   -> Maybe a
   -> Either e a
-maybeT = maybe
-{-# INLINE maybeT #-}
+withErrorT = withError
+{-# INLINE withErrorT #-}
 
 -- | Create a 'Parse' result from a 'TL.Text' error message and a 'Maybe'
 -- value
 --
 -- @since 1.2.0.0
-maybeTL
+withErrorTL
   :: Textual e
   => TL.Text
   -> Maybe a
   -> Either e a
-maybeTL = maybe
-{-# INLINE maybeTL #-}
+withErrorTL = withError
+{-# INLINE withErrorTL #-}
 
 -- | Create a 'Parse' result from a 'TLB.Builder' error message and a 'Maybe'
 -- value
 --
 -- @since 1.2.0.0
-maybeTLB
+withErrorTLB
   :: Textual e
   => TLB.Builder
   -> Maybe a
   -> Either e a
-maybeTLB = maybe
-{-# INLINE maybeTLB #-}
+withErrorTLB = withError
+{-# INLINE withErrorTLB #-}
 
 -- | Create a 'Parse' result from a 'BS.ByteString' error message and a
 -- 'Maybe' value
 --
 -- @since 1.2.0.0
-maybeBS
+withErrorBS
   :: Textual e
   => BS.ByteString
   -> Maybe a
   -> Either e a
-maybeBS = maybe
-{-# INLINE maybeBS #-}
+withErrorBS = withError
+{-# INLINE withErrorBS #-}
 
 -- | Create a 'Parse' result from a 'BSL.ByteString' error message and a
 -- 'Maybe' value
 --
 -- @since 1.2.0.0
-maybeBSL
+withErrorBSL
   :: Textual e
   => BSL.ByteString
   -> Maybe a
   -> Either e a
-maybeBSL = maybe
-{-# INLINE maybeBSL #-}
+withErrorBSL = withError
+{-# INLINE withErrorBSL #-}
 
 -- | Create a 'Parse' result from a 'BSB.Builder' error message and a
 -- 'Maybe' value
 --
 -- @since 1.2.0.0
-maybeBSB
+withErrorBSB
   :: Textual e
   => BSB.Builder
   -> Maybe a
   -> Either e a
-maybeBSB = maybe
-{-# INLINE maybeBSB #-}
+withErrorBSB = withError
+{-# INLINE withErrorBSB #-}
 
 -- | Create a 'Parse' result from a 'SBS.ShortByteString' error message and a
 -- 'Maybe' value
 --
 -- @since 1.2.0.0
-maybeSBS
+withErrorSBS
   :: Textual e
   => SBS.ShortByteString
   -> Maybe a
   -> Either e a
-maybeSBS = maybe
-{-# INLINE maybeSBS #-}
+withErrorSBS = withError
+{-# INLINE withErrorSBS #-}
 
 ------------------------------------------------------------------------------
 -- $ParseWithAnErrorPrefix
@@ -1332,8 +1330,7 @@ parseWithRead
   => e           -- ^ invalid input error
   -> t           -- ^ textual input to parse
   -> Either e a  -- ^ error or parsed value
-parseWithRead invalidError =
-    Prelude.maybe (Left invalidError) Right . readMaybe . toS
+parseWithRead invalidError = maybe (Left invalidError) Right . readMaybe . toS
 {-# INLINEABLE parseWithRead #-}
 
 -- | Parse a value using the 'Read' instance, with 'Textual' error messages

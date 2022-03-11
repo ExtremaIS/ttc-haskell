@@ -28,7 +28,7 @@ following conventions:
 
 ### Breaking
 
-* Add `maybe` functions
+* Add `withError` functions
 * Add `prefixError` functions
 
 ## 1.1.1.1 (2022-03-01)

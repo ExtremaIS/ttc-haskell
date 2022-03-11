@@ -1019,26 +1019,26 @@ testParseUnsafeSBS :: TestTree
 testParseUnsafeSBS = testCase "parseUnsafeSBS" $
     answer @=? TTC.parseUnsafeSBS answerSBS
 
-testMaybe :: TestTree
-testMaybe = testGroup "maybe"
+testWithError :: TestTree
+testWithError = testGroup "withError"
     [ testCase "OK" $ Right answer @=?
-        (TTC.maybe undefString (Just answer) :: Either T.Text PosInt)
+        (TTC.withError undefString (Just answer) :: Either T.Text PosInt)
     , testCase "S" $ Left "err" @=?
-        (TTC.maybeS "err" Nothing :: Either T.Text PosInt)
+        (TTC.withErrorS "err" Nothing :: Either T.Text PosInt)
     , testCase "T" $ Left "err" @=?
-        (TTC.maybeT "err" Nothing :: Either String PosInt)
+        (TTC.withErrorT "err" Nothing :: Either String PosInt)
     , testCase "TL" $ Left "err" @=?
-        (TTC.maybeTL "err" Nothing :: Either String PosInt)
+        (TTC.withErrorTL "err" Nothing :: Either String PosInt)
     , testCase "TLB" $ Left "err" @=?
-        (TTC.maybeTLB "err" Nothing :: Either String PosInt)
+        (TTC.withErrorTLB "err" Nothing :: Either String PosInt)
     , testCase "BS" $ Left "err" @=?
-        (TTC.maybeBS "err" Nothing :: Either String PosInt)
+        (TTC.withErrorBS "err" Nothing :: Either String PosInt)
     , testCase "BSL" $ Left "err" @=?
-        (TTC.maybeBSL "err" Nothing :: Either String PosInt)
+        (TTC.withErrorBSL "err" Nothing :: Either String PosInt)
     , testCase "BSB" $ Left "err" @=?
-        (TTC.maybeBSB "err" Nothing :: Either String PosInt)
+        (TTC.withErrorBSB "err" Nothing :: Either String PosInt)
     , testCase "SBS" $ Left "err" @=?
-        (TTC.maybeSBS "err" Nothing :: Either String PosInt)
+        (TTC.withErrorSBS "err" Nothing :: Either String PosInt)
     ]
   where
     undefString :: String
@@ -1277,7 +1277,7 @@ tests = testGroup "Data.TTC"
         , testParseUnsafeBSL
         , testParseUnsafeBSB
         , testParseUnsafeSBS
-        , testMaybe
+        , testWithError
         , testPrefixError
         , testParseWithRead
         , testParseWithRead'
