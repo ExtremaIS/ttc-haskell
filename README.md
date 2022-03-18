@@ -155,20 +155,20 @@ Here is an example instance for `Username`, implementing some restrictions:
 
 ```haskell
 instance TTC.Parse Username where
-  parse = TTC.asT $ \t -> first TTC.fromS $ do
-    unless (T.all isAsciiLower t) $ Left "username has invalid character(s)"
+  parse = TTC.asT $ \t -> TTC.prefixErrorS "invalid username: " $ do
+    unless (T.all isAsciiLower t) $ Left "not only lowercase ASCII letters"
     let len = T.length t
-    when (len < 3) $ Left "username has fewer than 3 characters"
-    when (len > 12) $ Left "username has more than 12 characters"
+    when (len < 3) $ Left "fewer than 3 characters"
+    when (len > 12) $ Left "more than 12 characters"
     pure $ Username t
 ```
 
 If a username needs to be parsed from a `String`, conversion is automatic:
 
 ```haskell
-case TTC.parse "tcard" :: Either String Username of
-  Right uname -> putStrLn $ "valid username: " ++ TTC.render uname
-  Left err -> putStrLn $ "invalid username: " ++ err
+case TTC.parse s :: Either String Username of
+  Right uname -> "valid username: " ++ TTC.render uname
+  Left err    -> err
 ```
 
 For more details, see the [Render and Parse][] article.

@@ -16,7 +16,6 @@ module Username (Username) where
 
 -- https://hackage.haskell.org/package/base
 import Control.Monad (unless, when)
-import Data.Bifunctor (first)
 import Data.Char (isAsciiLower)
 
 -- https://hackage.haskell.org/package/text
@@ -36,9 +35,9 @@ instance TTC.Render Username where
   render (Username t) = TTC.convert t
 
 instance TTC.Parse Username where
-  parse = TTC.asT $ \t -> first TTC.fromS $ do
-    unless (T.all isAsciiLower t) $ Left "username has invalid character(s)"
+  parse = TTC.asT $ \t -> TTC.prefixErrorS "invalid username: " $ do
+    unless (T.all isAsciiLower t) $ Left "not only lowercase ASCII letters"
     let len = T.length t
-    when (len < 3) $ Left "username has fewer than 3 characters"
-    when (len > 12) $ Left "username has more than 12 characters"
+    when (len < 3) $ Left "fewer than 3 characters"
+    when (len > 12) $ Left "more than 12 characters"
     pure $ Username t
