@@ -110,9 +110,32 @@ module Data.TTC
   , parseUnsafeBSL
   , parseUnsafeBSB
   , parseUnsafeSBS
-    -- ** Parse Utilities
+    -- ** Parse With A Single Error Message
+    -- $ParseWithASingleErrorMessage
+  , withError
+  , withErrorS
+  , withErrorT
+  , withErrorTL
+  , withErrorTLB
+  , withErrorBS
+  , withErrorBSL
+  , withErrorBSB
+  , withErrorSBS
+    -- ** Parse With An Error Prefix
+    -- $ParseWithAnErrorPrefix
+  , prefixError
+  , prefixErrorS
+  , prefixErrorT
+  , prefixErrorTL
+  , prefixErrorTLB
+  , prefixErrorBS
+  , prefixErrorBSL
+  , prefixErrorBSB
+  , prefixErrorSBS
+    -- ** Parse Enums
   , parseEnum
   , parseEnum'
+    -- ** Read Instances
   , parseWithRead
   , parseWithRead'
   , maybeParseWithRead
@@ -1026,7 +1049,231 @@ parseUnsafeSBS = parseUnsafe
 {-# INLINE parseUnsafeSBS #-}
 
 ------------------------------------------------------------------------------
--- $ParseUtils
+-- $ParseWithASingleErrorMessage
+--
+-- The 'withError' function takes an error message and a 'Maybe' value.  It
+-- returns a 'Parse' result: the error when the 'Maybe' value is 'Nothing', or
+-- the value inside the 'Just'.  This provides a convenient way to return the
+-- same error message for any parse error.  The rest of the functions are
+-- equivalent to 'withError', but they specify the type of the error message.
+-- Use them to avoid having to write type annotations in cases where the type
+-- is ambiguous.
+
+-- | Create a 'Parse' result from a 'Textual' error message and a 'Maybe'
+-- value
+--
+-- @since 1.2.0.0
+withError
+  :: (Textual e', Textual e)
+  => e'
+  -> Maybe a
+  -> Either e a
+withError err = maybe (Left $ convert err) Right
+{-# INLINE withError #-}
+
+-- | Create a 'Parse' result from a 'String' error message and a 'Maybe' value
+--
+-- @since 1.2.0.0
+withErrorS
+  :: Textual e
+  => String
+  -> Maybe a
+  -> Either e a
+withErrorS = withError
+{-# INLINE withErrorS #-}
+
+-- | Create a 'Parse' result from a 'T.Text' error message and a 'Maybe' value
+--
+-- @since 1.2.0.0
+withErrorT
+  :: Textual e
+  => T.Text
+  -> Maybe a
+  -> Either e a
+withErrorT = withError
+{-# INLINE withErrorT #-}
+
+-- | Create a 'Parse' result from a 'TL.Text' error message and a 'Maybe'
+-- value
+--
+-- @since 1.2.0.0
+withErrorTL
+  :: Textual e
+  => TL.Text
+  -> Maybe a
+  -> Either e a
+withErrorTL = withError
+{-# INLINE withErrorTL #-}
+
+-- | Create a 'Parse' result from a 'TLB.Builder' error message and a 'Maybe'
+-- value
+--
+-- @since 1.2.0.0
+withErrorTLB
+  :: Textual e
+  => TLB.Builder
+  -> Maybe a
+  -> Either e a
+withErrorTLB = withError
+{-# INLINE withErrorTLB #-}
+
+-- | Create a 'Parse' result from a 'BS.ByteString' error message and a
+-- 'Maybe' value
+--
+-- @since 1.2.0.0
+withErrorBS
+  :: Textual e
+  => BS.ByteString
+  -> Maybe a
+  -> Either e a
+withErrorBS = withError
+{-# INLINE withErrorBS #-}
+
+-- | Create a 'Parse' result from a 'BSL.ByteString' error message and a
+-- 'Maybe' value
+--
+-- @since 1.2.0.0
+withErrorBSL
+  :: Textual e
+  => BSL.ByteString
+  -> Maybe a
+  -> Either e a
+withErrorBSL = withError
+{-# INLINE withErrorBSL #-}
+
+-- | Create a 'Parse' result from a 'BSB.Builder' error message and a
+-- 'Maybe' value
+--
+-- @since 1.2.0.0
+withErrorBSB
+  :: Textual e
+  => BSB.Builder
+  -> Maybe a
+  -> Either e a
+withErrorBSB = withError
+{-# INLINE withErrorBSB #-}
+
+-- | Create a 'Parse' result from a 'SBS.ShortByteString' error message and a
+-- 'Maybe' value
+--
+-- @since 1.2.0.0
+withErrorSBS
+  :: Textual e
+  => SBS.ShortByteString
+  -> Maybe a
+  -> Either e a
+withErrorSBS = withError
+{-# INLINE withErrorSBS #-}
+
+------------------------------------------------------------------------------
+-- $ParseWithAnErrorPrefix
+--
+-- The 'prefixError' function adds a common prefix to error messages of a
+-- 'Parse' result.  The rest of the functions are equivalent to 'prefixError',
+-- but they specify the type of the error message.  Use them to avoid having
+-- to write type annotations in cases where the type is ambiguous.
+
+-- | Add a prefix to 'Textual' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixError
+  :: (Monoid e', Textual e', Textual e)
+  => e'
+  -> Either e' a
+  -> Either e a
+prefixError prefix = either (Left . convert . mappend prefix) Right
+{-# INLINE prefixError #-}
+
+-- | Add a prefix to 'String' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorS
+  :: Textual e
+  => String
+  -> Either String a
+  -> Either e a
+prefixErrorS = prefixError
+{-# INLINE prefixErrorS #-}
+
+-- | Add a prefix to 'T.Text' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorT
+  :: Textual e
+  => T.Text
+  -> Either T.Text a
+  -> Either e a
+prefixErrorT = prefixError
+{-# INLINE prefixErrorT #-}
+
+-- | Add a prefix to 'TL.Text' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorTL
+  :: Textual e
+  => TL.Text
+  -> Either TL.Text a
+  -> Either e a
+prefixErrorTL = prefixError
+{-# INLINE prefixErrorTL #-}
+
+-- | Add a prefix to 'TLB.Builder' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorTLB
+  :: Textual e
+  => TLB.Builder
+  -> Either TLB.Builder a
+  -> Either e a
+prefixErrorTLB = prefixError
+{-# INLINE prefixErrorTLB #-}
+
+-- | Add a prefix to 'BS.ByteString' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorBS
+  :: Textual e
+  => BS.ByteString
+  -> Either BS.ByteString a
+  -> Either e a
+prefixErrorBS = prefixError
+{-# INLINE prefixErrorBS #-}
+
+-- | Add a prefix to 'BSL.ByteString' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorBSL
+  :: Textual e
+  => BSL.ByteString
+  -> Either BSL.ByteString a
+  -> Either e a
+prefixErrorBSL = prefixError
+{-# INLINE prefixErrorBSL #-}
+
+-- | Add a prefix to 'BSB.Builder' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorBSB
+  :: Textual e
+  => BSB.Builder
+  -> Either BSB.Builder a
+  -> Either e a
+prefixErrorBSB = prefixError
+{-# INLINE prefixErrorBSB #-}
+
+-- | Add a prefix to 'SBS.ShortByteString' error messages of a 'Parse' result
+--
+-- @since 1.2.0.0
+prefixErrorSBS
+  :: Textual e
+  => SBS.ShortByteString
+  -> Either SBS.ShortByteString a
+  -> Either e a
+prefixErrorSBS = prefixError
+{-# INLINE prefixErrorSBS #-}
+
+------------------------------------------------------------------------------
+-- $ParseEnums
 
 -- | Parse a value in an enumeration
 --
@@ -1078,6 +1325,9 @@ parseEnum' name allowCI allowPrefix =
       (fromS $ "invalid " ++ name)
       (fromS $ "ambiguous " ++ name)
 {-# INLINEABLE parseEnum' #-}
+
+------------------------------------------------------------------------------
+-- $ReadInstanced
 
 -- | Parse a value using the 'Read' instance
 --

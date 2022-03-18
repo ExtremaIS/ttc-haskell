@@ -24,6 +24,13 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 1.2.0.0 (2022-03-18)
+
+### Breaking
+
+* Add `withError` functions
+* Add `prefixError` functions
+
 ## 1.1.1.1 (2022-03-01)
 
 ### Non-Breaking

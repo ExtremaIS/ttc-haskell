@@ -1019,6 +1019,57 @@ testParseUnsafeSBS :: TestTree
 testParseUnsafeSBS = testCase "parseUnsafeSBS" $
     answer @=? TTC.parseUnsafeSBS answerSBS
 
+testWithError :: TestTree
+testWithError = testGroup "withError"
+    [ testCase "OK" $ Right answer @=?
+        (TTC.withError undefString (Just answer) :: Either T.Text PosInt)
+    , testCase "S" $ Left "err" @=?
+        (TTC.withErrorS "err" Nothing :: Either T.Text PosInt)
+    , testCase "T" $ Left "err" @=?
+        (TTC.withErrorT "err" Nothing :: Either String PosInt)
+    , testCase "TL" $ Left "err" @=?
+        (TTC.withErrorTL "err" Nothing :: Either String PosInt)
+    , testCase "TLB" $ Left "err" @=?
+        (TTC.withErrorTLB "err" Nothing :: Either String PosInt)
+    , testCase "BS" $ Left "err" @=?
+        (TTC.withErrorBS "err" Nothing :: Either String PosInt)
+    , testCase "BSL" $ Left "err" @=?
+        (TTC.withErrorBSL "err" Nothing :: Either String PosInt)
+    , testCase "BSB" $ Left "err" @=?
+        (TTC.withErrorBSB "err" Nothing :: Either String PosInt)
+    , testCase "SBS" $ Left "err" @=?
+        (TTC.withErrorSBS "err" Nothing :: Either String PosInt)
+    ]
+  where
+    undefString :: String
+    undefString = undefined
+
+testPrefixError :: TestTree
+testPrefixError = testGroup "prefixError"
+    [ testCase "OK" $ Right answer @=?
+        (TTC.prefixError undefString (Right answer) :: Either String PosInt)
+    , testCase "S" $ Left err @=?
+        (TTC.prefixErrorS "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "T" $ Left err @=?
+        (TTC.prefixErrorT "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "TL" $ Left err @=?
+        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "TLB" $ Left err @=?
+        (TTC.prefixErrorTLB "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "BS" $ Left err @=?
+        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "BSL" $ Left err @=?
+        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "BSB" $ Left err @=?
+        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "SBS" $ Left err @=?
+        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
+    ]
+  where
+    undefString, err :: String
+    undefString = undefined
+    err = "error: uh-oh"
+
 testParseWithRead :: TestTree
 testParseWithRead = testGroup "parseWithRead"
     [ testCase "S" $ Right answerZ @=? TTC.parseWithRead IntInvalid answerS
@@ -1226,6 +1277,8 @@ tests = testGroup "Data.TTC"
         , testParseUnsafeBSL
         , testParseUnsafeBSB
         , testParseUnsafeSBS
+        , testWithError
+        , testPrefixError
         , testParseWithRead
         , testParseWithRead'
         , testMaybeParseWithRead

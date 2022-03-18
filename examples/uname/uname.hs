@@ -16,7 +16,16 @@ import Username (Username)
 
 ------------------------------------------------------------------------------
 
+testParse :: String -> IO ()
+testParse s = do
+    putStrLn $ "testParse " ++ show s
+    putStrLn . (' ' :) $ case TTC.parse s :: Either String Username of
+      Right uname -> "valid username: " ++ TTC.render uname
+      Left err    -> err
+
+------------------------------------------------------------------------------
+
 main :: IO ()
-main = case TTC.parse "tcard" :: Either String Username of
-    Right uname -> putStrLn $ "valid username: " ++ TTC.render uname
-    Left err -> putStrLn $ "invalid username: " ++ err
+main = do
+    testParse "tcard"
+    testParse "Travis"
