@@ -1,19 +1,5 @@
-resolver: ghc-9.2.2
+resolver: nightly-2022-03-19
 
 packages:
   - .
   - ./examples
-
-extra-deps:
-  - ansi-terminal-0.11.1
-  - ansi-wl-pprint-0.6.9
-  - call-stack-0.4.0
-  - clock-0.8.3
-  - colour-2.3.6
-  - optparse-applicative-0.17.0.0
-  - tagged-0.8.6.1
-  - tasty-1.4.2.1
-  - tasty-hunit-0.10.0.3
-  - transformers-compat-0.7.1
-  - unbounded-delays-0.1.1.1
-  - wcwidth-0.0.2
