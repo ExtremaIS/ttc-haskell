@@ -1,0 +1,25 @@
+-- This is a temporary cabal.project file for testing with GHC 9.4.1
+-- pre-releases.
+--
+-- Usage:
+--
+--     $ make test \
+--         MODE=cabal \
+--         GHC=ghc-9.4.0.20220523 \
+--         PROJECT_FILE=cabal-9.4.1.project
+--
+-- Boot library versions:
+--
+--     $ ghc-pkg list
+--
+-- Notes:
+--
+-- * GHC 9.4.1-alpha2
+--     * template-haskell-2.19.0.0
+--     * All tests pass
+
+packages:
+    ./ttc.cabal
+    examples/ttc-examples.cabal
+
+allow-newer: all
