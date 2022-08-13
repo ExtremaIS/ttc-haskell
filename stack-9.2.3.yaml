@@ -1,5 +1,0 @@
-resolver: nightly-2022-07-31
-
-packages:
-  - .
-  - ./examples
