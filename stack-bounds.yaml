@@ -1,8 +1,1 @@
-resolver: nightly-2022-07-07
-
-packages:
-  - .
-  - ./examples
-
-extra-deps:
-  - text-2.0
+stack-9.4.1.yaml
