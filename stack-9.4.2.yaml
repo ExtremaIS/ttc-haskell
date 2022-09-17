@@ -1,4 +1,4 @@
-resolver: ghc-9.4.1
+resolver: ghc-9.4.2
 
 packages:
   - .

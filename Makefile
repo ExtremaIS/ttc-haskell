@@ -14,7 +14,7 @@ CABAL_TEST_GHC_VERSIONS += 8.8.4
 CABAL_TEST_GHC_VERSIONS += 8.10.7
 CABAL_TEST_GHC_VERSIONS += 9.0.2
 CABAL_TEST_GHC_VERSIONS += 9.2.4
-CABAL_TEST_GHC_VERSIONS += 9.4.1
+CABAL_TEST_GHC_VERSIONS += 9.4.2
 
 STACK_TEST_CONFIGS += stack-8.2.2.yaml
 STACK_TEST_CONFIGS += stack-8.4.4.yaml
@@ -23,7 +23,7 @@ STACK_TEST_CONFIGS += stack-8.8.4.yaml
 STACK_TEST_CONFIGS += stack-8.10.7.yaml
 STACK_TEST_CONFIGS += stack-9.0.2.yaml
 STACK_TEST_CONFIGS += stack-9.2.4.yaml
-STACK_TEST_CONFIGS += stack-9.4.1.yaml
+STACK_TEST_CONFIGS += stack-9.4.2.yaml
 
 ##############################################################################
 # Make configuration
