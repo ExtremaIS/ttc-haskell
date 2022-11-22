@@ -34,7 +34,7 @@ jobs:
             cabal v2-freeze $CONFIG
           fi
       - name: Setup Cache
-        run: echo "CURR_MONTH=$(date +%B)" | tee -a "$GITHUB_ENV"
+        run: echo "CURR_MONTH=$(date +%Y%m)" | tee -a "$GITHUB_ENV"
       - name: Cache
         uses: actions/cache@v3
         with:
@@ -84,7 +84,7 @@ jobs:
           ghc-version: ${{ matrix.ghc }}
           stack-version: latest
       - name: Setup Cache
-        run: echo "CURR_MONTH=$(date +%B)" | tee -a "$GITHUB_ENV"
+        run: echo "CURR_MONTH=$(date +%Y%m)" | tee -a "$GITHUB_ENV"
       - name: Cache
         uses: actions/cache@v3
         with:
@@ -127,7 +127,7 @@ jobs:
             cabal v2-freeze $CONFIG
           fi
       - name: Setup Cache
-        run: echo "CURR_MONTH=$(date +%B)" | tee -a "$GITHUB_ENV"
+        run: echo "CURR_MONTH=$(date +%Y%m)" | tee -a "$GITHUB_ENV"
       - name: Cache
         uses: actions/cache@v3
         with:
