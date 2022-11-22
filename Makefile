@@ -60,9 +60,6 @@ else ifeq ($(MODE), stack)
   ifneq ($(origin RESOLVER), undefined)
     STACK_ARGS += --resolver "$(RESOLVER)"
   endif
-  ifneq ($(origin STACK_NIX_PATH), undefined)
-    STACK_ARGS += "--nix-path=$(STACK_NIX_PATH)"
-  endif
 else
   $(error unknown MODE: $(MODE))
 endif
@@ -285,7 +282,6 @@ help: # show this help
 > @echo "Stack mode (MODE=stack)"
 > @echo "  * Set CONFIG to specify a stack.yaml file."
 > @echo "  * Set RESOLVER to specify a Stack resolver."
-> @echo "  * Set STACK_NIX_PATH to specify a Stack Nix path."
 .PHONY: help
 
 hlint: # run hlint on all Haskell source
