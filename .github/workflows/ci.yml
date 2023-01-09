@@ -18,7 +18,7 @@ jobs:
         uses: actions/checkout@v3
       - name: Set ghcvers
         id: set-ghcvers
-        run: ./test-all.sh github
+        run: ./test-all.sh github >> $GITHUB_OUTPUT
 
   cabal:
     name: "Cabal: GHC ${{ matrix.ghc }}"
