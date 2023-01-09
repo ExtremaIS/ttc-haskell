@@ -8,12 +8,25 @@ on:
       - main
 
 jobs:
+  config:
+    name: "Load configuration"
+    runs-on: ubuntu-latest
+    outputs:
+      ghcvers: ${{ steps.set-ghcvers.outputs.ghcvers }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set ghcvers
+        id: set-ghcvers
+        run: ./test-all.sh github
+
   cabal:
     name: "Cabal: GHC ${{ matrix.ghc }}"
+    needs: config
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ghc: ['8.2.2', '8.4.4', '8.6.5', '8.8.4', '8.10.7', '9.0.2', '9.2.5', '9.4.4']
+        ghc: ${{fromJSON(needs.config.outputs.ghcvers)}}
     env:
       CONFIG: "--enable-tests --enable-benchmarks"
     steps:
@@ -67,10 +80,11 @@ jobs:
 
   stack:
     name: "Stack: GHC ${{ matrix.ghc }}"
+    needs: config
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        ghc: ['8.2.2', '8.4.4', '8.6.5', '8.8.4', '8.10.7', '9.0.2', '9.2.5', '9.4.4']
+        ghc: ${{fromJSON(needs.config.outputs.ghcvers)}}
     env:
       STACK_YAML: stack-${{ matrix.ghc }}.yaml
     steps:

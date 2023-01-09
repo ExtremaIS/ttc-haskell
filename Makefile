@@ -7,24 +7,6 @@ PROJECT    := $(PACKAGE)-haskell
 
 MODE ?= stack
 
-CABAL_TEST_GHC_VERSIONS += 8.2.2
-CABAL_TEST_GHC_VERSIONS += 8.4.4
-CABAL_TEST_GHC_VERSIONS += 8.6.5
-CABAL_TEST_GHC_VERSIONS += 8.8.4
-CABAL_TEST_GHC_VERSIONS += 8.10.7
-CABAL_TEST_GHC_VERSIONS += 9.0.2
-CABAL_TEST_GHC_VERSIONS += 9.2.5
-CABAL_TEST_GHC_VERSIONS += 9.4.4
-
-STACK_TEST_CONFIGS += stack-8.2.2.yaml
-STACK_TEST_CONFIGS += stack-8.4.4.yaml
-STACK_TEST_CONFIGS += stack-8.6.5.yaml
-STACK_TEST_CONFIGS += stack-8.8.4.yaml
-STACK_TEST_CONFIGS += stack-8.10.7.yaml
-STACK_TEST_CONFIGS += stack-9.0.2.yaml
-STACK_TEST_CONFIGS += stack-9.2.5.yaml
-STACK_TEST_CONFIGS += stack-9.4.4.yaml
-
 ##############################################################################
 # Make configuration
 
@@ -82,11 +64,6 @@ endef
 
 define hs_files
   find . -not -path '*/\.*' -type f -name '*.hs'
-endef
-
-define newline
-
-
 endef
 
 ##############################################################################
@@ -405,19 +382,7 @@ endif
 .PHONY: test
 
 test-all: # run all configured tests and build examples
-ifeq ($(MODE), cabal)
-> $(foreach GHC_VERSION,$(CABAL_TEST_GHC_VERSIONS), \
-    @command -v hr >/dev/null 2>&1 && hr $(GHC_VERSION) || true $(newline) \
-    @make test-doc GHC_VERSION=$(GHC_VERSION) $(newline) \
-    @make examples GHC_VERSION=$(GHC_VERSION) $(newline) \
-  )
-else
-> $(foreach CONFIG,$(STACK_TEST_CONFIGS), \
-    @command -v hr >/dev/null 2>&1 && hr $(CONFIG) || true $(newline) \
-    @make test-doc CONFIG=$(CONFIG) $(newline) \
-    @make examples CONFIG=$(CONFIG) $(newline) \
-  )
-endif
+> @./test-all.sh "$(MODE)"
 .PHONY: test-all
 
 test-doc: hr
