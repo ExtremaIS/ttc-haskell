@@ -77,6 +77,13 @@ jobs:
           else
             cabal v2-haddock $CONFIG
           fi
+      - name: Examples
+        run: |
+          if [ -f "cabal-${{ matrix.ghc }}.project" ] ; then
+            cabal v2-build --project-file=cabal-${{ matrix.ghc }}.project $CONFIG ttc-examples -f examples
+          else
+            cabal v2-build $CONFIG ttc-examples -f examples
+          fi
 
   stack:
     name: "Stack: GHC ${{ matrix.ghc }}"
@@ -113,6 +120,8 @@ jobs:
         run: stack test --system-ghc
       - name: Haddock
         run: stack haddock --system-ghc
+      - name: Examples
+        run: stack build --flag ttc-examples:examples
 
   cabal-version:
     name: "Cabal ${{ matrix.cabal }} (GHC ${{ matrix.ghc }})"

@@ -63,7 +63,7 @@ case "$1" in
     done < <(ghcvers)
     ;;
   "github" )
-    echo "ghcvers=$(ghcvers | jq -Rsc '. / "\n" - [""]')"
+    echo "ghcvers=$(ghcvers | jq -Rnc '[inputs]')"
     exit 0
     ;;
   "stack" )
