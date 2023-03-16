@@ -79,7 +79,7 @@ jobs:
           fi
       - name: Examples
         run: |
-          rm cabal.project.freeze
+          rm -f cabal*.project.freeze
           if [ -f "cabal-${{ matrix.ghc }}.project" ] ; then
             cabal v2-build --project-file=cabal-${{ matrix.ghc }}.project $CONFIG ttc-examples -f examples
           else
