@@ -122,7 +122,7 @@ jobs:
       - name: Haddock
         run: stack haddock --system-ghc
       - name: Examples
-        run: stack build --flag ttc-examples:examples
+        run: stack build --system-ghc --flag ttc-examples:examples
 
   cabal-version:
     name: "Cabal ${{ matrix.cabal }} (GHC ${{ matrix.ghc }})"
