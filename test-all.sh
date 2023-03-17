@@ -40,7 +40,10 @@ cabaltest() {
   if [ -e "${projfile}" ] ; then
     args+=("--project-file=${projfile}")
   fi
-  cabal v2-test "${args[@]}" --enable-tests --test-show-details=always || fail
+  args+=("--enable-tests")
+  args+=("--enable-benchmarks")
+  cabal v2-build "${args[@]}" || fail
+  cabal v2-test "${args[@]}" --test-show-details=always || fail
   cabal v2-haddock "${args[@]}" || fail
   cabal v2-build "${args[@]}" ttc-examples -f examples || fail
 }
@@ -51,8 +54,10 @@ stacktest() {
   hr "${ghcver}"
   declare -a args
   args+=("--stack-yaml=${config}")
-  stack build "${args[@]}" --haddock --test --bench --no-run-benchmarks \
+  stack build "${args[@]}" --test --bench --no-run-tests --no-run-benchmarks \
     || fail
+  stack test "${args[@]}" || fail
+  stack haddock "${args[@]}" || fail
   stack build "${args[@]}" --flag ttc-examples:examples || fail
 }
 
