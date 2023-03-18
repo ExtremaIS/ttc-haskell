@@ -130,6 +130,53 @@ jobs:
       - name: Examples
         run: stack build --system-ghc --flag ttc-examples:examples
 
+  stack-bounds:
+    name: "Stack Bounds (GHC ${{ matrix.ghc }})"
+    needs: config
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ghc: ['9.6.1']
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Haskell
+        uses: haskell/actions/setup@v2
+        id: setup
+        with:
+          ghc-version: ${{ matrix.ghc }}
+          cabal-version: latest
+          cabal-update: true
+          enable-stack: true
+          stack-version: latest
+      - name: Setup Environment
+        run: |
+          GHC_VERSION=$(ghc --numeric-version)
+          echo "GHC_VERSION=${GHC_VERSION}" | tee -a "${GITHUB_ENV}"
+          CABAL_VERSION=$(cabal --numeric-version)
+          echo "CABAL_VERSION=${CABAL_VERSION}" | tee -a "${GITHUB_ENV}"
+          STACK_YAML="stack-bounds.yaml"
+          echo "STACK_YAML=${STACK_YAML}" | tee -a "${GITHUB_ENV}"
+          CACHE_RESTORE_KEY="${RUNNER_OS}-$(date +%Y%m)-ghc-${GHC_VERSION}-stack-"
+          echo "CACHE_RESTORE_KEY=${CACHE_RESTORE_KEY}" | tee -a "${GITHUB_ENV}"
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.stack
+            .stack-work
+          key: ${{ env.CACHE_RESTORE_KEY }}${{ hashFiles('ttc.cabal', env.STACK_YAML) }}
+          restore-keys: ${{ env.CACHE_RESTORE_KEY }}
+      - name: Build
+        run: stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks
+      - name: Test
+        run: stack test --system-ghc
+      - name: Haddock
+        run: stack haddock --system-ghc
+      - name: Examples
+        run: stack build --system-ghc --flag ttc-examples:examples
+
   cabal-version:
     name: "Cabal ${{ matrix.cabal }} (GHC ${{ matrix.ghc }})"
     runs-on: ubuntu-latest
