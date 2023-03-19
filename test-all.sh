@@ -19,6 +19,14 @@ ghcvers() {
   awk '/^tested-with:$/{p=1;next}/^$/{p=0}p' ./*.cabal | sed 's/^[^=]*==//'
 }
 
+ghcvers_lower() {
+  grep ^with-compiler: cabal-bounds-lower.project | sed 's/.*-//'
+}
+
+ghcvers_upper() {
+  grep ^with-compiler: cabal-bounds-upper.project | sed 's/.*-//'
+}
+
 mockhr="$(command -v hr >/dev/null 2>&1 && echo "0" || echo "1")"
 hr() {
   echo "--{ $* }--------------------------------------"
@@ -69,6 +77,8 @@ case "$1" in
     ;;
   "github" )
     echo "ghcvers=$(ghcvers | jq -Rnc '[inputs]')"
+    echo "ghcvers_lower=$(ghcvers_lower | jq -Rnc '[inputs]')"
+    echo "ghcvers_upper=$(ghcvers_upper | jq -Rnc '[inputs]')"
     exit 0
     ;;
   "stack" )
