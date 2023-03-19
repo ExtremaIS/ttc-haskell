@@ -1,0 +1,28 @@
+packages:
+  ./ttc.cabal
+  examples/ttc-examples.cabal
+
+with-compiler: ghc-9.6.1
+
+constraints:
+    -- https://hackage.haskell.org/package/base
+    -- GHC boot library
+    base == 4.18.0.0
+
+    -- https://hackage.haskell.org/package/bytestring
+    -- GHC boot library
+  , bytestring == 0.11.4.0
+
+    -- https://hackage.haskell.org/package/tasty
+  , tasty == 1.4.3
+
+    -- https://hackage.haskell.org/package/tasty-hunit
+  , tasty-hunit == 0.10.0.3
+
+    -- https://hackage.haskell.org/package/template-haskell
+    -- GHC boot library
+  , template-haskell == 2.20.0.0
+
+    -- https://hackage.haskell.org/package/text
+    -- GHC boot library
+  , text == 2.0.2
