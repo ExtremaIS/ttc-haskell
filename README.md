@@ -306,7 +306,7 @@ that contains other changes.
 
 All releases are tagged in the `main` branch.  Release tags are signed using
 the
-[`security@extrema.is` GPG key](http://keys.gnupg.net/pks/lookup?op=vindex&fingerprint=on&search=0x1D484E4B4705FADF).
+[`security@extrema.is` GPG key](https://keyserver.ubuntu.com/pks/lookup?search=0x1D484E4B4705FADF&fingerprint=on&op=index).
 
 ### Contribution
 
