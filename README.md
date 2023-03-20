@@ -301,6 +301,7 @@ between arbitrary types, including string types.
 
 * Hackage: <https://hackage.haskell.org/package/ttc>
 * Stackage: <https://stackage.org/package/ttc>
+* Flora: <https://flora.pm/packages/@hackage/ttc>
 * GitHub: <https://github.com/ExtremaIS/ttc-haskell>
 * GitHub Actions CI: <https://github.com/ExtremaIS/ttc-haskell/actions>
 
