@@ -5,7 +5,8 @@ packages:
   - ./examples
 
 extra-deps:
-  - ansi-terminal-0.11.4
+  - ansi-terminal-0.11.5
+  - ansi-terminal-types-0.11.5
   - ansi-wl-pprint-0.6.9
   - call-stack-0.4.0
   - colour-2.3.6
