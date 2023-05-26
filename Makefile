@@ -121,8 +121,12 @@ example-enum: # build and run example-enum *
 ifeq ($(MODE), cabal)
 > cabal v2-run $(CABAL_ARGS) example-enum -f example-enum
 else
-> stack build $(STACK_ARGS) --flag ttc-examples:example-enum
-> stack exec example-enum
+> @echo "The example-enum example is disabled when using Stack.  Different"
+> @echo "dependencies need to be used depending on the version of"
+> @echo "optparse-applicative used, and Stack does not have an automated way"
+> @echo "to do this."
+#> stack build $(STACK_ARGS) --flag ttc-examples:example-enum
+#> stack exec example-enum
 endif
 .PHONY: example-enum
 

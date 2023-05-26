@@ -27,63 +27,90 @@ source-repository head
 flag example-enum
   description: build example-enum
   default: False
+  manual: True
 
 flag example-invalid
   description: build example-invalid
   default: False
+  manual: True
 
 flag example-lift
   description: build example-lift
   default: False
+  manual: True
 
 flag example-mkvalid
   description: build example-mkvalid
   default: False
+  manual: True
 
 flag example-mkuvalid
   description: build example-mkuvalid
   default: False
+  manual: True
 
 flag example-prompt
   description: build example-prompt
   default: False
+  manual: True
 
 flag example-uname
   description: build example-uname
   default: False
+  manual: True
 
 flag example-uvalidof
   description: build example-uvalidof
   default: False
+  manual: True
 
 flag example-uvalidqq
   description: build example-uvalidqq
   default: False
+  manual: True
 
 flag example-valid
   description: build example-valid
   default: False
+  manual: True
 
 flag example-validof
   description: build example-validof
   default: False
+  manual: True
 
 flag examples
   description: build all buildable examples
   default: False
+  manual: True
+
+flag optparse-applicative_ge_0_18
+  description: Use optparse-applicative 0.18 or newer
+  default: True
+  manual: False
 
 executable example-enum
-  if flag(examples) || flag(example-enum)
+  -- This example is not built with the examples flag because different
+  -- dependencies need to be used depending on the version of
+  -- optparse-applicative used, and Stack does not have an automated way to do
+  -- this.
+  if flag(example-enum)
     buildable: True
   else
     buildable: False
   hs-source-dirs: enum
   main-is: enum.hs
   build-depends:
-      ansi-wl-pprint
-    , base
-    , optparse-applicative
+      base
     , ttc
+  if flag(optparse-applicative_ge_0_18)
+    build-depends:
+        optparse-applicative >=0.18
+      , prettyprinter
+  else
+    build-depends:
+        ansi-wl-pprint
+      , optparse-applicative <0.18
   default-language: Haskell2010
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
 
