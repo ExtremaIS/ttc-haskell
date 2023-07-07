@@ -11,7 +11,7 @@ constraints:
 
     -- https://hackage.haskell.org/package/bytestring
     -- GHC boot library
-  , bytestring == 0.11.4.0
+  , bytestring == 0.12.0.0
 
     -- https://hackage.haskell.org/package/tasty
   , tasty == 1.4.3
@@ -26,3 +26,6 @@ constraints:
     -- https://hackage.haskell.org/package/text
     -- GHC boot library
   , text == 2.0.2
+
+allow-newer:
+    text-2.0.2:bytestring
