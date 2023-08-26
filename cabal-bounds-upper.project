@@ -25,7 +25,4 @@ constraints:
 
     -- https://hackage.haskell.org/package/text
     -- GHC boot library
-  , text == 2.0.2
-
-allow-newer:
-    text-2.0.2:bytestring
+  , text == 2.1
