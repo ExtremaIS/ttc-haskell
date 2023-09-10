@@ -29,6 +29,7 @@ following conventions:
 ### Non-Breaking
 
 * Bump `bytestring` dependency version upper bound
+* Bump `tasty` dependency version upper bound
 * Bump `text` dependency version upper bound
 
 ## 1.2.1.0 (2023-03-21)
