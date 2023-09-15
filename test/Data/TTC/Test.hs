@@ -1183,6 +1183,13 @@ testValid = testCase "valid" $ TestString "test" @=? validConst
     validConst :: TestString
     validConst = $$(TTC.valid "test")
 
+testValidIsString :: TestTree
+testValidIsString =
+    testCase "validIsString" $ TestString "test" @=? validConst
+  where
+    validConst :: TestString
+    validConst = $$("test")
+
 testValidOf :: TestTree
 testValidOf = testCase "validOf" $
     TestString "test" @=? $$(TTC.validOf (Proxy :: Proxy TestString) "test")
@@ -1289,6 +1296,7 @@ tests = testGroup "Data.TTC"
         ]
     , testGroup "Valid"
         [ testValid
+        , testValidIsString
         , testValidOf
         , testMkValid
         , testUntypedValidOf

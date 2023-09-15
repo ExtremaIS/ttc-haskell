@@ -21,6 +21,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 #if __GLASGOW_HASKELL__ >= 900
 {-# LANGUAGE ExplicitForAll #-}
@@ -154,6 +155,7 @@ module Data.TTC
 -- https://hackage.haskell.org/package/base
 import Data.Int (Int16, Int32, Int64, Int8)
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
+import Data.String (IsString(fromString))
 import Data.Word (Word16, Word32, Word64, Word8)
 import GHC.Stack (HasCallStack)
 import Text.Read (readMaybe)
@@ -1478,6 +1480,56 @@ valid
 valid s = case parse s of
     Right x -> [|| x ||]
     Left err -> fail $ "Invalid constant: " ++ err
+#endif
+
+-- | This instance enables use of 'valid' without having to type @valid@.  The
+-- [OverloadedStrings](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/overloaded_strings.html)
+-- extension must be enabled in the module where this functionality is used.
+-- Note that this reduces the number of characters in the code, but it can
+-- also make the code more difficult to understand by somebody who is not
+-- already familiar with it.  Typing @valid@ gives people a way to investigate
+-- and understand what is going on.
+--
+-- Note that the typed Template Haskell API changed in GHC 9.  The type
+-- displayed in this documentation is determined by the version of GHC used to
+-- build the documentation.
+--
+-- The type of this instance in GHC 9 or later is as follows:
+--
+-- @
+-- (MonadFail m, THS.Quote m, Parse a, THS.Lift a) => IsString (THS.Code m a)
+-- @
+--
+-- The type of this instance in previous versions of GHC is as follows:
+--
+-- @
+-- (Parse a, THS.Lift a) => IsString (TH.Q (TH.TExp a))
+-- @
+--
+-- This functionality can be used as follows in all supported versions of GHC.
+-- The following is example usage from the @valid@ example:
+--
+-- @
+-- sample2 :: Username
+-- sample2 = $$("alice")
+-- @
+--
+-- The parenthesis are not required from GHC 9.  The following is example
+-- usage from the @valid@ example:
+--
+-- @
+-- sample2 :: Username
+-- sample2 = $$"alice"
+-- @
+--
+-- @since 1.3.0.0
+#if __GLASGOW_HASKELL__ >= 900
+instance (MonadFail m, THS.Quote m, Parse a, THS.Lift a)
+    => IsString (THS.Code m a) where
+  fromString = valid
+#else
+instance (Parse a, THS.Lift a) => IsString (TH.Q (TH.TExp a)) where
+  fromString = valid
 #endif
 
 -- | Validate a constant at compile-time using a 'Parse' instance

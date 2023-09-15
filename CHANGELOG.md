@@ -26,6 +26,10 @@ following conventions:
 
 ## Unreleased
 
+### Breaking
+
+* Add typed Template Haskell expression `IsString` orphan instance
+
 ### Non-Breaking
 
 * Bump `bytestring` dependency version upper bound
