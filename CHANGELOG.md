@@ -29,6 +29,7 @@ following conventions:
 ### Breaking
 
 * Add typed Template Haskell expression `IsString` orphan instance
+* Add `parseOrFail` functions
 
 ### Non-Breaking
 

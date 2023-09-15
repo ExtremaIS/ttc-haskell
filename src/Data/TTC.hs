@@ -100,6 +100,17 @@ module Data.TTC
   , parseMaybeBSL
   , parseMaybeBSB
   , parseMaybeSBS
+    -- ** 'MonadFail' Parsing
+    -- $ParseOrFail
+  , parseOrFail
+  , parseOrFailS
+  , parseOrFailT
+  , parseOrFailTL
+  , parseOrFailTLB
+  , parseOrFailBS
+  , parseOrFailBSL
+  , parseOrFailBSB
+  , parseOrFailSBS
     -- ** Unsafe Parsing
     -- $ParseUnsafe
   , parseUnsafe
@@ -153,6 +164,9 @@ module Data.TTC
   ) where
 
 -- https://hackage.haskell.org/package/base
+#if __GLASGOW_HASKELL__ <= 806
+import Control.Monad.Fail (MonadFail)
+#endif
 import Data.Int (Int16, Int32, Int64, Int8)
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
 import Data.String (IsString(fromString))
@@ -977,6 +991,78 @@ parseMaybeBSB = parseMaybe
 parseMaybeSBS :: Parse a => SBS.ShortByteString -> Maybe a
 parseMaybeSBS = parseMaybe
 {-# INLINE parseMaybeSBS #-}
+
+------------------------------------------------------------------------------
+-- $ParseOrFail
+--
+-- The 'parseOrFail' function fails using 'MonadFail' on error instead of
+-- using an 'Either' type.  The rest of the functions are equivalent to
+-- 'parseOrFail', but they specify the type being parsed from.  Use them to
+-- avoid having to write type annotations in cases where the type is
+-- ambiguous.
+
+-- | Parse or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFail :: (MonadFail m, Parse a, Textual t) => t -> m a
+parseOrFail = either fail pure . parse
+{-# INLINE parseOrFail #-}
+
+-- | Parse from a 'String' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailS :: (MonadFail m, Parse a) => String -> m a
+parseOrFailS = parseOrFail
+{-# INLINE parseOrFailS #-}
+
+-- | Parse from strict 'T.Text' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailT :: (MonadFail m, Parse a) => T.Text -> m a
+parseOrFailT = parseOrFail
+{-# INLINE parseOrFailT #-}
+
+-- | Parse from lazy 'TL.Text' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailTL :: (MonadFail m, Parse a) => TL.Text -> m a
+parseOrFailTL = parseOrFail
+{-# INLINE parseOrFailTL #-}
+
+-- | Parse from a @Text@ 'TLB.Builder' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailTLB :: (MonadFail m, Parse a) => TLB.Builder -> m a
+parseOrFailTLB = parseOrFail
+{-# INLINE parseOrFailTLB #-}
+
+-- | Parse from a strict 'BS.ByteString' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailBS :: (MonadFail m, Parse a) => BS.ByteString -> m a
+parseOrFailBS = parseOrFail
+{-# INLINE parseOrFailBS #-}
+
+-- | Parse from a lazy 'BSL.ByteString' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailBSL :: (MonadFail m, Parse a) => BSL.ByteString -> m a
+parseOrFailBSL = parseOrFail
+{-# INLINE parseOrFailBSL #-}
+
+-- | Parse from a @ByteString@ 'BSB.Builder' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailBSB :: (MonadFail m, Parse a) => BSB.Builder -> m a
+parseOrFailBSB = parseOrFail
+{-# INLINE parseOrFailBSB #-}
+
+-- | Parse from a 'SBS.ShortByteString' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailSBS :: (MonadFail m, Parse a) => SBS.ShortByteString -> m a
+parseOrFailSBS = parseOrFail
+{-# INLINE parseOrFailSBS #-}
 
 ------------------------------------------------------------------------------
 -- $ParseUnsafe
