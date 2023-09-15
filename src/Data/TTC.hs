@@ -1080,56 +1080,56 @@ parseUnsafe :: (HasCallStack, Parse a, Textual t) => t -> a
 parseUnsafe = either (error . ("parseUnsafe: " ++)) id . parse
 {-# INLINE parseUnsafe #-}
 
--- | Unsafely parse to a 'String'
+-- | Unsafely parse from a 'String'
 --
 -- @since 0.1.0.0
 parseUnsafeS :: (HasCallStack, Parse a) => String -> a
 parseUnsafeS = parseUnsafe
 {-# INLINE parseUnsafeS #-}
 
--- | Unsafely parse to strict 'T.Text'
+-- | Unsafely parse from strict 'T.Text'
 --
 -- @since 0.1.0.0
 parseUnsafeT :: (HasCallStack, Parse a) => T.Text -> a
 parseUnsafeT = parseUnsafe
 {-# INLINE parseUnsafeT #-}
 
--- | Unsafely parse to lazy 'TL.Text'
+-- | Unsafely parse from lazy 'TL.Text'
 --
 -- @since 0.1.0.0
 parseUnsafeTL :: (HasCallStack, Parse a) => TL.Text -> a
 parseUnsafeTL = parseUnsafe
 {-# INLINE parseUnsafeTL #-}
 
--- | Unsafely parse to a @Text@ 'TLB.Builder'
+-- | Unsafely parse from a @Text@ 'TLB.Builder'
 --
 -- @since 1.1.0.0
 parseUnsafeTLB :: (HasCallStack, Parse a) => TLB.Builder -> a
 parseUnsafeTLB = parseUnsafe
 {-# INLINE parseUnsafeTLB #-}
 
--- | Unsafely parse to a strict 'BS.ByteString'
+-- | Unsafely parse from a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
 parseUnsafeBS :: (HasCallStack, Parse a) => BS.ByteString -> a
 parseUnsafeBS = parseUnsafe
 {-# INLINE parseUnsafeBS #-}
 
--- | Unsafely parse to a lazy 'BSL.ByteString'
+-- | Unsafely parse from a lazy 'BSL.ByteString'
 --
 -- @since 0.1.0.0
 parseUnsafeBSL :: (HasCallStack, Parse a) => BSL.ByteString -> a
 parseUnsafeBSL = parseUnsafe
 {-# INLINE parseUnsafeBSL #-}
 
--- | Unsafely parse to a @ByteString@ 'BSB.Builder'
+-- | Unsafely parse from a @ByteString@ 'BSB.Builder'
 --
 -- @since 1.1.0.0
 parseUnsafeBSB :: (HasCallStack, Parse a) => BSB.Builder -> a
 parseUnsafeBSB = parseUnsafe
 {-# INLINE parseUnsafeBSB #-}
 
--- | Unsafely parse to a 'SBS.ShortByteString'
+-- | Unsafely parse from a 'SBS.ShortByteString'
 --
 -- @since 1.1.0.0
 parseUnsafeSBS :: (HasCallStack, Parse a) => SBS.ShortByteString -> a
