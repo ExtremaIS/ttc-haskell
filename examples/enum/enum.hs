@@ -10,14 +10,37 @@
 -- 'TTC.parseEnum', supporting case-insensitive prefixes.
 ------------------------------------------------------------------------------
 
+{-# LANGUAGE CPP #-}
+
+#if defined(MIN_VERSION_ansi_wl_pprint)
+#if MIN_VERSION_ansi_wl_pprint (1,0,2)
+{-# OPTIONS_GHC -Wno-warnings-deprecations #-}
+#endif
+#endif
+
 module Main (main) where
 
 -- https://hackage.haskell.org/package/ansi-wl-pprint
+#if !MIN_VERSION_optparse_applicative (0,18,0)
 import qualified Text.PrettyPrint.ANSI.Leijen as Doc
 import Text.PrettyPrint.ANSI.Leijen (Doc)
+#endif
+
+-- https://hackage.haskell.org/package/base
+#if !MIN_VERSION_base (4,11,0)
+import Data.Monoid ((<>))
+#endif
 
 -- https://hackage.haskell.org/package/optparse-applicative
 import qualified Options.Applicative as OA
+#if MIN_VERSION_optparse_applicative (0,18,0)
+import Options.Applicative.Help.Pretty (Doc)
+#endif
+
+-- https://hackage.haskell.org/package/prettyprinter
+#if MIN_VERSION_optparse_applicative (0,18,0)
+import qualified Prettyprinter as Doc
+#endif
 
 -- https://hackage.haskell.org/package/ttc
 import qualified Data.TTC as TTC
@@ -55,6 +78,15 @@ greeting Spanish  = "¡Hola!"
 
 ------------------------------------------------------------------------------
 
+docString :: String -> Doc
+#if MIN_VERSION_optparse_applicative (0,18,0)
+docString = Doc.pretty
+#else
+docString = Doc.string
+#endif
+
+------------------------------------------------------------------------------
+
 -- Print a greeting in the specified language
 --
 -- Languages are usually represented using standard language codes, but
@@ -82,7 +114,8 @@ main = putStrLn . greeting =<< OA.execParser pinfo
     defaultLanguage = English
 
     langHelp :: Doc
-    langHelp = (Doc.text "Languages:" Doc.<$$>) . Doc.indent 2 $ Doc.vcat
-      [ Doc.text $ TTC.render lang
-      | lang <- [minBound :: Language ..]
-      ]
+    langHelp =
+      ((docString "Languages:" <> Doc.line) <>) . Doc.indent 2 $ Doc.vcat
+        [ docString $ TTC.render lang
+        | lang <- [minBound :: Language ..]
+        ]

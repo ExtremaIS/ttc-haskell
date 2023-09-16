@@ -24,6 +24,19 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 1.3.0.0 (2023-09-17)
+
+### Breaking
+
+* Add typed Template Haskell expression `IsString` orphan instance
+* Add `parseOrFail` functions
+
+### Non-Breaking
+
+* Bump `bytestring` dependency version upper bound
+* Bump `tasty` dependency version upper bound
+* Bump `text` dependency version upper bound
+
 ## 1.2.1.0 (2023-03-21)
 
 ### Non-Breaking

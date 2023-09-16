@@ -21,6 +21,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 #if __GLASGOW_HASKELL__ >= 900
 {-# LANGUAGE ExplicitForAll #-}
@@ -99,6 +100,17 @@ module Data.TTC
   , parseMaybeBSL
   , parseMaybeBSB
   , parseMaybeSBS
+    -- ** 'MonadFail' Parsing
+    -- $ParseOrFail
+  , parseOrFail
+  , parseOrFailS
+  , parseOrFailT
+  , parseOrFailTL
+  , parseOrFailTLB
+  , parseOrFailBS
+  , parseOrFailBSL
+  , parseOrFailBSB
+  , parseOrFailSBS
     -- ** Unsafe Parsing
     -- $ParseUnsafe
   , parseUnsafe
@@ -152,8 +164,12 @@ module Data.TTC
   ) where
 
 -- https://hackage.haskell.org/package/base
+#if __GLASGOW_HASKELL__ <= 806
+import Control.Monad.Fail (MonadFail)
+#endif
 import Data.Int (Int16, Int32, Int64, Int8)
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
+import Data.String (IsString(fromString))
 import Data.Word (Word16, Word32, Word64, Word8)
 import GHC.Stack (HasCallStack)
 import Text.Read (readMaybe)
@@ -977,6 +993,78 @@ parseMaybeSBS = parseMaybe
 {-# INLINE parseMaybeSBS #-}
 
 ------------------------------------------------------------------------------
+-- $ParseOrFail
+--
+-- The 'parseOrFail' function fails using 'MonadFail' on error instead of
+-- using an 'Either' type.  The rest of the functions are equivalent to
+-- 'parseOrFail', but they specify the type being parsed from.  Use them to
+-- avoid having to write type annotations in cases where the type is
+-- ambiguous.
+
+-- | Parse or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFail :: (MonadFail m, Parse a, Textual t) => t -> m a
+parseOrFail = either fail pure . parse
+{-# INLINE parseOrFail #-}
+
+-- | Parse from a 'String' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailS :: (MonadFail m, Parse a) => String -> m a
+parseOrFailS = parseOrFail
+{-# INLINE parseOrFailS #-}
+
+-- | Parse from strict 'T.Text' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailT :: (MonadFail m, Parse a) => T.Text -> m a
+parseOrFailT = parseOrFail
+{-# INLINE parseOrFailT #-}
+
+-- | Parse from lazy 'TL.Text' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailTL :: (MonadFail m, Parse a) => TL.Text -> m a
+parseOrFailTL = parseOrFail
+{-# INLINE parseOrFailTL #-}
+
+-- | Parse from a @Text@ 'TLB.Builder' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailTLB :: (MonadFail m, Parse a) => TLB.Builder -> m a
+parseOrFailTLB = parseOrFail
+{-# INLINE parseOrFailTLB #-}
+
+-- | Parse from a strict 'BS.ByteString' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailBS :: (MonadFail m, Parse a) => BS.ByteString -> m a
+parseOrFailBS = parseOrFail
+{-# INLINE parseOrFailBS #-}
+
+-- | Parse from a lazy 'BSL.ByteString' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailBSL :: (MonadFail m, Parse a) => BSL.ByteString -> m a
+parseOrFailBSL = parseOrFail
+{-# INLINE parseOrFailBSL #-}
+
+-- | Parse from a @ByteString@ 'BSB.Builder' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailBSB :: (MonadFail m, Parse a) => BSB.Builder -> m a
+parseOrFailBSB = parseOrFail
+{-# INLINE parseOrFailBSB #-}
+
+-- | Parse from a 'SBS.ShortByteString' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailSBS :: (MonadFail m, Parse a) => SBS.ShortByteString -> m a
+parseOrFailSBS = parseOrFail
+{-# INLINE parseOrFailSBS #-}
+
+------------------------------------------------------------------------------
 -- $ParseUnsafe
 --
 -- The 'parseUnsafe' function raises an exception on error instead of using an
@@ -992,56 +1080,56 @@ parseUnsafe :: (HasCallStack, Parse a, Textual t) => t -> a
 parseUnsafe = either (error . ("parseUnsafe: " ++)) id . parse
 {-# INLINE parseUnsafe #-}
 
--- | Unsafely parse to a 'String'
+-- | Unsafely parse from a 'String'
 --
 -- @since 0.1.0.0
 parseUnsafeS :: (HasCallStack, Parse a) => String -> a
 parseUnsafeS = parseUnsafe
 {-# INLINE parseUnsafeS #-}
 
--- | Unsafely parse to strict 'T.Text'
+-- | Unsafely parse from strict 'T.Text'
 --
 -- @since 0.1.0.0
 parseUnsafeT :: (HasCallStack, Parse a) => T.Text -> a
 parseUnsafeT = parseUnsafe
 {-# INLINE parseUnsafeT #-}
 
--- | Unsafely parse to lazy 'TL.Text'
+-- | Unsafely parse from lazy 'TL.Text'
 --
 -- @since 0.1.0.0
 parseUnsafeTL :: (HasCallStack, Parse a) => TL.Text -> a
 parseUnsafeTL = parseUnsafe
 {-# INLINE parseUnsafeTL #-}
 
--- | Unsafely parse to a @Text@ 'TLB.Builder'
+-- | Unsafely parse from a @Text@ 'TLB.Builder'
 --
 -- @since 1.1.0.0
 parseUnsafeTLB :: (HasCallStack, Parse a) => TLB.Builder -> a
 parseUnsafeTLB = parseUnsafe
 {-# INLINE parseUnsafeTLB #-}
 
--- | Unsafely parse to a strict 'BS.ByteString'
+-- | Unsafely parse from a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
 parseUnsafeBS :: (HasCallStack, Parse a) => BS.ByteString -> a
 parseUnsafeBS = parseUnsafe
 {-# INLINE parseUnsafeBS #-}
 
--- | Unsafely parse to a lazy 'BSL.ByteString'
+-- | Unsafely parse from a lazy 'BSL.ByteString'
 --
 -- @since 0.1.0.0
 parseUnsafeBSL :: (HasCallStack, Parse a) => BSL.ByteString -> a
 parseUnsafeBSL = parseUnsafe
 {-# INLINE parseUnsafeBSL #-}
 
--- | Unsafely parse to a @ByteString@ 'BSB.Builder'
+-- | Unsafely parse from a @ByteString@ 'BSB.Builder'
 --
 -- @since 1.1.0.0
 parseUnsafeBSB :: (HasCallStack, Parse a) => BSB.Builder -> a
 parseUnsafeBSB = parseUnsafe
 {-# INLINE parseUnsafeBSB #-}
 
--- | Unsafely parse to a 'SBS.ShortByteString'
+-- | Unsafely parse from a 'SBS.ShortByteString'
 --
 -- @since 1.1.0.0
 parseUnsafeSBS :: (HasCallStack, Parse a) => SBS.ShortByteString -> a
@@ -1478,6 +1566,56 @@ valid
 valid s = case parse s of
     Right x -> [|| x ||]
     Left err -> fail $ "Invalid constant: " ++ err
+#endif
+
+-- | This instance enables use of 'valid' without having to type @valid@.  The
+-- [OverloadedStrings](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/overloaded_strings.html)
+-- extension must be enabled in the module where this functionality is used.
+-- Note that this reduces the number of characters in the code, but it can
+-- also make the code more difficult to understand by somebody who is not
+-- already familiar with it.  Typing @valid@ gives people a way to investigate
+-- and understand what is going on.
+--
+-- Note that the typed Template Haskell API changed in GHC 9.  The type
+-- displayed in this documentation is determined by the version of GHC used to
+-- build the documentation.
+--
+-- The type of this instance in GHC 9 or later is as follows:
+--
+-- @
+-- (MonadFail m, THS.Quote m, Parse a, THS.Lift a) => IsString (THS.Code m a)
+-- @
+--
+-- The type of this instance in previous versions of GHC is as follows:
+--
+-- @
+-- (Parse a, THS.Lift a) => IsString (TH.Q (TH.TExp a))
+-- @
+--
+-- This functionality can be used as follows in all supported versions of GHC.
+-- The following is example usage from the @valid@ example:
+--
+-- @
+-- sample2 :: Username
+-- sample2 = $$("alice")
+-- @
+--
+-- The parenthesis are not required from GHC 9.  The following is example
+-- usage from the @valid@ example:
+--
+-- @
+-- sample2 :: Username
+-- sample2 = $$"alice"
+-- @
+--
+-- @since 1.3.0.0
+#if __GLASGOW_HASKELL__ >= 900
+instance (MonadFail m, THS.Quote m, Parse a, THS.Lift a)
+    => IsString (THS.Code m a) where
+  fromString = valid
+#else
+instance (Parse a, THS.Lift a) => IsString (TH.Q (TH.TExp a)) where
+  fromString = valid
 #endif
 
 -- | Validate a constant at compile-time using a 'Parse' instance

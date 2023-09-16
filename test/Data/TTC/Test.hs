@@ -971,6 +971,57 @@ testParseMaybeSBS :: TestTree
 testParseMaybeSBS = testCase "parseMaybeSBS" $
     Just answer @=? TTC.parseMaybeSBS answerSBS
 
+testParseOrFail :: TestTree
+testParseOrFail = testGroup "parseOrFail"
+    [ testCase "S" $ Just answer @=? TTC.parseOrFail answerS
+    , testCase "T" $ Just answer @=? TTC.parseOrFail answerT
+    , testCase "TL" $ Just answer @=? TTC.parseOrFail answerTL
+    , testCase "TLB" $ Just answer @=? TTC.parseOrFail answerTLB
+    , testCase "BS" $ Just answer @=? TTC.parseOrFail answerBS
+    , testCase "BSL" $ Just answer @=? TTC.parseOrFail answerBSL
+    , testCase "BSB" $ Just answer @=? TTC.parseOrFail answerBSB
+    , testCase "SBS" $ Just answer @=? TTC.parseOrFail answerSBS
+    -- successful 'parseOrFail' does not have any error type conversion:
+    , testCase "noerror" $
+        Just (PartialParser "test") @=? TTC.parseOrFail ("test" :: String)
+    , testCase "negative" $
+        Nothing @=? (TTC.parseOrFail ('-' : answerS) :: Maybe PosInt)
+    , testCase "invalid" $
+        Nothing @=? (TTC.parseOrFail ('a' : answerS) :: Maybe PosInt)
+    ]
+
+testParseOrFailS :: TestTree
+testParseOrFailS = testCase "parseOrFailS" $
+    Just answer @=? TTC.parseOrFailS answerS
+
+testParseOrFailT :: TestTree
+testParseOrFailT = testCase "parseOrFailT" $
+    Just answer @=? TTC.parseOrFailT answerT
+
+testParseOrFailTL :: TestTree
+testParseOrFailTL = testCase "parseOrFailTL" $
+    Just answer @=? TTC.parseOrFailTL answerTL
+
+testParseOrFailTLB :: TestTree
+testParseOrFailTLB = testCase "parseOrFailTLB" $
+    Just answer @=? TTC.parseOrFailTLB answerTLB
+
+testParseOrFailBS :: TestTree
+testParseOrFailBS = testCase "parseOrFailBS" $
+    Just answer @=? TTC.parseOrFailBS answerBS
+
+testParseOrFailBSL :: TestTree
+testParseOrFailBSL = testCase "parseOrFailBSL" $
+    Just answer @=? TTC.parseOrFailBSL answerBSL
+
+testParseOrFailBSB :: TestTree
+testParseOrFailBSB = testCase "parseOrFailBSB" $
+    Just answer @=? TTC.parseOrFailBSB answerBSB
+
+testParseOrFailSBS :: TestTree
+testParseOrFailSBS = testCase "parseOrFailSBS" $
+    Just answer @=? TTC.parseOrFailSBS answerSBS
+
 testParseUnsafe :: TestTree
 testParseUnsafe = testGroup "parseUnsafe"
     [ testCase "S" $ answer @=? TTC.parseUnsafe answerS
@@ -1183,6 +1234,13 @@ testValid = testCase "valid" $ TestString "test" @=? validConst
     validConst :: TestString
     validConst = $$(TTC.valid "test")
 
+testValidIsString :: TestTree
+testValidIsString =
+    testCase "validIsString" $ TestString "test" @=? validConst
+  where
+    validConst :: TestString
+    validConst = $$("test")
+
 testValidOf :: TestTree
 testValidOf = testCase "validOf" $
     TestString "test" @=? $$(TTC.validOf (Proxy :: Proxy TestString) "test")
@@ -1268,6 +1326,15 @@ tests = testGroup "Data.TTC"
         , testParseMaybeBSL
         , testParseMaybeBSB
         , testParseMaybeSBS
+        , testParseOrFail
+        , testParseOrFailS
+        , testParseOrFailT
+        , testParseOrFailTL
+        , testParseOrFailTLB
+        , testParseOrFailBS
+        , testParseOrFailBSL
+        , testParseOrFailBSB
+        , testParseOrFailSBS
         , testParseUnsafe
         , testParseUnsafeS
         , testParseUnsafeT
@@ -1289,6 +1356,7 @@ tests = testGroup "Data.TTC"
         ]
     , testGroup "Valid"
         [ testValid
+        , testValidIsString
         , testValidOf
         , testMkValid
         , testUntypedValidOf

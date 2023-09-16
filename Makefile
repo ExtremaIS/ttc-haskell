@@ -88,7 +88,6 @@ endif
 
 clean-all: clean
 clean-all: # clean package and remove artifacts
-> @rm -rf .hie
 > @rm -rf .stack-work examples/.stack-work
 > @rm -rf build
 > @rm -rf dist-newstyle
@@ -120,10 +119,14 @@ endif
 example-enum: hr
 example-enum: # build and run example-enum *
 ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-enum
+> cabal v2-run $(CABAL_ARGS) example-enum -f example-enum
 else
-> stack build $(STACK_ARGS) --flag ttc-examples:example-enum
-> stack exec example-enum
+> @echo "The example-enum example is disabled when using Stack.  Different"
+> @echo "dependencies need to be used depending on the version of"
+> @echo "optparse-applicative used, and Stack does not have an automated way"
+> @echo "to do this."
+#> stack build $(STACK_ARGS) --flag ttc-examples:example-enum
+#> stack exec example-enum
 endif
 .PHONY: example-enum
 
@@ -139,7 +142,7 @@ endif
 example-lift: hr
 example-lift: # build and run example-lift *
 ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-lift
+> cabal v2-run $(CABAL_ARGS) example-lift -f example-lift
 else
 > stack build $(STACK_ARGS) --flag ttc-examples:example-lift
 > stack exec example-lift
@@ -149,7 +152,7 @@ endif
 example-mkvalid: hr
 example-mkvalid: # build and run example-mkvalid *
 ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-mkvalid
+> cabal v2-run $(CABAL_ARGS) example-mkvalid -f example-mkvalid
 else
 > stack build $(STACK_ARGS) --flag ttc-examples:example-mkvalid
 > stack exec example-mkvalid
@@ -159,7 +162,7 @@ endif
 example-mkuvalid: hr
 example-mkuvalid: # build and run example-mkuvalid *
 ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-mkuvalid
+> cabal v2-run $(CABAL_ARGS) example-mkuvalid -f example-mkuvalid
 else
 > stack build $(STACK_ARGS) --flag ttc-examples:example-mkuvalid
 > stack exec example-mkuvalid
@@ -169,7 +172,7 @@ endif
 example-prompt: hr
 example-prompt: # build and run example-prompt *
 ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-prompt
+> cabal v2-run $(CABAL_ARGS) example-prompt -f example-prompt
 else
 > stack build $(STACK_ARGS) --flag ttc-examples:example-prompt
 > stack exec example-prompt
@@ -179,7 +182,7 @@ endif
 example-uname: hr
 example-uname: # build and run example-uname *
 ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-uname
+> cabal v2-run $(CABAL_ARGS) example-uname -f example-uname
 else
 > stack build $(STACK_ARGS) --flag ttc-examples:example-uname
 > stack exec example-uname
@@ -189,7 +192,7 @@ endif
 example-uvalidof: hr
 example-uvalidof: # build and run example-uvalidof *
 ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-uvalidof
+> cabal v2-run $(CABAL_ARGS) example-uvalidof -f example-uvalidof
 else
 > stack build $(STACK_ARGS) --flag ttc-examples:example-uvalidof
 > stack exec example-uvalidof
@@ -199,7 +202,7 @@ endif
 example-uvalidqq: hr
 example-uvalidqq: # build and run example-uvalidqq *
 ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-uvalidqq
+> cabal v2-run $(CABAL_ARGS) example-uvalidqq -f example-uvalidqq
 else
 > stack build $(STACK_ARGS) --flag ttc-examples:example-uvalidqq
 > stack exec example-uvalidqq
@@ -209,7 +212,7 @@ endif
 example-valid: hr
 example-valid: # build and run example-valid *
 ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-valid
+> cabal v2-run $(CABAL_ARGS) example-valid -f example-valid
 else
 > stack build $(STACK_ARGS) --flag ttc-examples:example-valid
 > stack exec example-valid
@@ -219,7 +222,7 @@ endif
 example-validof: hr
 example-validof: # build and run example-validof *
 ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-validof
+> cabal v2-run $(CABAL_ARGS) example-validof -f example-validof
 else
 > stack build $(STACK_ARGS) --flag ttc-examples:example-validof
 > stack exec example-validof
@@ -354,17 +357,6 @@ source-tar: # create source tarball using tar
 >   .
 > @rm -f build/.gitignore
 .PHONY: source-tar
-
-stan: hr
-stan: export STAN_USE_DEFAULT_CONFIG=True
-stan: # run stan static analysis
-ifeq ($(MODE), cabal)
-> @cabal v2-build -f write-hie
-else
-> @stack build --flag $(PACKAGE):write-hie
-endif
-> @stan
-.PHONY: stan
 
 test: hr
 test: # run tests, optionally for pattern P *
