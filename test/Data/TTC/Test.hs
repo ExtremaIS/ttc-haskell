@@ -34,6 +34,9 @@ import qualified Data.Text as T
 import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
 
+-- https://hackage.haskell.org/package/text-short
+import qualified Data.Text.Short as ST
+
 -- (ttc)
 import qualified Data.TTC as TTC
 
@@ -139,6 +142,9 @@ xTL = "test テスト"
 xTLB :: TLB.Builder
 xTLB = "test テスト"
 
+xST :: ST.ShortText
+xST = "test テスト"
+
 xBS :: BS.ByteString
 xBS = "test \xe3\x83\x86\xe3\x82\xb9\xe3\x83\x88"
 
@@ -162,6 +168,9 @@ xiTL = "test \xfffd"
 
 xiTLB :: TLB.Builder
 xiTLB = "test \xfffd"
+
+xiST :: ST.ShortText
+xiST = "test \xfffd"
 
 xiBS :: BS.ByteString
 xiBS = "test \xe3"
@@ -207,6 +216,9 @@ answerTL = "42"
 
 answerTLB :: TLB.Builder
 answerTLB = "42"
+
+answerST :: ST.ShortText
+answerST = "42"
 
 answerBS :: BS.ByteString
 answerBS = "42"
@@ -263,6 +275,9 @@ redTL = "red"
 redTLB :: TLB.Builder
 redTLB = "red"
 
+redST :: ST.ShortText
+redST = "red"
+
 redBS :: BS.ByteString
 redBS = "red"
 
@@ -294,6 +309,7 @@ testToS = testGroup "toS"
     , testCase "T" $ xS @=? TTC.toS xT
     , testCase "TL" $ xS @=? TTC.toS xTL
     , testCase "TLB" $ xS @=? TTC.toS xTLB
+    , testCase "ST" $ xS @=? TTC.toS xST
     , testCase "BS" $ xS @=? TTC.toS xBS
     , testCase "BS/invalid" $ xiS @=? TTC.toS xiBS
     , testCase "BSL" $ xS @=? TTC.toS xBSL
@@ -310,6 +326,7 @@ testToT = testGroup "toT"
     , testCase "T" $ xT @=? TTC.toT xT
     , testCase "TL" $ xT @=? TTC.toT xTL
     , testCase "TLB" $ xT @=? TTC.toT xTLB
+    , testCase "ST" $ xT @=? TTC.toT xST
     , testCase "BS" $ xT @=? TTC.toT xBS
     , testCase "BS/invalid" $ xiT @=? TTC.toT xiBS
     , testCase "BSL" $ xT @=? TTC.toT xBSL
@@ -326,6 +343,7 @@ testToTL = testGroup "toTL"
     , testCase "T" $ xTL @=? TTC.toTL xT
     , testCase "TL" $ xTL @=? TTC.toTL xTL
     , testCase "TLB" $ xTL @=? TTC.toTL xTLB
+    , testCase "ST" $ xTL @=? TTC.toTL xST
     , testCase "BS" $ xTL @=? TTC.toTL xBS
     , testCase "BS/invalid" $ xiTL @=? TTC.toTL xiBS
     , testCase "BSL" $ xTL @=? TTC.toTL xBSL
@@ -342,6 +360,7 @@ testToTLB = testGroup "toTLB"
     , testCase "T" $ xTLB @=? TTC.toTLB xT
     , testCase "TL" $ xTLB @=? TTC.toTLB xTL
     , testCase "TLB" $ xTLB @=? TTC.toTLB xTLB
+    , testCase "ST" $ xTLB @=? TTC.toTLB xST
     , testCase "BS" $ xTLB @=? TTC.toTLB xBS
     , testCase "BS/invalid" $ xiTLB @=? TTC.toTLB xiBS
     , testCase "BSL" $ xTLB @=? TTC.toTLB xBSL
@@ -352,12 +371,30 @@ testToTLB = testGroup "toTLB"
     , testCase "SBS/invalid" $ xiTLB @=? TTC.toTLB xiSBS
     ]
 
+testToST :: TestTree
+testToST = testGroup "toST"
+    [ testCase "S" $ xST @=? TTC.toST xS
+    , testCase "T" $ xST @=? TTC.toST xT
+    , testCase "TL" $ xST @=? TTC.toST xTL
+    , testCase "TLB" $ xST @=? TTC.toST xTLB
+    , testCase "ST" $ xST @=? TTC.toST xST
+    , testCase "BS" $ xST @=? TTC.toST xBS
+    , testCase "BS/invalid" $ xiST @=? TTC.toST xiBS
+    , testCase "BSL" $ xST @=? TTC.toST xBSL
+    , testCase "BSL/invalid" $ xiST @=? TTC.toST xiBSL
+    , testCase "BSB" $ xST @=? TTC.toST xBSB
+    , testCase "BSB/invalid" $ xiST @=? TTC.toST xiBSB
+    , testCase "SBS" $ xST @=? TTC.toST xSBS
+    , testCase "SBS/invalid" $ xiST @=? TTC.toST xiSBS
+    ]
+
 testToBS :: TestTree
 testToBS = testGroup "toBS"
     [ testCase "S" $ xBS @=? TTC.toBS xS
     , testCase "T" $ xBS @=? TTC.toBS xT
     , testCase "TL" $ xBS @=? TTC.toBS xTL
     , testCase "TLB" $ xBS @=? TTC.toBS xTLB
+    , testCase "ST" $ xBS @=? TTC.toBS xST
     , testCase "BS" $ xBS @=? TTC.toBS xBS
     , testCase "BSL" $ xBS @=? TTC.toBS xBSL
     , testCase "BSB" $ xBS @=? TTC.toBS xBSB
@@ -370,6 +407,7 @@ testToBSL = testGroup "toBSL"
     , testCase "T" $ xBSL @=? TTC.toBSL xT
     , testCase "TL" $ xBSL @=? TTC.toBSL xTL
     , testCase "TLB" $ xBSL @=? TTC.toBSL xTLB
+    , testCase "ST" $ xBSL @=? TTC.toBSL xST
     , testCase "BS" $ xBSL @=? TTC.toBSL xBS
     , testCase "BSL" $ xBSL @=? TTC.toBSL xBSL
     , testCase "BSB" $ xBSL @=? TTC.toBSL xBSB
@@ -382,6 +420,7 @@ testToBSB = testGroup "toBSB"
     , testCase "T" $ xBSB @=? TTC.toBSB xT
     , testCase "TL" $ xBSB @=? TTC.toBSB xTL
     , testCase "TLB" $ xBSB @=? TTC.toBSB xTLB
+    , testCase "ST" $ xBSB @=? TTC.toBSB xST
     , testCase "BS" $ xBSB @=? TTC.toBSB xBS
     , testCase "BSL" $ xBSB @=? TTC.toBSB xBSL
     , testCase "BSB" $ xBSB @=? TTC.toBSB xBSB
@@ -394,6 +433,7 @@ testToSBS = testGroup "toSBS"
     , testCase "T" $ xSBS @=? TTC.toSBS xT
     , testCase "TL" $ xSBS @=? TTC.toSBS xTL
     , testCase "TLB" $ xSBS @=? TTC.toSBS xTLB
+    , testCase "ST" $ xSBS @=? TTC.toSBS xST
     , testCase "BS" $ xSBS @=? TTC.toSBS xBS
     , testCase "BSL" $ xSBS @=? TTC.toSBS xBSL
     , testCase "BSB" $ xSBS @=? TTC.toSBS xBSB
@@ -406,6 +446,7 @@ testConvert = testGroup "convert"
     , testCase "S->T" $ xT @=? TTC.convert xS
     , testCase "S->TL" $ xTL @=? TTC.convert xS
     , testCase "S->TLB" $ xTLB @=? TTC.convert xS
+    , testCase "S->ST" $ xST @=? TTC.convert xS
     , testCase "S->BS" $ xBS @=? TTC.convert xS
     , testCase "S->BSL" $ xBSL @=? TTC.convert xS
     , testCase "S->BSB" $ xBSB @=? TTC.convert xS
@@ -414,6 +455,7 @@ testConvert = testGroup "convert"
     , testCase "T->T" $ xT @=? TTC.convert xT
     , testCase "T->TL" $ xTL @=? TTC.convert xT
     , testCase "T->TLB" $ xTLB @=? TTC.convert xT
+    , testCase "T->ST" $ xST @=? TTC.convert xT
     , testCase "T->BS" $ xBS @=? TTC.convert xT
     , testCase "T->BSL" $ xBSL @=? TTC.convert xT
     , testCase "T->BSB" $ xBSB @=? TTC.convert xT
@@ -422,6 +464,7 @@ testConvert = testGroup "convert"
     , testCase "TL->T" $ xT @=? TTC.convert xTL
     , testCase "TL->TL" $ xTL @=? TTC.convert xTL
     , testCase "TL->TLB" $ xTLB @=? TTC.convert xTL
+    , testCase "TL->ST" $ xST @=? TTC.convert xTL
     , testCase "TL->BS" $ xBS @=? TTC.convert xTL
     , testCase "TL->BSL" $ xBSL @=? TTC.convert xTL
     , testCase "TL->BSB" $ xBSB @=? TTC.convert xTL
@@ -430,6 +473,7 @@ testConvert = testGroup "convert"
     , testCase "TLB->T" $ xT @=? TTC.convert xTLB
     , testCase "TLB->TL" $ xTL @=? TTC.convert xTLB
     , testCase "TLB->TLB" $ xTLB @=? TTC.convert xTLB
+    , testCase "TLB->ST" $ xST @=? TTC.convert xTLB
     , testCase "TLB->BS" $ xBS @=? TTC.convert xTLB
     , testCase "TLB->BSL" $ xBSL @=? TTC.convert xTLB
     , testCase "TLB->BSB" $ xBSB @=? TTC.convert xTLB
@@ -438,6 +482,7 @@ testConvert = testGroup "convert"
     , testCase "BS->T" $ xT @=? TTC.convert xBS
     , testCase "BS->TL" $ xTL @=? TTC.convert xBS
     , testCase "BS->TLB" $ xTLB @=? TTC.convert xBS
+    , testCase "BS->ST" $ xST @=? TTC.convert xBS
     , testCase "BS->BS" $ xBS @=? TTC.convert xBS
     , testCase "BS->BSL" $ xBSL @=? TTC.convert xBS
     , testCase "BS->BSB" $ xBSB @=? TTC.convert xBS
@@ -446,6 +491,7 @@ testConvert = testGroup "convert"
     , testCase "BSL->T" $ xT @=? TTC.convert xBSL
     , testCase "BSL->TL" $ xTL @=? TTC.convert xBSL
     , testCase "BSL->TLB" $ xTLB @=? TTC.convert xBSL
+    , testCase "BSL->ST" $ xST @=? TTC.convert xBSL
     , testCase "BSL->BS" $ xBS @=? TTC.convert xBSL
     , testCase "BSL->BSL" $ xBSL @=? TTC.convert xBSL
     , testCase "BSL->BSB" $ xBSB @=? TTC.convert xBSL
@@ -454,6 +500,7 @@ testConvert = testGroup "convert"
     , testCase "BSB->T" $ xT @=? TTC.convert xBSB
     , testCase "BSB->TL" $ xTL @=? TTC.convert xBSB
     , testCase "BSB->TLB" $ xTLB @=? TTC.convert xBSB
+    , testCase "BSB->ST" $ xST @=? TTC.convert xBSB
     , testCase "BSB->BS" $ xBS @=? TTC.convert xBSB
     , testCase "BSB->BSL" $ xBSL @=? TTC.convert xBSB
     , testCase "BSB->BSB" $ xBSB @=? TTC.convert xBSB
@@ -462,6 +509,7 @@ testConvert = testGroup "convert"
     , testCase "SBS->T" $ xT @=? TTC.convert xSBS
     , testCase "SBS->TL" $ xTL @=? TTC.convert xSBS
     , testCase "SBS->TLB" $ xTLB @=? TTC.convert xSBS
+    , testCase "SBS->ST" $ xST @=? TTC.convert xSBS
     , testCase "SBS->BS" $ xBS @=? TTC.convert xSBS
     , testCase "SBS->BSL" $ xBSL @=? TTC.convert xSBS
     , testCase "SBS->BSB" $ xBSB @=? TTC.convert xSBS
@@ -474,6 +522,7 @@ testFromS = testGroup "fromS"
     , testCase "T" $ xT @=? TTC.fromS xS
     , testCase "TL" $ xTL @=? TTC.fromS xS
     , testCase "TLB" $ xTLB @=? TTC.fromS xS
+    , testCase "ST" $ xST @=? TTC.fromS xS
     , testCase "BS" $ xBS @=? TTC.fromS xS
     , testCase "BSL" $ xBSL @=? TTC.fromS xS
     , testCase "BSB" $ xBSB @=? TTC.fromS xS
@@ -486,6 +535,7 @@ testFromT = testGroup "fromT"
     , testCase "T" $ xT @=? TTC.fromT xT
     , testCase "TL" $ xTL @=? TTC.fromT xT
     , testCase "TLB" $ xTLB @=? TTC.fromT xT
+    , testCase "ST" $ xST @=? TTC.fromT xT
     , testCase "BS" $ xBS @=? TTC.fromT xT
     , testCase "BSL" $ xBSL @=? TTC.fromT xT
     , testCase "BSB" $ xBSB @=? TTC.fromT xT
@@ -498,6 +548,7 @@ testFromTL = testGroup "fromTL"
     , testCase "T" $ xT @=? TTC.fromTL xTL
     , testCase "TL" $ xTL @=? TTC.fromTL xTL
     , testCase "TLB" $ xTLB @=? TTC.fromTL xTL
+    , testCase "ST" $ xST @=? TTC.fromTL xTL
     , testCase "BS" $ xBS @=? TTC.fromTL xTL
     , testCase "BSL" $ xBSL @=? TTC.fromTL xTL
     , testCase "BSB" $ xBSB @=? TTC.fromTL xTL
@@ -510,6 +561,7 @@ testFromTLB = testGroup "fromTLB"
     , testCase "T" $ xT @=? TTC.fromTLB xTLB
     , testCase "TL" $ xTL @=? TTC.fromTLB xTLB
     , testCase "TLB" $ xTLB @=? TTC.fromTLB xTLB
+    , testCase "ST" $ xST @=? TTC.fromTLB xTLB
     , testCase "BS" $ xBS @=? TTC.fromTLB xTLB
     , testCase "BSL" $ xBSL @=? TTC.fromTLB xTLB
     , testCase "BSB" $ xBSB @=? TTC.fromTLB xTLB
@@ -522,6 +574,7 @@ testFromBS = testGroup "fromBS"
     , testCase "T" $ xT @=? TTC.fromBS xBS
     , testCase "TL" $ xTL @=? TTC.fromBS xBS
     , testCase "TLB" $ xTLB @=? TTC.fromBS xBS
+    , testCase "ST" $ xST @=? TTC.fromBS xBS
     , testCase "BS" $ xBS @=? TTC.fromBS xBS
     , testCase "BSL" $ xBSL @=? TTC.fromBS xBS
     , testCase "BSB" $ xBSB @=? TTC.fromBS xBS
@@ -534,6 +587,7 @@ testFromBSL = testGroup "fromBSL"
     , testCase "T" $ xT @=? TTC.fromBSL xBSL
     , testCase "TL" $ xTL @=? TTC.fromBSL xBSL
     , testCase "TLB" $ xTLB @=? TTC.fromBSL xBSL
+    , testCase "ST" $ xST @=? TTC.fromBSL xBSL
     , testCase "BS" $ xBS @=? TTC.fromBSL xBSL
     , testCase "BSL" $ xBSL @=? TTC.fromBSL xBSL
     , testCase "BSB" $ xBSB @=? TTC.fromBSL xBSL
@@ -546,6 +600,7 @@ testFromBSB = testGroup "fromBSB"
     , testCase "T" $ xT @=? TTC.fromBSB xBSB
     , testCase "TL" $ xTL @=? TTC.fromBSB xBSB
     , testCase "TLB" $ xTLB @=? TTC.fromBSB xBSB
+    , testCase "ST" $ xST @=? TTC.fromBSB xBSB
     , testCase "BS" $ xBS @=? TTC.fromBSB xBSB
     , testCase "BSL" $ xBSL @=? TTC.fromBSB xBSB
     , testCase "BSB" $ xBSB @=? TTC.fromBSB xBSB
@@ -558,6 +613,7 @@ testFromSBS = testGroup "fromSBS"
     , testCase "T" $ xT @=? TTC.fromSBS xSBS
     , testCase "TL" $ xTL @=? TTC.fromSBS xSBS
     , testCase "TLB" $ xTLB @=? TTC.fromSBS xSBS
+    , testCase "ST" $ xST @=? TTC.fromSBS xSBS
     , testCase "BS" $ xBS @=? TTC.fromSBS xSBS
     , testCase "BSL" $ xBSL @=? TTC.fromSBS xSBS
     , testCase "BSB" $ xBSB @=? TTC.fromSBS xSBS
@@ -570,6 +626,7 @@ testAsS = testGroup "asS"
     , testCase "T" $ xS @=? TTC.asS id xT
     , testCase "TL" $ xS @=? TTC.asS id xTL
     , testCase "TLB" $ xS @=? TTC.asS id xTLB
+    , testCase "ST" $ xS @=? TTC.asS id xST
     , testCase "BS" $ xS @=? TTC.asS id xBS
     , testCase "BSL" $ xS @=? TTC.asS id xBSL
     , testCase "BSB" $ xS @=? TTC.asS id xBSB
@@ -582,6 +639,7 @@ testAsT = testGroup "asT"
     , testCase "T" $ xT @=? TTC.asT id xT
     , testCase "TL" $ xT @=? TTC.asT id xTL
     , testCase "TLB" $ xT @=? TTC.asT id xTLB
+    , testCase "ST" $ xT @=? TTC.asT id xST
     , testCase "BS" $ xT @=? TTC.asT id xBS
     , testCase "BSL" $ xT @=? TTC.asT id xBSL
     , testCase "BSB" $ xT @=? TTC.asT id xBSB
@@ -594,6 +652,7 @@ testAsTL = testGroup "asTL"
     , testCase "T" $ xTL @=? TTC.asTL id xT
     , testCase "TL" $ xTL @=? TTC.asTL id xTL
     , testCase "TLB" $ xTL @=? TTC.asTL id xTLB
+    , testCase "ST" $ xTL @=? TTC.asTL id xST
     , testCase "BS" $ xTL @=? TTC.asTL id xBS
     , testCase "BSL" $ xTL @=? TTC.asTL id xBSL
     , testCase "BSB" $ xTL @=? TTC.asTL id xBSB
@@ -606,6 +665,7 @@ testAsTLB = testGroup "asTLB"
     , testCase "T" $ xTLB @=? TTC.asTLB id xT
     , testCase "TL" $ xTLB @=? TTC.asTLB id xTL
     , testCase "TLB" $ xTLB @=? TTC.asTLB id xTLB
+    , testCase "ST" $ xTLB @=? TTC.asTLB id xST
     , testCase "BS" $ xTLB @=? TTC.asTLB id xBS
     , testCase "BSL" $ xTLB @=? TTC.asTLB id xBSL
     , testCase "BSB" $ xTLB @=? TTC.asTLB id xBSB
@@ -618,6 +678,7 @@ testAsBS = testGroup "asBS"
     , testCase "T" $ xBS @=? TTC.asBS id xT
     , testCase "TL" $ xBS @=? TTC.asBS id xTL
     , testCase "TLB" $ xBS @=? TTC.asBS id xTLB
+    , testCase "ST" $ xBS @=? TTC.asBS id xST
     , testCase "BS" $ xBS @=? TTC.asBS id xBS
     , testCase "BSL" $ xBS @=? TTC.asBS id xBSL
     , testCase "BSB" $ xBS @=? TTC.asBS id xBSB
@@ -630,6 +691,7 @@ testAsBSL = testGroup "asBSL"
     , testCase "T" $ xBSL @=? TTC.asBSL id xT
     , testCase "TL" $ xBSL @=? TTC.asBSL id xTL
     , testCase "TLB" $ xBSL @=? TTC.asBSL id xTLB
+    , testCase "ST" $ xBSL @=? TTC.asBSL id xST
     , testCase "BS" $ xBSL @=? TTC.asBSL id xBS
     , testCase "BSL" $ xBSL @=? TTC.asBSL id xBSL
     , testCase "BSB" $ xBSL @=? TTC.asBSL id xBSB
@@ -642,6 +704,7 @@ testAsBSB = testGroup "asBSB"
     , testCase "T" $ xBSB @=? TTC.asBSB id xT
     , testCase "TL" $ xBSB @=? TTC.asBSB id xTL
     , testCase "TLB" $ xBSB @=? TTC.asBSB id xTLB
+    , testCase "ST" $ xBSB @=? TTC.asBSB id xST
     , testCase "BS" $ xBSB @=? TTC.asBSB id xBS
     , testCase "BSL" $ xBSB @=? TTC.asBSB id xBSL
     , testCase "BSB" $ xBSB @=? TTC.asBSB id xBSB
@@ -654,6 +717,7 @@ testAsSBS = testGroup "asSBS"
     , testCase "T" $ xSBS @=? TTC.asSBS id xT
     , testCase "TL" $ xSBS @=? TTC.asSBS id xTL
     , testCase "TLB" $ xSBS @=? TTC.asSBS id xTLB
+    , testCase "ST" $ xSBS @=? TTC.asSBS id xST
     , testCase "BS" $ xSBS @=? TTC.asSBS id xBS
     , testCase "BSL" $ xSBS @=? TTC.asSBS id xBSL
     , testCase "BSB" $ xSBS @=? TTC.asSBS id xBSB
@@ -669,6 +733,7 @@ testRender = testGroup "render"
     , testCase "T" $ answerT @=? TTC.render answer
     , testCase "TL" $ answerTL @=? TTC.render answer
     , testCase "TLB" $ answerTLB @=? TTC.render answer
+    , testCase "ST" $ answerST @=? TTC.render answer
     , testCase "BS" $ answerBS @=? TTC.render answer
     , testCase "BSL" $ answerBSL @=? TTC.render answer
     , testCase "BSB" $ answerBSB @=? TTC.render answer
@@ -723,6 +788,9 @@ testRenderTL = testCase "renderTL" $ answerTL @=? TTC.renderTL answer
 testRenderTLB :: TestTree
 testRenderTLB = testCase "renderTLB" $ answerTLB @=? TTC.renderTLB answer
 
+testRenderST :: TestTree
+testRenderST = testCase "renderST" $ answerST @=? TTC.renderST answer
+
 testRenderBS :: TestTree
 testRenderBS = testCase "renderBS" $ answerBS @=? TTC.renderBS answer
 
@@ -742,6 +810,7 @@ testRenderWithShow = testGroup "renderWithShow"
     , testCase "T" $ answerT @=? TTC.renderWithShow answerZ
     , testCase "TL" $ answerTL @=? TTC.renderWithShow answerZ
     , testCase "TLB" $ answerTLB @=? TTC.renderWithShow answerZ
+    , testCase "ST" $ answerST @=? TTC.renderWithShow answerZ
     , testCase "BS" $ answerBS @=? TTC.renderWithShow answerZ
     , testCase "BSL" $ answerBSL @=? TTC.renderWithShow answerZ
     , testCase "BSB" $ answerBSB @=? TTC.renderWithShow answerZ
@@ -757,6 +826,7 @@ testParse = testGroup "parse"
     , testCase "T" $ Just answer @=? TTC.parseMaybe answerT
     , testCase "TL" $ Just answer @=? TTC.parseMaybe answerTL
     , testCase "TLB" $ Just answer @=? TTC.parseMaybe answerTLB
+    , testCase "ST" $ Just answer @=? TTC.parseMaybe answerST
     , testCase "BS" $ Just answer @=? TTC.parseMaybe answerBS
     , testCase "BSL" $ Just answer @=? TTC.parseMaybe answerBSL
     , testCase "BSB" $ Just answer @=? TTC.parseMaybe answerBSB
@@ -900,6 +970,11 @@ testParseTLB =
     let parseTLB = TTC.parseTLB :: TLB.Builder -> Either String PosInt
     in  testCase "parseTLB" $ Right answer @=? parseTLB answerTLB
 
+testParseST :: TestTree
+testParseST =
+    let parseST = TTC.parseST :: ST.ShortText -> Either String PosInt
+    in  testCase "parseST" $ Right answer @=? parseST answerST
+
 testParseBS :: TestTree
 testParseBS =
     let parseBS = TTC.parseBS :: BS.ByteString -> Either String PosInt
@@ -926,6 +1001,7 @@ testParseMaybe = testGroup "parseMaybe"
     , testCase "T" $ Just answer @=? TTC.parseMaybe answerT
     , testCase "TL" $ Just answer @=? TTC.parseMaybe answerTL
     , testCase "TLB" $ Just answer @=? TTC.parseMaybe answerTLB
+    , testCase "ST" $ Just answer @=? TTC.parseMaybe answerST
     , testCase "BS" $ Just answer @=? TTC.parseMaybe answerBS
     , testCase "BSL" $ Just answer @=? TTC.parseMaybe answerBSL
     , testCase "BSB" $ Just answer @=? TTC.parseMaybe answerBSB
@@ -955,6 +1031,10 @@ testParseMaybeTLB :: TestTree
 testParseMaybeTLB = testCase "parseMaybeTLB" $
     Just answer @=? TTC.parseMaybeTLB answerTLB
 
+testParseMaybeST :: TestTree
+testParseMaybeST = testCase "parseMaybeST" $
+    Just answer @=? TTC.parseMaybeST answerST
+
 testParseMaybeBS :: TestTree
 testParseMaybeBS = testCase "parseMaybeBS" $
     Just answer @=? TTC.parseMaybeBS answerBS
@@ -977,6 +1057,7 @@ testParseOrFail = testGroup "parseOrFail"
     , testCase "T" $ Just answer @=? TTC.parseOrFail answerT
     , testCase "TL" $ Just answer @=? TTC.parseOrFail answerTL
     , testCase "TLB" $ Just answer @=? TTC.parseOrFail answerTLB
+    , testCase "ST" $ Just answer @=? TTC.parseOrFail answerST
     , testCase "BS" $ Just answer @=? TTC.parseOrFail answerBS
     , testCase "BSL" $ Just answer @=? TTC.parseOrFail answerBSL
     , testCase "BSB" $ Just answer @=? TTC.parseOrFail answerBSB
@@ -1006,6 +1087,10 @@ testParseOrFailTLB :: TestTree
 testParseOrFailTLB = testCase "parseOrFailTLB" $
     Just answer @=? TTC.parseOrFailTLB answerTLB
 
+testParseOrFailST :: TestTree
+testParseOrFailST = testCase "parseOrFailST" $
+    Just answer @=? TTC.parseOrFailST answerST
+
 testParseOrFailBS :: TestTree
 testParseOrFailBS = testCase "parseOrFailBS" $
     Just answer @=? TTC.parseOrFailBS answerBS
@@ -1028,6 +1113,7 @@ testParseUnsafe = testGroup "parseUnsafe"
     , testCase "T" $ answer @=? TTC.parseUnsafe answerT
     , testCase "TL" $ answer @=? TTC.parseUnsafe answerTL
     , testCase "TLB" $ answer @=? TTC.parseUnsafe answerTLB
+    , testCase "ST" $ answer @=? TTC.parseUnsafe answerST
     , testCase "BS" $ answer @=? TTC.parseUnsafe answerBS
     , testCase "BSL" $ answer @=? TTC.parseUnsafe answerBSL
     , testCase "BSB" $ answer @=? TTC.parseUnsafe answerBSB
@@ -1053,6 +1139,10 @@ testParseUnsafeTL = testCase "parseUnsafeTL" $
 testParseUnsafeTLB :: TestTree
 testParseUnsafeTLB = testCase "parseUnsafeTLB" $
     answer @=? TTC.parseUnsafeTLB answerTLB
+
+testParseUnsafeST :: TestTree
+testParseUnsafeST = testCase "parseUnsafeST" $
+    answer @=? TTC.parseUnsafeST answerST
 
 testParseUnsafeBS :: TestTree
 testParseUnsafeBS = testCase "parseUnsafeBS" $
@@ -1082,6 +1172,8 @@ testWithError = testGroup "withError"
         (TTC.withErrorTL "err" Nothing :: Either String PosInt)
     , testCase "TLB" $ Left "err" @=?
         (TTC.withErrorTLB "err" Nothing :: Either String PosInt)
+    , testCase "ST" $ Left "err" @=?
+        (TTC.withErrorST "err" Nothing :: Either String PosInt)
     , testCase "BS" $ Left "err" @=?
         (TTC.withErrorBS "err" Nothing :: Either String PosInt)
     , testCase "BSL" $ Left "err" @=?
@@ -1107,6 +1199,8 @@ testPrefixError = testGroup "prefixError"
         (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
     , testCase "TLB" $ Left err @=?
         (TTC.prefixErrorTLB "error: " (Left "uh-oh") :: Either String PosInt)
+    , testCase "ST" $ Left err @=?
+        (TTC.prefixErrorTLB "error: " (Left "uh-oh") :: Either String PosInt)
     , testCase "BS" $ Left err @=?
         (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
     , testCase "BSL" $ Left err @=?
@@ -1128,6 +1222,7 @@ testParseWithRead = testGroup "parseWithRead"
     , testCase "TL" $ Right answerZ @=? TTC.parseWithRead IntInvalid answerTL
     , testCase "TLB" $
         Right answerZ @=? TTC.parseWithRead IntInvalid answerTLB
+    , testCase "ST" $ Right answerZ @=? TTC.parseWithRead IntInvalid answerST
     , testCase "BS" $ Right answerZ @=? TTC.parseWithRead IntInvalid answerBS
     , testCase "BSL" $
         Right answerZ @=? TTC.parseWithRead IntInvalid answerBSL
@@ -1145,6 +1240,7 @@ testParseWithRead' = testGroup "parseWithRead'"
     , testCase "T" $ Right answerZ @=? parseWithRead' answerT
     , testCase "TL" $ Right answerZ @=? parseWithRead' answerTL
     , testCase "TLB" $ Right answerZ @=? parseWithRead' answerTLB
+    , testCase "ST" $ Right answerZ @=? parseWithRead' answerST
     , testCase "BS" $ Right answerZ @=? parseWithRead' answerBS
     , testCase "BSL" $ Right answerZ @=? parseWithRead' answerBSL
     , testCase "BSB" $ Right answerZ @=? parseWithRead' answerBSB
@@ -1162,6 +1258,7 @@ testMaybeParseWithRead = testGroup "maybeParseWithRead"
     , testCase "T" $ Just answerZ @=? TTC.maybeParseWithRead answerT
     , testCase "TL" $ Just answerZ @=? TTC.maybeParseWithRead answerTL
     , testCase "TLB" $ Just answerZ @=? TTC.maybeParseWithRead answerTLB
+    , testCase "ST" $ Just answerZ @=? TTC.maybeParseWithRead answerST
     , testCase "BS" $ Just answerZ @=? TTC.maybeParseWithRead answerBS
     , testCase "BSL" $ Just answerZ @=? TTC.maybeParseWithRead answerBSL
     , testCase "BSB" $ Just answerZ @=? TTC.maybeParseWithRead answerBSB
@@ -1176,6 +1273,7 @@ testParseEnum = testGroup "parseEnum"
     , testCase "T" $ Right Red @=? parse False False redT
     , testCase "TL" $ Right Red @=? parse False False redTL
     , testCase "TLB" $ Right Red @=? parse False False redTLB
+    , testCase "ST" $ Right Red @=? parse False False redST
     , testCase "BS" $ Right Red @=? parse False False redBS
     , testCase "BSL" $ Right Red @=? parse False False redBSL
     , testCase "BSB" $ Right Red @=? parse False False redBSB
@@ -1198,6 +1296,7 @@ testParseEnum' = testGroup "parseEnum'"
     , testCase "T" $ Right Red @=? parse False False redT
     , testCase "TL" $ Right Red @=? parse False False redTL
     , testCase "TLB" $ Right Red @=? parse False False redTLB
+    , testCase "ST" $ Right Red @=? parse False False redST
     , testCase "BS" $ Right Red @=? parse False False redBS
     , testCase "BSL" $ Right Red @=? parse False False redBSL
     , testCase "BSB" $ Right Red @=? parse False False redBSB
@@ -1271,6 +1370,7 @@ tests = testGroup "Data.TTC"
         , testToT
         , testToTL
         , testToTLB
+        , testToST
         , testToBS
         , testToBSL
         , testToBSB
@@ -1300,6 +1400,7 @@ tests = testGroup "Data.TTC"
         , testRenderT
         , testRenderTL
         , testRenderTLB
+        , testRenderST
         , testRenderBS
         , testRenderBSL
         , testRenderBSB
@@ -1313,6 +1414,7 @@ tests = testGroup "Data.TTC"
         , testParseT
         , testParseTL
         , testParseTLB
+        , testParseST
         , testParseBS
         , testParseBSL
         , testParseBSB
@@ -1322,6 +1424,7 @@ tests = testGroup "Data.TTC"
         , testParseMaybeT
         , testParseMaybeTL
         , testParseMaybeTLB
+        , testParseMaybeST
         , testParseMaybeBS
         , testParseMaybeBSL
         , testParseMaybeBSB
@@ -1331,6 +1434,7 @@ tests = testGroup "Data.TTC"
         , testParseOrFailT
         , testParseOrFailTL
         , testParseOrFailTLB
+        , testParseOrFailST
         , testParseOrFailBS
         , testParseOrFailBSL
         , testParseOrFailBSB
@@ -1340,6 +1444,7 @@ tests = testGroup "Data.TTC"
         , testParseUnsafeT
         , testParseUnsafeTL
         , testParseUnsafeTLB
+        , testParseUnsafeST
         , testParseUnsafeBS
         , testParseUnsafeBSL
         , testParseUnsafeBSB

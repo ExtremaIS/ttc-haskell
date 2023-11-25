@@ -72,6 +72,7 @@ types:
 * Strict `Text`
 * Lazy `Text`
 * `Text` `Builder`
+* `ShortText`
 * Strict `ByteString`
 * Lazy `ByteString`
 * `ByteString` `Builder` (and `Data.Binary.Builder`)
