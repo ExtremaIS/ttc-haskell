@@ -64,6 +64,8 @@ import Data.Text (Text)
 -- https://hackage.haskell.org/package/ttc
 import qualified Data.TTC as TTC
 
+{-# ANN module "HLint: ignore Unused LANGUAGE pragma" #-}
+
 ------------------------------------------------------------------------------
 
 -- | A 'Username' must consist of 3 to 12 lowercase ASCII letters.
