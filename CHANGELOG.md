@@ -24,6 +24,17 @@ following conventions:
 
 [KaC]: <https://keepachangelog.com/en/1.0.0/>
 
+## 1.4.0.0 (2023-12-03)
+
+### Breaking
+
+* Add support for `ShortText`
+
+### Non-Breaking
+
+* Bump `base` dependency version upper bound
+* Bump `template-haskell` dependency version upper bound
+
 ## 1.3.0.0 (2023-09-17)
 
 ### Breaking

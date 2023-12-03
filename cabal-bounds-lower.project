@@ -26,3 +26,6 @@ constraints:
     -- https://hackage.haskell.org/package/text
     -- (GHC boot library from GHC 8.4)
   , text == 1.2.2.0
+
+    -- https://hackage.haskell.org/package/text-short
+  , text-short == 0.1

@@ -37,6 +37,7 @@ module Data.TTC
   , toT
   , toTL
   , toTLB
+  , toST
   , toBS
   , toBSL
   , toBSB
@@ -47,6 +48,7 @@ module Data.TTC
   , fromT
   , fromTL
   , fromTLB
+  , fromST
   , fromBS
   , fromBSL
   , fromBSB
@@ -57,6 +59,7 @@ module Data.TTC
   , asT
   , asTL
   , asTLB
+  , asST
   , asBS
   , asBSL
   , asBSB
@@ -70,6 +73,7 @@ module Data.TTC
   , renderT
   , renderTL
   , renderTLB
+  , renderST
   , renderBS
   , renderBSL
   , renderBSB
@@ -85,6 +89,7 @@ module Data.TTC
   , parseT
   , parseTL
   , parseTLB
+  , parseST
   , parseBS
   , parseBSL
   , parseBSB
@@ -96,6 +101,7 @@ module Data.TTC
   , parseMaybeT
   , parseMaybeTL
   , parseMaybeTLB
+  , parseMaybeST
   , parseMaybeBS
   , parseMaybeBSL
   , parseMaybeBSB
@@ -107,6 +113,7 @@ module Data.TTC
   , parseOrFailT
   , parseOrFailTL
   , parseOrFailTLB
+  , parseOrFailST
   , parseOrFailBS
   , parseOrFailBSL
   , parseOrFailBSB
@@ -118,6 +125,7 @@ module Data.TTC
   , parseUnsafeT
   , parseUnsafeTL
   , parseUnsafeTLB
+  , parseUnsafeST
   , parseUnsafeBS
   , parseUnsafeBSL
   , parseUnsafeBSB
@@ -129,6 +137,7 @@ module Data.TTC
   , withErrorT
   , withErrorTL
   , withErrorTLB
+  , withErrorST
   , withErrorBS
   , withErrorBSL
   , withErrorBSB
@@ -140,6 +149,7 @@ module Data.TTC
   , prefixErrorT
   , prefixErrorTL
   , prefixErrorTLB
+  , prefixErrorST
   , prefixErrorBS
   , prefixErrorBSL
   , prefixErrorBSB
@@ -193,6 +203,9 @@ import qualified Data.Text.Lazy as TL
 import qualified Data.Text.Lazy.Builder as TLB
 import qualified Data.Text.Lazy.Encoding as TLE
 
+-- https://hackage.haskell.org/package/text-short
+import qualified Data.Text.Short as ST
+
 ------------------------------------------------------------------------------
 -- $Textual
 
@@ -203,6 +216,7 @@ import qualified Data.Text.Lazy.Encoding as TLE
 -- * Strict 'T.Text' (@T@)
 -- * Lazy 'TL.Text' (@TL@)
 -- * @Text@ 'TLB.Builder' (@TLB@)
+-- * 'ST.ShortText' (@ST@)
 -- * Strict 'BS.ByteString' (@BS@)
 -- * Lazy 'BSL.ByteString' (@BSL@)
 -- * @ByteString@ 'BSB.Builder' (@BSB@) (Note: @Data.Binary.Builder@
@@ -251,6 +265,11 @@ class Textual t where
   -- @since 1.1.0.0
   toTLB :: t -> TLB.Builder
 
+  -- | Convert to 'ST.ShortText'
+  --
+  -- @since 1.4.0.0
+  toST :: t -> ST.ShortText
+
   -- | Convert to a strict 'BS.ByteString'
   --
   -- @since 0.1.0.0
@@ -281,6 +300,7 @@ instance Textual String where
   toT = T.pack
   toTL = TL.pack
   toTLB = TLB.fromString
+  toST = ST.fromString
   toBS = TE.encodeUtf8 . T.pack
   toBSL = TLE.encodeUtf8 . TL.pack
   toBSB = BSB.byteString . TE.encodeUtf8 . T.pack
@@ -290,6 +310,7 @@ instance Textual String where
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
   {-# INLINE toTLB #-}
+  {-# INLINE toST #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
@@ -301,6 +322,7 @@ instance Textual T.Text where
   toT = id
   toTL = TL.fromStrict
   toTLB = TLB.fromText
+  toST = ST.fromText
   toBS = TE.encodeUtf8
   toBSL = TLE.encodeUtf8 . TL.fromStrict
   toBSB = BSB.byteString . TE.encodeUtf8
@@ -310,6 +332,7 @@ instance Textual T.Text where
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
   {-# INLINE toTLB #-}
+  {-# INLINE toST #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
@@ -321,6 +344,7 @@ instance Textual TL.Text where
   toT = TL.toStrict
   toTL = id
   toTLB = TLB.fromLazyText
+  toST = ST.fromText . TL.toStrict
   toBS = BSL.toStrict . TLE.encodeUtf8
   toBSL = TLE.encodeUtf8
   toBSB = BSB.lazyByteString . TLE.encodeUtf8
@@ -330,6 +354,7 @@ instance Textual TL.Text where
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
   {-# INLINE toTLB #-}
+  {-# INLINE toST #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
@@ -341,6 +366,7 @@ instance Textual TLB.Builder where
   toT = TL.toStrict . TLB.toLazyText
   toTL = TLB.toLazyText
   toTLB = id
+  toST = ST.fromText . TL.toStrict . TLB.toLazyText
   toBS = BSL.toStrict . TLE.encodeUtf8 . TLB.toLazyText
   toBSL = TLE.encodeUtf8 . TLB.toLazyText
   toBSB = BSB.lazyByteString . TLE.encodeUtf8 . TLB.toLazyText
@@ -350,6 +376,29 @@ instance Textual TLB.Builder where
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
   {-# INLINE toTLB #-}
+  {-# INLINE toST #-}
+  {-# INLINE toBS #-}
+  {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
+  {-# INLINE convert #-}
+
+instance Textual ST.ShortText where
+  toS = ST.toString
+  toT = ST.toText
+  toTL = TL.fromStrict . ST.toText
+  toTLB = TLB.fromText . ST.toText
+  toST = id
+  toBS = ST.toByteString
+  toBSL = BSL.fromStrict . ST.toByteString
+  toBSB = BSB.byteString . ST.toByteString
+  toSBS = ST.toShortByteString
+  convert = toST
+  {-# INLINE toS #-}
+  {-# INLINE toT #-}
+  {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
+  {-# INLINE toST #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
@@ -361,6 +410,7 @@ instance Textual BS.ByteString where
   toT = TE.decodeUtf8With TEE.lenientDecode
   toTL = TLE.decodeUtf8With TEE.lenientDecode . BSL.fromStrict
   toTLB = TLB.fromText . TE.decodeUtf8With TEE.lenientDecode
+  toST = ST.fromText . TE.decodeUtf8With TEE.lenientDecode
   toBS = id
   toBSL = BSL.fromStrict
   toBSB = BSB.byteString
@@ -370,6 +420,7 @@ instance Textual BS.ByteString where
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
   {-# INLINE toTLB #-}
+  {-# INLINE toST #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
@@ -381,6 +432,7 @@ instance Textual BSL.ByteString where
   toT = TL.toStrict . TLE.decodeUtf8With TEE.lenientDecode
   toTL = TLE.decodeUtf8With TEE.lenientDecode
   toTLB = TLB.fromLazyText . TLE.decodeUtf8With TEE.lenientDecode
+  toST = ST.fromText . TL.toStrict . TLE.decodeUtf8With TEE.lenientDecode
   toBS = BSL.toStrict
   toBSL = id
   toBSB = BSB.lazyByteString
@@ -390,6 +442,7 @@ instance Textual BSL.ByteString where
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
   {-# INLINE toTLB #-}
+  {-# INLINE toST #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
@@ -406,6 +459,11 @@ instance Textual BSB.Builder where
     = TLB.fromLazyText
     . TLE.decodeUtf8With TEE.lenientDecode
     . BSB.toLazyByteString
+  toST
+    = ST.fromText
+    . TL.toStrict
+    . TLE.decodeUtf8With TEE.lenientDecode
+    . BSB.toLazyByteString
   toBS = BSL.toStrict . BSB.toLazyByteString
   toBSL = BSB.toLazyByteString
   toBSB = id
@@ -415,6 +473,7 @@ instance Textual BSB.Builder where
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
   {-# INLINE toTLB #-}
+  {-# INLINE toST #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
@@ -426,6 +485,7 @@ instance Textual SBS.ShortByteString where
   toT = TE.decodeUtf8With TEE.lenientDecode . SBS.fromShort
   toTL = TLE.decodeUtf8With TEE.lenientDecode . BSL.fromStrict . SBS.fromShort
   toTLB = TLB.fromText . TE.decodeUtf8With TEE.lenientDecode . SBS.fromShort
+  toST = ST.fromText . TE.decodeUtf8With TEE.lenientDecode . SBS.fromShort
   toBS = SBS.fromShort
   toBSL = BSL.fromStrict . SBS.fromShort
   toBSB = BSB.byteString . SBS.fromShort
@@ -435,6 +495,7 @@ instance Textual SBS.ShortByteString where
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
   {-# INLINE toTLB #-}
+  {-# INLINE toST #-}
   {-# INLINE toBS #-}
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
@@ -481,6 +542,13 @@ fromTL = convert
 fromTLB :: Textual t => TLB.Builder -> t
 fromTLB = convert
 {-# INLINE fromTLB #-}
+
+-- | Convert from a 'ST.ShortText'
+--
+-- @since 1.4.0.0
+fromST :: Textual t => ST.ShortText -> t
+fromST = convert
+{-# INLINE fromST #-}
 
 -- | Convert from a strict 'BS.ByteString'
 --
@@ -544,6 +612,13 @@ asTL f = f . convert
 asTLB :: Textual t => (TLB.Builder -> a) -> t -> a
 asTLB f = f . convert
 {-# INLINE asTLB #-}
+
+-- | Convert an argument to a 'ST.ShortText'
+--
+-- @since 1.4.0.0
+asST :: Textual t => (ST.ShortText -> a) -> t -> a
+asST f = f . convert
+{-# INLINE asST #-}
 
 -- | Convert an argument to a strict 'BS.ByteString'
 --
@@ -708,6 +783,13 @@ renderTL = render
 renderTLB :: Render a => a -> TLB.Builder
 renderTLB = render
 {-# INLINE renderTLB #-}
+
+-- | Render to a 'ST.ShortText'
+--
+-- @since 1.4.0.0
+renderST :: Render a => a -> ST.ShortText
+renderST = render
+{-# INLINE renderST #-}
 
 -- | Render to a strict 'BS.ByteString'
 --
@@ -893,6 +975,13 @@ parseTLB :: (Parse a, Textual e) => TLB.Builder -> Either e a
 parseTLB = parse
 {-# INLINE parseTLB #-}
 
+-- | Parse from a 'ST.ShortText'
+--
+-- @since 1.4.0.0
+parseST :: (Parse a, Textual e) => ST.ShortText -> Either e a
+parseST = parse
+{-# INLINE parseST #-}
+
 -- | Parse from a strict 'BS.ByteString'
 --
 -- @since 0.3.0.0
@@ -963,6 +1052,13 @@ parseMaybeTL = parseMaybe
 parseMaybeTLB :: Parse a => TLB.Builder -> Maybe a
 parseMaybeTLB = parseMaybe
 {-# INLINE parseMaybeTLB #-}
+
+-- | Parse from a 'ST.ShortText' to a 'Maybe' type
+--
+-- @since 1.4.0.0
+parseMaybeST :: Parse a => ST.ShortText -> Maybe a
+parseMaybeST = parseMaybe
+{-# INLINE parseMaybeST #-}
 
 -- | Parse from a strict 'BS.ByteString' to a 'Maybe' type
 --
@@ -1036,6 +1132,13 @@ parseOrFailTLB :: (MonadFail m, Parse a) => TLB.Builder -> m a
 parseOrFailTLB = parseOrFail
 {-# INLINE parseOrFailTLB #-}
 
+-- | Parse from a 'ST.ShortText' or fail using 'MonadFail'
+--
+-- @since 1.4.0.0
+parseOrFailST :: (MonadFail m, Parse a) => ST.ShortText -> m a
+parseOrFailST = parseOrFail
+{-# INLINE parseOrFailST #-}
+
 -- | Parse from a strict 'BS.ByteString' or fail using 'MonadFail'
 --
 -- @since 1.3.0.0
@@ -1107,6 +1210,13 @@ parseUnsafeTL = parseUnsafe
 parseUnsafeTLB :: (HasCallStack, Parse a) => TLB.Builder -> a
 parseUnsafeTLB = parseUnsafe
 {-# INLINE parseUnsafeTLB #-}
+
+-- | Unsafely parse from a 'ST.ShortText'
+--
+-- @since 1.4.0.0
+parseUnsafeST :: (HasCallStack, Parse a) => ST.ShortText -> a
+parseUnsafeST = parseUnsafe
+{-# INLINE parseUnsafeST #-}
 
 -- | Unsafely parse from a strict 'BS.ByteString'
 --
@@ -1204,6 +1314,18 @@ withErrorTLB
   -> Either e a
 withErrorTLB = withError
 {-# INLINE withErrorTLB #-}
+
+-- | Create a 'Parse' result from a 'ST.ShortText' error message and a 'Maybe'
+-- value
+--
+-- @since 1.4.0.0
+withErrorST
+  :: Textual e
+  => ST.ShortText
+  -> Maybe a
+  -> Either e a
+withErrorST = withError
+{-# INLINE withErrorST #-}
 
 -- | Create a 'Parse' result from a 'BS.ByteString' error message and a
 -- 'Maybe' value
@@ -1315,6 +1437,17 @@ prefixErrorTLB
   -> Either e a
 prefixErrorTLB = prefixError
 {-# INLINE prefixErrorTLB #-}
+
+-- | Add a prefix to 'ST.ShortText' error messages of a 'Parse' result
+--
+-- @since 1.4.0.0
+prefixErrorST
+  :: Textual e
+  => ST.ShortText
+  -> Either ST.ShortText a
+  -> Either e a
+prefixErrorST = prefixError
+{-# INLINE prefixErrorST #-}
 
 -- | Add a prefix to 'BS.ByteString' error messages of a 'Parse' result
 --

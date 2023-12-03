@@ -2,9 +2,12 @@
 
 ## Functionality
 
-* [linear-builder][] support requires GHC 9.2 or later
+## Tests
 
-[linear-builder]: <https://github.com/Bodigrim/linear-builder>
+## Compatibility
+
+* [`linear-builder`](https://github.com/Bodigrim/linear-builder)
+  support requires GHC 9.2 or later
 
 ## Documentation
 
