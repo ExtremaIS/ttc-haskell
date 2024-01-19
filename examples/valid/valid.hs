@@ -2,7 +2,7 @@
 -- |
 -- Module      : Main
 -- Description : example of compile-time validation
--- Copyright   : Copyright (c) 2019-2023 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2024 Travis Cardwell
 -- License     : MIT
 --
 -- 'TTC.valid' is used to create validated constants.  The type must have a

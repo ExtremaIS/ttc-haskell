@@ -2,7 +2,7 @@
 -- |
 -- Module      : Main
 -- Description : example of compile-time validation
--- Copyright   : Copyright (c) 2019-2023 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2024 Travis Cardwell
 -- License     : MIT
 --
 -- 'TTC.untypedValidOf' is used to create a validated constant.  The sample
