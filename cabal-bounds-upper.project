@@ -2,12 +2,12 @@ packages:
   ./ttc.cabal
   examples/ttc-examples.cabal
 
-with-compiler: ghc-9.8.2
+with-compiler: ghc-9.10.1
 
 constraints:
     -- https://hackage.haskell.org/package/base
     -- GHC boot library
-    base == 4.19.1.0
+    base == 4.20.0.0
 
     -- https://hackage.haskell.org/package/bytestring
     -- GHC boot library
@@ -21,11 +21,11 @@ constraints:
 
     -- https://hackage.haskell.org/package/template-haskell
     -- GHC boot library
-  , template-haskell == 2.21.0.0
+  , template-haskell == 2.22.0.0
 
     -- https://hackage.haskell.org/package/text
     -- GHC boot library
   , text == 2.1.1
 
     -- https://hackage.haskell.org/package/text-short
-  , text-short == 0.1.5
+  , text-short == 0.1.6
