@@ -47,74 +47,14 @@ import TestString (TestString(TestString))
 ------------------------------------------------------------------------------
 -- $Instances
 
-instance TTC.Render Char
-instance TTC.Parse Char
-
-instance TTC.Render Double
-instance TTC.Parse Double
-
-instance TTC.Render Float
-instance TTC.Parse Float
-
-instance TTC.Render Int
-instance TTC.Parse Int
-
-instance TTC.Render Int8
-instance TTC.Parse Int8
-
-instance TTC.Render Int16
-instance TTC.Parse Int16
-
-instance TTC.Render Int32
-instance TTC.Parse Int32
-
-instance TTC.Render Int64
-instance TTC.Parse Int64
-
-instance TTC.Render Integer
-instance TTC.Parse Integer
-
-instance TTC.Render Word
-instance TTC.Parse Word
-
-instance TTC.Render Word8
-instance TTC.Parse Word8
-
-instance TTC.Render Word16
-instance TTC.Parse Word16
-
-instance TTC.Render Word32
-instance TTC.Parse Word32
-
-instance TTC.Render Word64
-instance TTC.Parse Word64
-
-instance TTC.Render String
-instance TTC.Parse String
-
-instance TTC.Render T.Text
-instance TTC.Parse T.Text
-
-instance TTC.Render TL.Text
-instance TTC.Parse TL.Text
-
-instance TTC.Render TLB.Builder
-instance TTC.Parse TLB.Builder
-
-instance TTC.Render ST.ShortText
-instance TTC.Parse ST.ShortText
-
-instance TTC.Render BS.ByteString
-instance TTC.Parse BS.ByteString
-
-instance TTC.Render BSL.ByteString
-instance TTC.Parse BSL.ByteString
-
-instance TTC.Render BSB.Builder
-instance TTC.Parse BSB.Builder
-
-instance TTC.Render SBS.ShortByteString
-instance TTC.Parse SBS.ShortByteString
+TTC.defaultRenderAndParseInstances
+  [ ''Char, ''Double, ''Float, ''Integer
+  , ''Int, ''Int8, ''Int16, ''Int32, ''Int64
+  , ''Word, ''Word8, ''Word16, ''Word32, ''Word64
+  , ''String
+  , ''T.Text, ''TL.Text, ''TLB.Builder, ''ST.ShortText
+  , ''BS.ByteString, ''BSL.ByteString, ''BSB.Builder, ''SBS.ShortByteString
+  ]
 
 ------------------------------------------------------------------------------
 

@@ -30,6 +30,7 @@ following conventions:
 
 * Add missing `RenderDefault` and `ParseDefault` instances for `TLB.Builder`,
   `ST.ShortText`, `BSB.Builder`, and `SBS.ShortByteString`
+* Add Template Haskell functions for loading default instances
 * Constrain `text-short` lower bound
 
 ### Non-Breaking

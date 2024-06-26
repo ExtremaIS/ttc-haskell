@@ -171,6 +171,14 @@ module Data.TTC
   , untypedValidOf
   , mkUntypedValid
   , mkUntypedValidQQ
+    -- * Template Haskell
+    -- $TemplateHaskell
+  , defaultRenderInstance
+  , defaultRenderInstances
+  , defaultParseInstance
+  , defaultParseInstances
+  , defaultRenderAndParseInstance
+  , defaultRenderAndParseInstances
   ) where
 
 -- https://hackage.haskell.org/package/base
@@ -653,20 +661,25 @@ asSBS f = f . convert
 
 -- | The 'Render' type class renders a data type as a textual data type.
 --
--- There are no default instances for the 'Render' type class, so that all
--- instances can be customized per project when desired.  Instances for some
--- basic data types are defined for the 'RenderDefault' type class, however,
--- and you can load the 'Render' instance as follows:
---
--- @
--- instance TTC.Render Int
--- @
---
 -- Since a type may have at most one instance of a given type class, special
 -- care must be taken when defining type class instances in a shared library.
 -- In particular, orphan instances should generally not be used in shared
 -- libraries since they prevent users of the libraries from writing their own
 -- instances.
+--
+-- There are no default instances for the 'Render' type class, so that all
+-- instances can be customized per project when desired.  Instances for some
+-- basic data types are defined for the 'RenderDefault' type class, however,
+-- and you can load such an instance as follows:
+--
+-- @
+-- instance TTC.Render Int
+-- @
+--
+-- See the 'RenderDefault' documentation to see which types have default
+-- instances defined.  Note that loading such default instances should be
+-- avoided in libraries.  See the Template Haskell section below for an
+-- alternative way to load default instances (in bulk).
 --
 -- See the @uname@ and @prompt@ example programs in the @examples@ directory.
 --
@@ -701,6 +714,9 @@ instance RenderDefault Double where
 instance RenderDefault Float where
   renderDefault = renderWithShow
 
+instance RenderDefault Integer where
+  renderDefault = renderWithShow
+
 instance RenderDefault Int where
   renderDefault = renderWithShow
 
@@ -714,9 +730,6 @@ instance RenderDefault Int32 where
   renderDefault = renderWithShow
 
 instance RenderDefault Int64 where
-  renderDefault = renderWithShow
-
-instance RenderDefault Integer where
   renderDefault = renderWithShow
 
 instance RenderDefault Word where
@@ -846,20 +859,25 @@ renderWithShow = convert . show
 
 -- | The 'Parse' type class parses a data type from a textual data type.
 --
--- There are no default instances for the 'Parse' type class, so that all
--- instances can be customized per project when desired.  Instances for some
--- basic data types are defined for the 'ParseDefault' type class, however,
--- and you can load the 'Parse' instance as follows:
---
--- @
--- instance TTC.Parse Int
--- @
---
 -- Since a type may have at most one instance of a given type class, special
 -- care must be taken when defining type class instances in a shared library.
 -- In particular, orphan instances should generally not be used in shared
 -- libraries since they prevent users of the libraries from writing their own
 -- instances.
+--
+-- There are no default instances for the 'Parse' type class, so that all
+-- instances can be customized per project when desired.  Instances for some
+-- basic data types are defined for the 'ParseDefault' type class, however,
+-- and you can load such an instance as follows:
+--
+-- @
+-- instance TTC.Parse Int
+-- @
+--
+-- See the 'ParseDefault' documentation to see which types have default
+-- instances defined.  Note that loading such default instances should be
+-- avoided in libraries.  See the Template Haskell section below for an
+-- alternative way to load default instances (in bulk).
 --
 -- See the @uname@ and @prompt@ example programs in the @examples@ directory.
 --
@@ -904,6 +922,9 @@ instance ParseDefault Double where
 instance ParseDefault Float where
   parseDefault = parseWithRead' "Float"
 
+instance ParseDefault Integer where
+  parseDefault = parseWithRead' "Integer"
+
 instance ParseDefault Int where
   parseDefault = parseWithRead' "Int"
 
@@ -918,9 +939,6 @@ instance ParseDefault Int32 where
 
 instance ParseDefault Int64 where
   parseDefault = parseWithRead' "Int64"
-
-instance ParseDefault Integer where
-  parseDefault = parseWithRead' "Integer"
 
 instance ParseDefault Word where
   parseDefault = parseWithRead' "Word"
@@ -2016,3 +2034,89 @@ mkUntypedValidQQ funName typeName = do
       [ TH.SigD funName' $ TH.ConT ''Q.QuasiQuoter
       , TH.FunD funName' [TH.Clause [] body []]
       ]
+
+------------------------------------------------------------------------------
+-- $TemplateHaskell
+--
+-- These Template Haskell functions provide an alternative way to load default
+-- instances.  See the documentation for 'Render' and 'Parse' for details
+-- about default instances.  Remember that loading such default instances
+-- should be avoided in libraries.
+
+-- | Load the default 'Render' instance for a type
+--
+-- Example:
+--
+-- @
+-- defaultRenderInstance ''Int
+-- @
+--
+-- @since 1.5.0.0
+defaultRenderInstance :: TH.Name -> TH.DecsQ
+defaultRenderInstance typeName =
+    let a = pure $ TH.ConT typeName
+    in  [d| instance Render $a |]
+
+-- | Load the default 'Render' instances for any number of types
+--
+-- Example:
+--
+-- @
+-- defaultRenderInstances [''Int, ''Int8, ''Int16, ''Int32, ''Int64]
+-- @
+--
+-- @since 1.5.0.0
+defaultRenderInstances :: [TH.Name] -> TH.DecsQ
+defaultRenderInstances = fmap concat . mapM defaultRenderInstance
+
+-- | Load the default 'Parse' instance for a type
+--
+-- Example:
+--
+-- @
+-- defaultParseInstance ''Int
+-- @
+--
+-- @since 1.5.0.0
+defaultParseInstance :: TH.Name -> TH.DecsQ
+defaultParseInstance typeName =
+    let a = pure $ TH.ConT typeName
+    in  [d| instance Parse $a |]
+
+-- | Load the default 'Parse' instances for any number of types
+--
+-- Example:
+--
+-- @
+-- defaultParseInstances [''Int, ''Int8, ''Int16, ''Int32, ''Int64]
+-- @
+--
+-- @since 1.5.0.0
+defaultParseInstances :: [TH.Name] -> TH.DecsQ
+defaultParseInstances = fmap concat . mapM defaultParseInstance
+
+-- | Load the default 'Render' and 'Parse' instance for a type
+--
+-- Example:
+--
+-- @
+-- defaultRenderAndParseInstance ''Int
+-- @
+--
+-- @since 1.5.0.0
+defaultRenderAndParseInstance :: TH.Name -> TH.DecsQ
+defaultRenderAndParseInstance =
+    (<>) <$> defaultRenderInstance <*> defaultParseInstance
+
+-- | Load the default 'Render' and 'Parse' instances for any number of types
+--
+-- Example:
+--
+-- @
+-- defaultRenderAndParseInstances [''Int, ''Int8, ''Int16, ''Int32, ''Int64]
+-- @
+--
+-- @since 1.5.0.0
+defaultRenderAndParseInstances :: [TH.Name] -> TH.DecsQ
+defaultRenderAndParseInstances =
+    fmap concat . mapM defaultRenderAndParseInstance
