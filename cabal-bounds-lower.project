@@ -28,4 +28,4 @@ constraints:
   , text == 1.2.2.0
 
     -- https://hackage.haskell.org/package/text-short
-  , text-short == 0.1
+  , text-short == 0.1.2
