@@ -2105,8 +2105,12 @@ defaultParseInstances = fmap concat . mapM defaultParseInstance
 --
 -- @since 1.5.0.0
 defaultRenderAndParseInstance :: TH.Name -> TH.DecsQ
-defaultRenderAndParseInstance =
-    (<>) <$> defaultRenderInstance <*> defaultParseInstance
+defaultRenderAndParseInstance typeName = do
+    -- NOTE This function is implemented this way for compatibility with old
+    -- versions of GHC/base.
+    renderDecs <- defaultRenderInstance typeName
+    parseDecs <- defaultParseInstance typeName
+    pure $ renderDecs ++ parseDecs
 
 -- | Load the default 'Render' and 'Parse' instances for any number of types
 --
