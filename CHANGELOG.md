@@ -26,6 +26,11 @@ following conventions:
 
 ## Unreleased
 
+### Breaking
+
+* Add missing `RenderDefault` and `ParseDefault` instances for `TLB.Builder`,
+  `ST.ShortText`, `BSB.Builder`, and `SBS.ShortByteString`
+
 ### Non-Breaking
 
 * Bump `base` dependency version upper bound

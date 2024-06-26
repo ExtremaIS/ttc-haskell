@@ -737,17 +737,29 @@ instance RenderDefault Word64 where
 instance RenderDefault String where
   renderDefault = fromS
 
-instance RenderDefault BSL.ByteString where
-  renderDefault = fromBSL
-
-instance RenderDefault BS.ByteString where
-  renderDefault = fromBS
+instance RenderDefault T.Text where
+  renderDefault = fromT
 
 instance RenderDefault TL.Text where
   renderDefault = fromTL
 
-instance RenderDefault T.Text where
-  renderDefault = fromT
+instance RenderDefault TLB.Builder where
+  renderDefault = fromTLB
+
+instance RenderDefault ST.ShortText where
+  renderDefault = fromST
+
+instance RenderDefault BS.ByteString where
+  renderDefault = fromBS
+
+instance RenderDefault BSL.ByteString where
+  renderDefault = fromBSL
+
+instance RenderDefault BSB.Builder where
+  renderDefault = fromBSB
+
+instance RenderDefault SBS.ShortByteString where
+  renderDefault = fromSBS
 
 ------------------------------------------------------------------------------
 -- $RenderSpecific
@@ -928,17 +940,29 @@ instance ParseDefault Word64 where
 instance ParseDefault String where
   parseDefault = Right . toS
 
-instance ParseDefault BSL.ByteString where
-  parseDefault = Right . toBSL
-
-instance ParseDefault BS.ByteString where
-  parseDefault = Right . toBS
+instance ParseDefault T.Text where
+  parseDefault = Right . toT
 
 instance ParseDefault TL.Text where
   parseDefault = Right . toTL
 
-instance ParseDefault T.Text where
-  parseDefault = Right . toT
+instance ParseDefault TLB.Builder where
+  parseDefault = Right . toTLB
+
+instance ParseDefault ST.ShortText where
+  parseDefault = Right . toST
+
+instance ParseDefault BS.ByteString where
+  parseDefault = Right . toBS
+
+instance ParseDefault BSL.ByteString where
+  parseDefault = Right . toBSL
+
+instance ParseDefault BSB.Builder where
+  parseDefault = Right . toBSB
+
+instance ParseDefault SBS.ShortByteString where
+  parseDefault = Right . toSBS
 
 ------------------------------------------------------------------------------
 -- $ParseSpecific

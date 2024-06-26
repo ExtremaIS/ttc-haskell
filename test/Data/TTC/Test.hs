@@ -92,17 +92,29 @@ instance TTC.Parse Word64
 instance TTC.Render String
 instance TTC.Parse String
 
-instance TTC.Render BSL.ByteString
-instance TTC.Parse BSL.ByteString
-
-instance TTC.Render BS.ByteString
-instance TTC.Parse BS.ByteString
+instance TTC.Render T.Text
+instance TTC.Parse T.Text
 
 instance TTC.Render TL.Text
 instance TTC.Parse TL.Text
 
-instance TTC.Render T.Text
-instance TTC.Parse T.Text
+instance TTC.Render TLB.Builder
+instance TTC.Parse TLB.Builder
+
+instance TTC.Render ST.ShortText
+instance TTC.Parse ST.ShortText
+
+instance TTC.Render BS.ByteString
+instance TTC.Parse BS.ByteString
+
+instance TTC.Render BSL.ByteString
+instance TTC.Parse BSL.ByteString
+
+instance TTC.Render BSB.Builder
+instance TTC.Parse BSB.Builder
+
+instance TTC.Render SBS.ShortByteString
+instance TTC.Parse SBS.ShortByteString
 
 ------------------------------------------------------------------------------
 
@@ -770,10 +782,14 @@ testRenderDefault = testGroup "RenderDefault"
     , let w = 42 :: Word64
       in  testCase "Word64" $ show w @=? TTC.renderS w
     , testCase "String" $ xS @=? TTC.renderS xS
-    , testCase "BSL.ByteString" $ xS @=? TTC.renderS xBSL
-    , testCase "BS.ByteString" $ xS @=? TTC.renderS xBS
-    , testCase "TL.Text" $ xS @=? TTC.renderS xTL
     , testCase "T.Text" $ xS @=? TTC.renderS xT
+    , testCase "TL.Text" $ xS @=? TTC.renderS xTL
+    , testCase "TLB.Builder" $ xS @=? TTC.renderS xTLB
+    , testCase "ST.ShortText" $ xS @=? TTC.renderS xST
+    , testCase "BS.ByteString" $ xS @=? TTC.renderS xBS
+    , testCase "BSL.ByteString" $ xS @=? TTC.renderS xBSL
+    , testCase "BSB.Builder" $ xS @=? TTC.renderS xBSB
+    , testCase "SBS.ShortByteString" $ xS @=? TTC.renderS xSBS
     ]
 
 testRenderS :: TestTree
@@ -928,25 +944,45 @@ testParseDefault = testGroup "ParseDefault"
             [ testCase "empty" $ Right "" @=? parse ""
             , testCase "nonempty" $ Right xS @=? parse xS
             ]
-    , let parse = TTC.parse :: String -> Either String BSL.ByteString
-      in  testGroup "BSL.ByteString"
-            [ testCase "empty" $ Right BSL.empty @=? parse ""
-            , testCase "nonempty" $ Right xBSL @=? parse xS
-            ]
-    , let parse = TTC.parse :: String -> Either String BS.ByteString
-      in  testGroup "BS.ByteString"
-            [ testCase "empty" $ Right BS.empty @=? parse ""
-            , testCase "nonempty" $ Right xBS @=? parse xS
+    , let parse = TTC.parse :: String -> Either String T.Text
+      in  testGroup "T.Text"
+            [ testCase "empty" $ Right T.empty @=? parse ""
+            , testCase "nonempty" $ Right xT @=? parse xS
             ]
     , let parse = TTC.parse :: String -> Either String TL.Text
       in  testGroup "TL.Text"
             [ testCase "empty" $ Right TL.empty @=? parse ""
             , testCase "nonempty" $ Right xTL @=? parse xS
             ]
-    , let parse = TTC.parse :: String -> Either String T.Text
-      in  testGroup "T.Text"
-            [ testCase "empty" $ Right T.empty @=? parse ""
-            , testCase "nonempty" $ Right xT @=? parse xS
+    , let parse = TTC.parse :: String -> Either String TLB.Builder
+      in  testGroup "TLB.Builder"
+            [ testCase "empty" $ Right (TLB.fromString "") @=? parse ""
+            , testCase "nonempty" $ Right xTLB @=? parse xS
+            ]
+    , let parse = TTC.parse :: String -> Either String ST.ShortText
+      in  testGroup "ST.ShortText"
+            [ testCase "empty" $ Right ST.empty @=? parse ""
+            , testCase "nonempty" $ Right xST @=? parse xS
+            ]
+    , let parse = TTC.parse :: String -> Either String BS.ByteString
+      in  testGroup "BS.ByteString"
+            [ testCase "empty" $ Right BS.empty @=? parse ""
+            , testCase "nonempty" $ Right xBS @=? parse xS
+            ]
+    , let parse = TTC.parse :: String -> Either String BSL.ByteString
+      in  testGroup "BSL.ByteString"
+            [ testCase "empty" $ Right BSL.empty @=? parse ""
+            , testCase "nonempty" $ Right xBSL @=? parse xS
+            ]
+    , let parse = TTC.parse :: String -> Either String BSB.Builder
+      in  testGroup "BSB.Builder"
+            [ testCase "empty" $ Right (BSB.byteString BS.empty) @=? parse ""
+            , testCase "nonempty" $ Right xBSB @=? parse xS
+            ]
+    , let parse = TTC.parse :: String -> Either String SBS.ShortByteString
+      in  testGroup "SBS.ShortByteString"
+            [ testCase "empty" $ Right SBS.empty @=? parse ""
+            , testCase "nonempty" $ Right xSBS @=? parse xS
             ]
     ]
 
