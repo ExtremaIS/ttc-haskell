@@ -2048,7 +2048,7 @@ mkUntypedValidQQ funName typeName = do
 -- Example:
 --
 -- @
--- defaultRenderInstance ''Int
+-- TTC.defaultRenderInstance ''Int
 -- @
 --
 -- @since 1.5.0.0
@@ -2062,7 +2062,7 @@ defaultRenderInstance typeName =
 -- Example:
 --
 -- @
--- defaultRenderInstances [''Int, ''Int8, ''Int16, ''Int32, ''Int64]
+-- TTC.defaultRenderInstances [''Int, ''Int8, ''Int16, ''Int32, ''Int64]
 -- @
 --
 -- @since 1.5.0.0
@@ -2074,7 +2074,7 @@ defaultRenderInstances = fmap concat . mapM defaultRenderInstance
 -- Example:
 --
 -- @
--- defaultParseInstance ''Int
+-- TTC.defaultParseInstance ''Int
 -- @
 --
 -- @since 1.5.0.0
@@ -2088,7 +2088,7 @@ defaultParseInstance typeName =
 -- Example:
 --
 -- @
--- defaultParseInstances [''Int, ''Int8, ''Int16, ''Int32, ''Int64]
+-- TTC.defaultParseInstances [''Int, ''Int8, ''Int16, ''Int32, ''Int64]
 -- @
 --
 -- @since 1.5.0.0
@@ -2100,7 +2100,7 @@ defaultParseInstances = fmap concat . mapM defaultParseInstance
 -- Example:
 --
 -- @
--- defaultRenderAndParseInstance ''Int
+-- TTC.defaultRenderAndParseInstance ''Int
 -- @
 --
 -- @since 1.5.0.0
@@ -2117,7 +2117,8 @@ defaultRenderAndParseInstance typeName = do
 -- Example:
 --
 -- @
--- defaultRenderAndParseInstances [''Int, ''Int8, ''Int16, ''Int32, ''Int64]
+-- TTC.defaultRenderAndParseInstances
+--   [''Int, ''Int8, ''Int16, ''Int32, ''Int64]
 -- @
 --
 -- @since 1.5.0.0
