@@ -17,7 +17,7 @@ constraints:
   , tasty == 1.5
 
     -- https://hackage.haskell.org/package/tasty-hunit
-  , tasty-hunit == 0.10.1
+  , tasty-hunit == 0.10.2
 
     -- https://hackage.haskell.org/package/template-haskell
     -- GHC boot library
