@@ -115,7 +115,7 @@ jobs:
         run: cabal build ttc-examples -f examples $CABAL_OPTS
 
       - name: "ttc: stack: configure build"
-        run: stack ls dependencies json > stack-deps.json
+        run: stack --system-ghc ls dependencies json > stack-deps.json
 
       - name: "ttc: stack: restore cache"
         uses: actions/cache/restore@v3
