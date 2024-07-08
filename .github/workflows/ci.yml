@@ -64,6 +64,7 @@ jobs:
           STACK_YAML="stack-${GHC_VERSION}.yaml"
           echo "STACK_YAML=${STACK_YAML}" | tee -a "${GITHUB_ENV}"
           TS_YYYYMM="$(date +%Y%m)"
+          echo "TS_YYYYMM=${TS_YYYYMM}" | tee -a "${GITHUB_ENV}"
           CACHE_CABAL_KEY_PREFIX="${RUNNER_OS}-${TS_YYYYMM}-ghc-${GHC_VERSION}-cabal-${CABAL_VERSION}"
           echo "CACHE_CABAL_KEY_PREFIX=${CACHE_CABAL_KEY_PREFIX}" | tee -a "${GITHUB_ENV}"
           CACHE_STACK_KEY_PREFIX="${RUNNER_OS}-${TS_YYYYMM}-ghc-${GHC_VERSION}-stack"
