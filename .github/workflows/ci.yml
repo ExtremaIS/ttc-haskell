@@ -255,8 +255,8 @@ jobs:
         name: "ttc: upper bounds: examples"
         run: cabal build ttc-examples -f examples $CABAL_OPTS
 
-  test-cabal-os-ghc822:
-    name: Cabal ${{ matrix.cabal }} on ${{ matrix.os }} (GHC ${{ matrix.ghc }})
+  test-cabal2410-ghc822:
+    name: Cabal ${{ matrix.cabal }} (GHC ${{ matrix.ghc }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
