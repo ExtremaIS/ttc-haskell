@@ -90,10 +90,10 @@ jobs:
       - name: "ttc: cabal: install dependencies"
         run: cabal build all $CABAL_OPTS --only-dependencies
 
-      - name: "ttc: cabal: save cache"
-        uses: actions/cache/save@v3
-        if: ${{ !steps.cache-cabal-ttc.outputs.cache-hit
+      - if: ${{ !steps.cache-cabal-ttc.outputs.cache-hit
           || steps.cache-cabal-ttc.outputs.cache-primary-key != steps.cache-cabal-ttc.outputs.cache-matched-key }}
+        name: "ttc: cabal: save cache"
+        uses: actions/cache/save@v3
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-cabal-ttc.outputs.cache-primary-key }}
@@ -130,18 +130,18 @@ jobs:
       - name: "ttc: stack: examples"
         run: stack build --system-ghc --flag ttc-examples:examples
 
-      - name: "ttc: stack: save cache"
-        uses: actions/cache/save@v3
-        if: ${{ !steps.cache-stack-ttc.outputs.cache-hit
+      - if: ${{ !steps.cache-stack-ttc.outputs.cache-hit
           || steps.cache-stack-ttc.outputs.cache-primary-key != steps.cache-stack-ttc.outputs.cache-matched-key }}
+        name: "ttc: stack: save cache"
+        uses: actions/cache/save@v3
         with:
           path: .stack-work
           key: ${{ steps.cache-stack-ttc.outputs.cache-primary-key }}
 
-      - name: "stack: save cache"
-        uses: actions/cache/save@v3
-        if: ${{ !steps.cache-stack.outputs.cache-hit
+      - if: ${{ !steps.cache-stack.outputs.cache-hit
           || steps.cache-stack.outputs.cache-primary-key != steps.cache-stack.outputs.cache-matched-key }}
+        name: "stack: save cache"
+        uses: actions/cache/save@v3
         with:
           path: ~/.stack
           key: ${{ steps.cache-stack.outputs.cache-primary-key }}
@@ -173,11 +173,12 @@ jobs:
         name: "ttc: lower bounds: install dependencies"
         run: cabal build all $CABAL_OPTS --only-dependencies
 
-      - if: matrix.ghc == "8.2.2"
+      - if: matrix.ghc == "8.2.2" &&
+          ( ${{ !steps.cache-bounds-lower-ttc.outputs.cache-hit
+          || steps.cache-bounds-lower-ttc.outputs.cache-primary-key != steps.cache-bounds-lower-ttc.outputs.cache-matched-key }}
+          )
         name: "ttc: lower bounds: save cache"
         uses: actions/cache/save@v3
-        if: ${{ !steps.cache-bounds-lower-ttc.outputs.cache-hit
-          || steps.cache-bounds-lower-ttc.outputs.cache-primary-key != steps.cache-bounds-lower-ttc.outputs.cache-matched-key }}
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-bounds-lower-ttc.outputs.cache-primary-key }}
@@ -225,11 +226,12 @@ jobs:
         name: "ttc: upper bounds: install dependencies"
         run: cabal build all $CABAL_OPTS --only-dependencies
 
-      - if: matrix.ghc == "9.10.1"
+      - if: matrix.ghc == "9.10.1" &&
+          ( ${{ !steps.cache-bounds-upper-ttc.outputs.cache-hit
+          || steps.cache-bounds-upper-ttc.outputs.cache-primary-key != steps.cache-bounds-upper-ttc.outputs.cache-matched-key }}
+          )
         name: "ttc: upper bounds: save cache"
         uses: actions/cache/save@v3
-        if: ${{ !steps.cache-bounds-upper-ttc.outputs.cache-hit
-          || steps.cache-bounds-upper-ttc.outputs.cache-primary-key != steps.cache-bounds-upper-ttc.outputs.cache-matched-key }}
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-bounds-upper-ttc.outputs.cache-primary-key }}
@@ -305,10 +307,10 @@ jobs:
       - name: "ttc: install dependencies"
         run: cabal build all $CABAL_OPTS --only-dependencies
 
-      - name: "ttc: save cache"
-        uses: actions/cache/save@v3
-        if: ${{ !steps.cache-cabal-ttc.outputs.cache-hit
+      - if: ${{ !steps.cache-cabal-ttc.outputs.cache-hit
           || steps.cache-cabal-ttc.outputs.cache-primary-key != steps.cache-cabal-ttc.outputs.cache-matched-key }}
+        name: "ttc: save cache"
+        uses: actions/cache/save@v3
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-cabal-ttc.outputs.cache-primary-key }}
