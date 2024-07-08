@@ -88,7 +88,7 @@ jobs:
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ env.CACHE_CABAL_KEY_PREFIX }}-ttc-plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.CACHE_CABAL_KEY_PREFIX }}-ttc-
+          restore-keys: ${{ env.CACHE_CABAL_KEY_PREFIX }}-ttc-plan-
 
       - name: "ttc: cabal: install dependencies"
         run: cabal build all $CABAL_OPTS --only-dependencies
@@ -113,13 +113,16 @@ jobs:
       - name: "ttc: cabal: examples"
         run: cabal build ttc-examples -f examples $CABAL_OPTS
 
+      - name: "ttc: stack: configure build"
+        run: stack ls dependencies json > stack-deps.json
+
       - name: "ttc: stack: restore cache"
         uses: actions/cache/restore@v3
         id: cache-stack-ttc
         with:
           path: .stack-work
-          key: ${{ env.CACHE_STACK_KEY_PREFIX }}-ttc-${{ hashFiles('ttc.cabal', env.STACK_YAML) }}
-          restore-keys: ${{ env.CACHE_STACK_KEY_PREFIX }}-ttc-
+          key: ${{ env.CACHE_STACK_KEY_PREFIX }}-ttc-deps-${{ hashFiles('stack-deps.json') }}
+          restore-keys: ${{ env.CACHE_STACK_KEY_PREFIX }}-ttc-deps-
 
       - name: "ttc: stack: build"
         run: stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks
