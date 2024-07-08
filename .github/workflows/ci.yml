@@ -296,8 +296,8 @@ jobs:
 
       - name: "ttc: configure build"
         run: |
-          cabal configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
-          cabal build --dry-run $CABAL_OPTS
+          cabal v2-configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
+          cabal v2-build --dry-run $CABAL_OPTS
 
       - name: "ttc: restore cache"
         uses: actions/cache/restore@v3
@@ -308,7 +308,7 @@ jobs:
           restore-keys: ${{ env.CACHE_CABAL_KEY_PREFIX }}-ttc-
 
       - name: "ttc: install dependencies"
-        run: cabal build all $CABAL_OPTS --only-dependencies
+        run: cabal v2-build all $CABAL_OPTS --only-dependencies
 
       - if: ${{ !steps.cache-cabal-ttc.outputs.cache-hit
           || steps.cache-cabal-ttc.outputs.cache-primary-key != steps.cache-cabal-ttc.outputs.cache-matched-key }}
@@ -319,13 +319,13 @@ jobs:
           key: ${{ steps.cache-cabal-ttc.outputs.cache-primary-key }}
 
       - name: "ttc: build"
-        run: cabal build all $CABAL_OPTS
+        run: cabal v2-build all $CABAL_OPTS
 
       - name: "ttc: test"
-        run: cabal test all $CABAL_OPTS
+        run: cabal v2-test all $CABAL_OPTS
 
       - name: "ttc: haddock"
-        run: cabal haddock all $CABAL_OPTS
+        run: cabal v2-haddock all $CABAL_OPTS
 
       - name: "ttc: examples"
-        run: cabal build ttc-examples -f examples $CABAL_OPTS
+        run: cabal v2-build ttc-examples -f examples $CABAL_OPTS
