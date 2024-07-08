@@ -176,10 +176,7 @@ jobs:
         name: "ttc: lower bounds: install dependencies"
         run: cabal build all $CABAL_OPTS --only-dependencies
 
-      - if: matrix.ghc == '8.2.2' &&
-          ( ${{ !steps.cache-bounds-lower-ttc.outputs.cache-hit
-          || steps.cache-bounds-lower-ttc.outputs.cache-primary-key != steps.cache-bounds-lower-ttc.outputs.cache-matched-key }}
-          )
+      - if: ${{ matrix.ghc == '8.2.2' && (!steps.cache-bounds-lower-ttc.outputs.cache-hit || steps.cache-bounds-lower-ttc.outputs.cache-primary-key != steps.cache-bounds-lower-ttc.outputs.cache-matched-key) }}
         name: "ttc: lower bounds: save cache"
         uses: actions/cache/save@v3
         with:
@@ -229,10 +226,7 @@ jobs:
         name: "ttc: upper bounds: install dependencies"
         run: cabal build all $CABAL_OPTS --only-dependencies
 
-      - if: matrix.ghc == '9.10.1' &&
-          ( ${{ !steps.cache-bounds-upper-ttc.outputs.cache-hit
-          || steps.cache-bounds-upper-ttc.outputs.cache-primary-key != steps.cache-bounds-upper-ttc.outputs.cache-matched-key }}
-          )
+      - if: ${{ matrix.ghc == '9.10.1' && (!steps.cache-bounds-upper-ttc.outputs.cache-hit || steps.cache-bounds-upper-ttc.outputs.cache-primary-key != steps.cache-bounds-upper-ttc.outputs.cache-matched-key) }}
         name: "ttc: upper bounds: save cache"
         uses: actions/cache/save@v3
         with:
