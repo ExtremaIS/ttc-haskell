@@ -43,9 +43,12 @@ jobs:
         with:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: latest
-          cabal-update: true
+          cabal-update: false
           enable-stack: true
           stack-version: 2.15.7
+
+      - name: "update Cabal"
+        run: cabal update
 
       - name: "setup environment"
         run: |
