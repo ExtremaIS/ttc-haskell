@@ -146,7 +146,7 @@ jobs:
           path: ~/.stack
           key: ${{ steps.cache-stack.outputs.cache-primary-key }}
 
-      - if: matrix.ghc == "8.2.2"
+      - if: matrix.ghc == '8.2.2'
         name: "lower bounds: setup environment"
         run: |
           CABAL_OPTS="--project-file=cabal-bounds-lower.project"
@@ -154,13 +154,13 @@ jobs:
           CACHE_CABAL_KEY_PREFIX="${RUNNER_OS}-${TS_YYYYMM}-ghc-${GHC_VERSION}-cabal-${CABAL_VERSION}-bounds-lower"
           echo "CACHE_CABAL_KEY_PREFIX=${CACHE_CABAL_KEY_PREFIX}" | tee -a "${GITHUB_ENV}"
 
-      - if: matrix.ghc == "8.2.2"
+      - if: matrix.ghc == '8.2.2'
         name: "ttc: lower bounds: configure build"
         run: |
           cabal configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
           cabal build --dry-run $CABAL_OPTS
 
-      - if: matrix.ghc == "8.2.2"
+      - if: matrix.ghc == '8.2.2'
         name: "ttc: lower bounds: restore cache"
         uses: actions/cache/restore@v3
         id: cache-bounds-lower-ttc
@@ -169,11 +169,11 @@ jobs:
           key: ${{ env.CACHE_CABAL_KEY_PREFIX }}-ttc-plan-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ env.CACHE_CABAL_KEY_PREFIX }}-ttc-
 
-      - if: matrix.ghc == "8.2.2"
+      - if: matrix.ghc == '8.2.2'
         name: "ttc: lower bounds: install dependencies"
         run: cabal build all $CABAL_OPTS --only-dependencies
 
-      - if: matrix.ghc == "8.2.2" &&
+      - if: matrix.ghc == '8.2.2' &&
           ( ${{ !steps.cache-bounds-lower-ttc.outputs.cache-hit
           || steps.cache-bounds-lower-ttc.outputs.cache-primary-key != steps.cache-bounds-lower-ttc.outputs.cache-matched-key }}
           )
@@ -183,23 +183,23 @@ jobs:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-bounds-lower-ttc.outputs.cache-primary-key }}
 
-      - if: matrix.ghc == "8.2.2"
+      - if: matrix.ghc == '8.2.2'
         name: "ttc: lower bounds: build"
         run: cabal build all $CABAL_OPTS
 
-      - if: matrix.ghc == "8.2.2"
+      - if: matrix.ghc == '8.2.2'
         name: "ttc: lower bounds: test"
         run: cabal test all $CABAL_OPTS
 
-      - if: matrix.ghc == "8.2.2"
+      - if: matrix.ghc == '8.2.2'
         name: "ttc: lower bounds: haddock"
         run: cabal haddock all $CABAL_OPTS
 
-      - if: matrix.ghc == "8.2.2"
+      - if: matrix.ghc == '8.2.2'
         name: "ttc: lower bounds: examples"
         run: cabal build ttc-examples -f examples $CABAL_OPTS
 
-      - if: matrix.ghc == "9.10.1"
+      - if: matrix.ghc == '9.10.1'
         name: "upper bounds: setup environment"
         run: |
           CABAL_OPTS="--project-file=cabal-bounds-upper.project"
@@ -207,13 +207,13 @@ jobs:
           CACHE_CABAL_KEY_PREFIX="${RUNNER_OS}-${TS_YYYYMM}-ghc-${GHC_VERSION}-cabal-${CABAL_VERSION}-bounds-upper"
           echo "CACHE_CABAL_KEY_PREFIX=${CACHE_CABAL_KEY_PREFIX}" | tee -a "${GITHUB_ENV}"
 
-      - if: matrix.ghc == "9.10.1"
+      - if: matrix.ghc == '9.10.1'
         name: "ttc: upper bounds: configure build"
         run: |
           cabal configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
           cabal build --dry-run $CABAL_OPTS
 
-      - if: matrix.ghc == "9.10.1"
+      - if: matrix.ghc == '9.10.1'
         name: "ttc: upper bounds: restore cache"
         uses: actions/cache/restore@v3
         id: cache-bounds-upper-ttc
@@ -222,11 +222,11 @@ jobs:
           key: ${{ env.CACHE_CABAL_KEY_PREFIX }}-ttc-plan-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ env.CACHE_CABAL_KEY_PREFIX }}-ttc-
 
-      - if: matrix.ghc == "9.10.1"
+      - if: matrix.ghc == '9.10.1'
         name: "ttc: upper bounds: install dependencies"
         run: cabal build all $CABAL_OPTS --only-dependencies
 
-      - if: matrix.ghc == "9.10.1" &&
+      - if: matrix.ghc == '9.10.1' &&
           ( ${{ !steps.cache-bounds-upper-ttc.outputs.cache-hit
           || steps.cache-bounds-upper-ttc.outputs.cache-primary-key != steps.cache-bounds-upper-ttc.outputs.cache-matched-key }}
           )
@@ -236,19 +236,19 @@ jobs:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-bounds-upper-ttc.outputs.cache-primary-key }}
 
-      - if: matrix.ghc == "9.10.1"
+      - if: matrix.ghc == '9.10.1'
         name: "ttc: upper bounds: build"
         run: cabal build all $CABAL_OPTS
 
-      - if: matrix.ghc == "9.10.1"
+      - if: matrix.ghc == '9.10.1'
         name: "ttc: upper bounds: test"
         run: cabal test all $CABAL_OPTS
 
-      - if: matrix.ghc == "9.10.1"
+      - if: matrix.ghc == '9.10.1'
         name: "ttc: upper bounds: haddock"
         run: cabal haddock all $CABAL_OPTS
 
-      - if: matrix.ghc == "9.10.1"
+      - if: matrix.ghc == '9.10.1'
         name: "ttc: upper bounds: examples"
         run: cabal build ttc-examples -f examples $CABAL_OPTS
 
