@@ -258,7 +258,7 @@ ifeq ($(MODE), stack)
 else
 > cabal build ttc $(CABAL_ARGS) --enable-tests --enable-benchmarks
 endif
-.PHONY: build
+.PHONY: ttc
 
 ttc-coverage: hr
 ttc-coverage: # ttc: run tests with code coverage *
@@ -286,7 +286,7 @@ ifeq ($(MODE), stack)
 else
 > cabal build ttc-examples $(CABAL_ARGS)
 endif
-.PHONY: examples
+.PHONY: ttc-examples
 
 ttc-example-enum: hr
 ttc-example-enum: # build and run ttc-example-enum *
@@ -295,7 +295,7 @@ ifeq ($(MODE), stack)
 else
 > cabal run $(CABAL_ARGS) ttc-example-enum
 endif
-.PHONY: example-enum
+.PHONY: ttc-example-enum
 
 ttc-example-invalid: hr
 ttc-example-invalid: # build ttc-example-invalid, which should fail *
@@ -305,7 +305,7 @@ ifeq ($(MODE), stack)
 else
 > cabal build ttc-examples $(CABAL_ARGS) -f ttc-example-invalid
 endif
-.PHONY: example-invalid
+.PHONY: ttc-example-invalid
 
 ttc-example-lift: hr
 ttc-example-lift: # build and run ttc-example-lift *
