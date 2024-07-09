@@ -1,4 +1,4 @@
-# `ttc-haskell` Changelog
+# `ttc` Changelog
 
 This project follows the [Haskell package versioning policy][PVP], with
 versions in `A.B.C.D` format.  `A` may be incremented arbitrarily for

@@ -681,7 +681,8 @@ asSBS f = f . convert
 -- avoided in libraries.  See the Template Haskell section below for an
 -- alternative way to load default instances (in bulk).
 --
--- See the @uname@ and @prompt@ example programs in the @examples@ directory.
+-- See the @uname@ and @prompt@ example programs in the @ttc-examples@
+-- directory.
 --
 -- For more details, see the following article:
 -- <https://www.extrema.is/articles/ttc-textual-type-classes/render-and-parse>
@@ -879,7 +880,8 @@ renderWithShow = convert . show
 -- avoided in libraries.  See the Template Haskell section below for an
 -- alternative way to load default instances (in bulk).
 --
--- See the @uname@ and @prompt@ example programs in the @examples@ directory.
+-- See the @uname@ and @prompt@ example programs in the @ttc-examples@
+-- directory.
 --
 -- For more details, see the following article:
 -- <https://www.extrema.is/articles/ttc-textual-type-classes/render-and-parse>
@@ -1543,7 +1545,7 @@ prefixErrorSBS = prefixError
 -- This function is intended to be used with types that have few choices, as
 -- the implementation uses a linear algorithm.
 --
--- See the @enum@ example program in the @examples@ directory.
+-- See the @enum@ example program in the @ttc-examples@ directory.
 --
 -- @since 0.1.0.0
 parseEnum
@@ -1716,8 +1718,8 @@ readsWithParse s = case parseMaybe s of
 -- @
 --
 -- This function is used the same way in all GHC versions.  See the @valid@,
--- @invalid@, and @lift@ example programs in the @examples@ directory.  The
--- following is example usage from the @valid@ example:
+-- @invalid@, and @lift@ example programs in the @ttc-examples@ directory.
+-- The following is example usage from the @valid@ example:
 --
 -- @
 -- sample :: Username
@@ -1834,7 +1836,7 @@ instance (Parse a, THS.Lift a) => IsString (TH.Q (TH.TExp a)) where
 -- @
 --
 -- This function is used the same way in all GHC versions.  See the @validof@
--- example program in the @examples@ directory.  The following is example
+-- example program in the @ttc-examples@ directory.  The following is example
 -- usage from the @validof@ example:
 --
 -- @
@@ -1897,7 +1899,7 @@ validOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
 -- @
 --
 -- This function is used the same way in all GHC versions.  See the @mkvalid@
--- example program in the @examples@ directory.  The following is example
+-- example program in the @ttc-examples@ directory.  The following is example
 -- usage from the @mkvalid@ example:
 --
 -- @
@@ -1944,7 +1946,7 @@ mkValid funName typeName = do
 -- run-time.  Since the result is not compiled in, no 'THS.Lift' instance is
 -- required.
 --
--- See the @uvalidof@ example program in the @examples@ directory.  The
+-- See the @uvalidof@ example program in the @ttc-examples@ directory.  The
 -- following is example usage from the @uvalidof@ example:
 --
 -- @
@@ -1967,7 +1969,7 @@ untypedValidOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
 -- Create a @valid@ function for a type in order to avoid having to write a
 -- 'Proxy' when defining constants.
 --
--- See the @mkuvalid@ example program in the @examples@ directory.  The
+-- See the @mkuvalid@ example program in the @ttc-examples@ directory.  The
 -- following is example usage from the @mkuvalid@ example:
 --
 -- @
@@ -1998,7 +2000,7 @@ mkUntypedValid funName typeName = do
 
 -- | Make a @valid@ quasi-quoter using 'untypedValidOf' for the given type
 --
--- See the @uvalidqq@ example program in the @examples@ directory.  The
+-- See the @uvalidqq@ example program in the @ttc-examples@ directory.  The
 -- following is example usage from the @uvalidqq@ example:
 --
 -- @

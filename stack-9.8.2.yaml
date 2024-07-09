@@ -1,5 +1,5 @@
 resolver: nightly-2024-07-05
 
 packages:
-  - .
-  - ./examples
+  - ./ttc
+  - ./ttc-examples

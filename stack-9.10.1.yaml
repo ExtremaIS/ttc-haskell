@@ -1,8 +1,8 @@
 resolver: ghc-9.10.1
 
 packages:
-  - .
-  - ./examples
+  - ./ttc
+  - ./ttc-examples
 
 extra-deps:
   - ansi-terminal-1.1.1

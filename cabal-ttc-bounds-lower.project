@@ -1,6 +1,6 @@
 packages:
-  ./ttc.cabal
-  examples/ttc-examples.cabal
+  ttc/ttc.cabal
+  ttc-examples/ttc-examples.cabal
 
 with-compiler: ghc-8.2.2
 

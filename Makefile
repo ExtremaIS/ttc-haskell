@@ -1,13 +1,4 @@
 ##############################################################################
-# Project configuration
-
-PACKAGE    := ttc
-CABAL_FILE := $(PACKAGE).cabal
-PROJECT    := $(PACKAGE)-haskell
-
-MODE ?= stack
-
-##############################################################################
 # Make configuration
 
 ifeq ($(origin .RECIPEPREFIX), undefined)
@@ -22,6 +13,8 @@ MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --warn-undefined-variables
 
 .DEFAULT_GOAL := build
+
+MODE ?= cabal
 
 ifeq ($(MODE), cabal)
   GHC_VERSION ?= $(shell ghc --version | sed 's/.* //')
@@ -58,8 +51,7 @@ define die
 endef
 
 define get_version
-$(shell grep '^version:' $(if $(origin 1) == undefined,$(CABAL_FILE),$(1)) \
-        | sed 's/^version: *//')
+$(shell grep '^version:' $(1) | sed 's/^version: *//')
 endef
 
 define hs_files
@@ -71,171 +63,43 @@ endef
 
 build: hr
 build: # build package *
-ifeq ($(MODE), cabal)
-> cabal v2-build $(CABAL_ARGS) --enable-tests --enable-benchmarks
-else
+ifeq ($(MODE), stack)
 > stack build $(STACK_ARGS) --test --bench --no-run-tests --no-run-benchmarks
+else
+> cabal build all $(CABAL_ARGS) --enable-tests --enable-benchmarks
 endif
 .PHONY: build
 
-clean: # clean package
-ifeq ($(MODE), cabal)
+clean: # clean packages
+> @rm -rf stack*.yaml.lock
+> @rm -rf .stack-work ttc/.stack-work ttc-examples/.stack-work
+> @rm -f cabal*.project.local
 > @rm -rf dist-newstyle
-else
-> @stack clean
-endif
 .PHONY: clean
 
 clean-all: clean
-clean-all: # clean package and remove artifacts
-> @rm -rf .stack-work examples/.stack-work
-> @rm -rf build
-> @rm -rf dist-newstyle
-> @rm -f *.yaml.lock
-> @rm -f cabal*.project.local
+clean-all: #internal# clean package and remove build artifacts
+#> @rm -rf build
 .PHONY: clean-all
 
 coverage: hr
 coverage: # run tests with code coverage *
-ifeq ($(MODE), cabal)
-> cabal v2-test $(CABAL_ARGS) \
->   --enable-coverage --enable-tests --test-show-details=always
-else
+ifeq ($(MODE), stack)
 > stack test $(STACK_ARGS) --coverage
-> stack hpc report .
+else
+> cabal test all $(CABAL_ARGS) \
+>   --enable-coverage --enable-tests --test-show-details=always
 endif
 .PHONY: coverage
 
 doc-api: hr
 doc-api: # build API documentation *
-ifeq ($(MODE), cabal)
-> cabal v2-haddock $(CABAL_ARGS)
-else
+ifeq ($(MODE), stack)
 > stack haddock $(STACK_ARGS)
+else
+> cabal haddock all $(CABAL_ARGS)
 endif
 .PHONY: doc-api
-
-example-enum: hr
-example-enum: # build and run example-enum *
-ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-enum -f example-enum
-else
-> @echo "The example-enum example is disabled when using Stack.  Different"
-> @echo "dependencies need to be used depending on the version of"
-> @echo "optparse-applicative used, and Stack does not have an automated way"
-> @echo "to do this."
-#> stack build $(STACK_ARGS) --flag ttc-examples:example-enum
-#> stack exec example-enum
-endif
-.PHONY: example-enum
-
-example-invalid: hr
-example-invalid: # build example-invalid, which should fail *
-ifeq ($(MODE), cabal)
-> cabal v2-build $(CABAL_ARGS) ttc-examples -f example-invalid
-else
-> stack build $(STACK_ARGS) --flag ttc-examples:example-invalid
-endif
-.PHONY: example-invalid
-
-example-lift: hr
-example-lift: # build and run example-lift *
-ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-lift -f example-lift
-else
-> stack build $(STACK_ARGS) --flag ttc-examples:example-lift
-> stack exec example-lift
-endif
-.PHONY: example-lift
-
-example-mkvalid: hr
-example-mkvalid: # build and run example-mkvalid *
-ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-mkvalid -f example-mkvalid
-else
-> stack build $(STACK_ARGS) --flag ttc-examples:example-mkvalid
-> stack exec example-mkvalid
-endif
-.PHONY: example-mkvalid
-
-example-mkuvalid: hr
-example-mkuvalid: # build and run example-mkuvalid *
-ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-mkuvalid -f example-mkuvalid
-else
-> stack build $(STACK_ARGS) --flag ttc-examples:example-mkuvalid
-> stack exec example-mkuvalid
-endif
-.PHONY: example-mkuvalid
-
-example-prompt: hr
-example-prompt: # build and run example-prompt *
-ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-prompt -f example-prompt
-else
-> stack build $(STACK_ARGS) --flag ttc-examples:example-prompt
-> stack exec example-prompt
-endif
-.PHONY: example-prompt
-
-example-uname: hr
-example-uname: # build and run example-uname *
-ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-uname -f example-uname
-else
-> stack build $(STACK_ARGS) --flag ttc-examples:example-uname
-> stack exec example-uname
-endif
-.PHONY: example-uname
-
-example-uvalidof: hr
-example-uvalidof: # build and run example-uvalidof *
-ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-uvalidof -f example-uvalidof
-else
-> stack build $(STACK_ARGS) --flag ttc-examples:example-uvalidof
-> stack exec example-uvalidof
-endif
-.PHONY: example-uvalidof
-
-example-uvalidqq: hr
-example-uvalidqq: # build and run example-uvalidqq *
-ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-uvalidqq -f example-uvalidqq
-else
-> stack build $(STACK_ARGS) --flag ttc-examples:example-uvalidqq
-> stack exec example-uvalidqq
-endif
-.PHONY: example-uvalidqq
-
-example-valid: hr
-example-valid: # build and run example-valid *
-ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-valid -f example-valid
-else
-> stack build $(STACK_ARGS) --flag ttc-examples:example-valid
-> stack exec example-valid
-endif
-.PHONY: example-valid
-
-example-validof: hr
-example-validof: # build and run example-validof *
-ifeq ($(MODE), cabal)
-> cabal v2-run $(CABAL_ARGS) example-validof -f example-validof
-else
-> stack build $(STACK_ARGS) --flag ttc-examples:example-validof
-> stack exec example-validof
-endif
-.PHONY: example-validof
-
-examples: hr
-examples: # build all buldable examples *
-ifeq ($(MODE), cabal)
-> cabal v2-build $(CABAL_ARGS) ttc-examples -f examples
-else
-> stack build $(STACK_ARGS) --flag ttc-examples:examples
-endif
-.PHONY: examples
 
 grep: # grep all non-hidden files for expression E
 > $(eval E:= "")
@@ -299,110 +163,68 @@ recent: # show N most recently modified files
 >   | head -n $(N)
 .PHONY: recent
 
-repl: # enter a REPL *
-ifeq ($(MODE), cabal)
-> cabal repl $(CABAL_ARGS)
-else
-> stack exec $(STACK_ARGS) ghci
-endif
-.PHONY: repl
-
-sdist: # create source tarball for Hackage
-> $(eval BRANCH := $(shell git rev-parse --abbrev-ref HEAD))
-> @test "${BRANCH}" = "main" || $(call die,"not in main branch")
-ifeq ($(MODE), cabal)
-> @cabal sdist
-else
-> @stack sdist
-endif
-.PHONY: sdist
-
-source-git: # create source tarball of git TREE
-> $(eval TREE := "HEAD")
-> $(eval BRANCH := $(shell git rev-parse --abbrev-ref $(TREE)))
-> @test "$(BRANCH)" = "main" || echo "WARNING: Not in main branch!" >&2
-> $(eval DIRTY := $(shell git diff --shortstat | wc -l))
-> @test "$(DIRTY)" = "0" \
->   || echo "WARNING: Not including non-committed changes!" >&2
-> $(eval UNTRACKED := $(shell \
-    git ls-files --other --directory --no-empty-directory --exclude-standard \
-    | wc -l))
-> @test "$(UNTRACKED)" = "0" \
->   || echo "WARNING: Not including untracked files!" >&2
-> $(eval VERSION := $(call get_version))
-> @mkdir -p build
-> @git archive --format=tar --prefix=$(PROJECT)-$(VERSION)/ $(TREE) \
->   | xz \
->   > build/$(PROJECT)-$(VERSION).tar.xz
-.PHONY: source-git
-
-source-tar: # create source tarball using tar
-> $(eval DIRTY := $(shell git diff --shortstat | wc -l))
-> @test "$(DIRTY)" = "0" \
->   || echo "WARNING: Including non-committed changes!" >&2
-> $(eval UNTRACKED := $(shell \
-    git ls-files --other --directory --no-empty-directory --exclude-standard \
-    | wc -l))
-> @test "$(UNTRACKED)" = "0" \
->   || echo "WARNING: Including untracked files!" >&2
-> $(eval VERSION := $(call get_version))
-> @mkdir -p build
-> @sed -e 's,^/,./,' -e 's,/$$,,' .gitignore > build/.gitignore
-> @tar \
->   --exclude-vcs \
->   --exclude-ignore-recursive=build/.gitignore \
->   --transform "s,^\.,$(PROJECT)-$(VERSION)," \
->   -Jcf build/$(PROJECT)-$(VERSION).tar.xz \
->   .
-> @rm -f build/.gitignore
-.PHONY: source-tar
-
 test: hr
 test: # run tests, optionally for pattern P *
 > $(eval P := "")
-ifeq ($(MODE), cabal)
-> @test -z "$(P)" \
->   && cabal v2-test $(CABAL_ARGS) --enable-tests --test-show-details=always \
->   || cabal v2-test $(CABAL_ARGS) --enable-tests --test-show-details=always \
->       --test-option '--pattern=$(P)'
-else
+ifeq ($(MODE), stack)
 > @test -z "$(P)" \
 >   && stack test $(STACK_ARGS) \
 >   || stack test $(STACK_ARGS) --test-arguments '--pattern $(P)'
+else
+> @test -z "$(P)" \
+>   && cabal test all $(CABAL_ARGS) \
+>        --enable-tests --test-show-details=always \
+>   || cabal test all $(CABAL_ARGS) \
+>        --enable-tests --test-show-details=always \
+>        --test-option '--pattern=$(P)'
 endif
 .PHONY: test
 
 test-all: # run all configured tests and build examples using MODE
-> @./test-all.sh "$(MODE)"
+ifeq ($(MODE), stack)
+> @make test-build CONFIG=stack-8.2.2.yaml
+> @make test-build CONFIG=stack-8.4.4.yaml
+> @make test-build CONFIG=stack-8.6.5.yaml
+> @make test-build CONFIG=stack-8.8.4.yaml
+> @make test-build CONFIG=stack-8.10.7.yaml
+> @make test-build CONFIG=stack-9.0.2.yaml
+> @make test-build CONFIG=stack-9.2.8.yaml
+> @make test-build CONFIG=stack-9.4.8.yaml
+> @make test-build CONFIG=stack-9.6.6.yaml
+> @make test-build CONFIG=stack-9.8.2.yaml
+> @make test-build CONFIG=stack-9.10.1.yaml
+else
+> @make test-build GHC_VERSION=8.2.2
+> @make test-build GHC_VERSION=8.4.4
+> @make test-build GHC_VERSION=8.6.5
+> @make test-build GHC_VERSION=8.8.4
+> @make test-build GHC_VERSION=8.10.7
+> @make test-build GHC_VERSION=9.0.2
+> @make test-build GHC_VERSION=9.2.8
+> @make test-build GHC_VERSION=9.4.8
+> @make test-build GHC_VERSION=9.6.6
+> @make test-build GHC_VERSION=9.8.2
+> @make test-build GHC_VERSION=9.10.1
+endif
 .PHONY: test-all
 
+test-bounds-lower: ttc-test-bounds-lower
 test-bounds-lower: # test lower bounds (Cabal only)
-ifeq ($(MODE), stack)
-> $(error test-bounds-lower not supported in Stack mode)
-endif
-> @make test-build CABAL_ARGS="--project-file=cabal-bounds-lower.project"
 .PHONY: test-bounds-lower
 
+test-bounds-upper: ttc-test-bounds-upper
 test-bounds-upper: # test upper bounds (Cabal only)
-ifeq ($(MODE), stack)
-> $(error test-bounds-upper not supported in Stack mode)
-endif
-> @make test-build CABAL_ARGS="--project-file=cabal-bounds-upper.project"
 .PHONY: test-bounds-upper
 
 test-build: hr
 test-build: build
 test-build: test
 test-build: doc-api
-test-build: examples
-test-build: # build, run tests, build API documentation, build examples *
+test-build: # build, run tests, build API documentation *
 .PHONY: test-build
 
 test-nightly: # run tests for the latest Stackage nightly release (Stack only)
-ifeq ($(MODE), cabal)
-> $(error test-nightly not supported in Cabal mode)
-endif
-> @make test RESOLVER=nightly
+> @make test MODE=stack RESOLVER=nightly
 .PHONY: test-nightly
 
 todo: # search for TODO items
@@ -416,7 +238,230 @@ todo: # search for TODO items
 >   || true
 .PHONY: todo
 
-version: # show current version
-> @echo "ttc.cabal          $(call get_version, ttc.cabal)"
-> @echo "ttc-examples.cabal $(call get_version, ttc-examples.cabal)"
+ttc: hr
+ttc: # build ttc package *
+ifeq ($(MODE), stack)
+> stack build ttc $(STACK_ARGS) \
+>   --test --bench --no-run-tests --no-run-benchmarks
+else
+> cabal build ttc $(CABAL_ARGS) --enable-tests --enable-benchmarks
+endif
+.PHONY: build
+
+ttc-coverage: hr
+ttc-coverage: # ttc: run tests with code coverage *
+ifeq ($(MODE), stack)
+> stack test ttc $(STACK_ARGS) --coverage
+else
+> cabal test ttc $(CABAL_ARGS) \
+>   --enable-coverage --enable-tests --test-show-details=always
+endif
+.PHONY: ttc-coverage
+
+ttc-doc-api: hr
+ttc-doc-api: # ttc: build API documentation *
+ifeq ($(MODE), stack)
+> stack haddock ttc $(STACK_ARGS)
+else
+> cabal haddock ttc $(CABAL_ARGS)
+endif
+.PHONY: ttc-doc-api
+
+ttc-examples: hr
+ttc-examples: # build all buildable ttc-examples *
+ifeq ($(MODE), stack)
+> stack build ttc-examples $(STACK_ARGS)
+else
+> cabal build ttc-examples $(CABAL_ARGS)
+endif
+.PHONY: examples
+
+ttc-example-enum: hr
+ttc-example-enum: # build and run ttc-example-enum *
+ifeq ($(MODE), stack)
+> stack run $(STACK_ARGS) ttc-example-enum
+else
+> cabal run $(CABAL_ARGS) ttc-example-enum
+endif
+.PHONY: example-enum
+
+ttc-example-invalid: hr
+ttc-example-invalid: # build ttc-example-invalid, which should fail *
+ifeq ($(MODE), stack)
+> stack build ttc-examples $(STACK_ARGS) \
+>   --flag ttc-examples:ttc-example-invalid
+else
+> cabal build ttc-examples $(CABAL_ARGS) -f ttc-example-invalid
+endif
+.PHONY: example-invalid
+
+ttc-example-lift: hr
+ttc-example-lift: # build and run ttc-example-lift *
+ifeq ($(MODE), stack)
+> stack run $(STACK_ARGS) ttc-example-lift
+else
+> cabal run $(CABAL_ARGS) ttc-example-lift
+endif
+.PHONY: ttc-example-lift
+
+ttc-example-mkvalid: hr
+ttc-example-mkvalid: # build and run ttc-example-mkvalid *
+ifeq ($(MODE), stack)
+> stack run $(STACK_ARGS) ttc-example-mkvalid
+else
+> cabal run $(CABAL_ARGS) ttc-example-mkvalid
+endif
+.PHONY: ttc-example-mkvalid
+
+ttc-example-mkuvalid: hr
+ttc-example-mkuvalid: # build and run ttc-example-mkuvalid *
+ifeq ($(MODE), stack)
+> stack run $(STACK_ARGS) ttc-example-mkuvalid
+else
+> cabal run $(CABAL_ARGS) ttc-example-mkuvalid
+endif
+.PHONY: ttc-example-mkuvalid
+
+ttc-example-prompt: hr
+ttc-example-prompt: # build and run ttc-example-prompt *
+ifeq ($(MODE), stack)
+> stack run $(STACK_ARGS) ttc-example-prompt
+else
+> cabal run $(CABAL_ARGS) ttc-example-prompt
+endif
+.PHONY: ttc-example-prompt
+
+ttc-example-uname: hr
+ttc-example-uname: # build and run ttc-example-uname *
+ifeq ($(MODE), stack)
+> stack run $(STACK_ARGS) ttc-example-uname
+else
+> cabal run $(CABAL_ARGS) ttc-example-uname
+endif
+.PHONY: ttc-example-uname
+
+ttc-example-uvalidof: hr
+ttc-example-uvalidof: # build and run ttc-example-uvalidof *
+ifeq ($(MODE), stack)
+> stack run $(STACK_ARGS) ttc-example-uvalidof
+else
+> cabal run $(CABAL_ARGS) ttc-example-uvalidof
+endif
+.PHONY: ttc-example-uvalidof
+
+ttc-example-uvalidqq: hr
+ttc-example-uvalidqq: # build and run ttc-example-uvalidqq *
+ifeq ($(MODE), stack)
+> stack run $(STACK_ARGS) ttc-example-uvalidqq
+else
+> cabal run $(CABAL_ARGS) ttc-example-uvalidqq
+endif
+.PHONY: ttc-example-uvalidqq
+
+ttc-example-valid: hr
+ttc-example-valid: # build and run ttc-example-valid *
+ifeq ($(MODE), stack)
+> stack run $(STACK_ARGS) ttc-example-valid
+else
+> cabal run $(CABAL_ARGS) ttc-example-valid
+endif
+.PHONY: ttc-example-valid
+
+ttc-example-validof: hr
+ttc-example-validof: # build and run ttc-example-validof *
+ifeq ($(MODE), stack)
+> stack run $(STACK_ARGS) ttc-example-validof
+else
+> cabal run $(CABAL_ARGS) ttc-example-validof
+endif
+.PHONY: ttc-example-validof
+
+ttc-repl: # ttc: enter a REPL *
+ifeq ($(MODE), stack)
+> stack repl ttc $(STACK_ARGS)
+else
+> cabal repl ttc $(CABAL_ARGS)
+endif
+.PHONY: ttc-repl
+
+ttc-sdist: # ttc: create a source tarball for Hackage
+> $(eval BRANCH := $(shell git rev-parse --abbrev-ref HEAD))
+> @test "${BRANCH}" = "main" || $(call die,"not in main branch")
+ifeq ($(MODE), stack)
+> @stack sdist ttc
+else
+> @cabal sdist ttc
+endif
+.PHONY: ttc-sdist
+
+ttc-test: hr
+ttc-test: # ttc: run tests, optionally for pattern P *
+> $(eval P := "")
+ifeq ($(MODE), stack)
+> @test -z "$(P)" \
+>   && stack test ttc $(STACK_ARGS) \
+>   || stack test ttc $(STACK_ARGS) --test-arguments '--pattern $(P)'
+else
+> @test -z "$(P)" \
+>   && cabal test ttc $(CABAL_ARGS) \
+>        --enable-tests --test-show-details=always \
+>   || cabal test ttc $(CABAL_ARGS) \
+>       --enable-tests --test-show-details=always \
+>       --test-option '--pattern=$(P)'
+endif
+.PHONY: ttc-test
+
+ttc-test-all: # ttc: run all configured tests and build examples using MODE
+ifeq ($(MODE), stack)
+> @make ttc-test-build CONFIG=stack-8.2.2.yaml
+> @make ttc-test-build CONFIG=stack-8.4.4.yaml
+> @make ttc-test-build CONFIG=stack-8.6.5.yaml
+> @make ttc-test-build CONFIG=stack-8.8.4.yaml
+> @make ttc-test-build CONFIG=stack-8.10.7.yaml
+> @make ttc-test-build CONFIG=stack-9.0.2.yaml
+> @make ttc-test-build CONFIG=stack-9.2.8.yaml
+> @make ttc-test-build CONFIG=stack-9.4.8.yaml
+> @make ttc-test-build CONFIG=stack-9.6.6.yaml
+> @make ttc-test-build CONFIG=stack-9.8.2.yaml
+> @make ttc-test-build CONFIG=stack-9.10.1.yaml
+else
+> @make ttc-test-build GHC_VERSION=8.2.2
+> @make ttc-test-build GHC_VERSION=8.4.4
+> @make ttc-test-build GHC_VERSION=8.6.5
+> @make ttc-test-build GHC_VERSION=8.8.4
+> @make ttc-test-build GHC_VERSION=8.10.7
+> @make ttc-test-build GHC_VERSION=9.0.2
+> @make ttc-test-build GHC_VERSION=9.2.8
+> @make ttc-test-build GHC_VERSION=9.4.8
+> @make ttc-test-build GHC_VERSION=9.6.6
+> @make ttc-test-build GHC_VERSION=9.8.2
+> @make ttc-test-build GHC_VERSION=9.10.1
+endif
+.PHONY: ttc-test-all
+
+ttc-test-bounds-lower: # ttc: test lower bounds (Cabal only)
+> @make ttc-test-build MODE=cabal \
+>   CABAL_ARGS="--project-file=cabal-ttc-bounds-lower.project"
+.PHONY: ttc-test-bounds-lower
+
+ttc-test-bounds-upper: # ttc: test upper bounds (Cabal only)
+> @make ttc-test-build MODE=cabal \
+>   CABAL_ARGS="--project-file=cabal-ttc-bounds-upper.project"
+.PHONY: ttc-test-bounds-upper
+
+ttc-test-build: hr
+ttc-test-build: ttc
+ttc-test-build: ttc-test
+ttc-test-build: ttc-doc-api
+ttc-test-build: ttc-examples
+ttc-test-build: # ttc: build, run tests, build API documentation, build examples *
+.PHONY: ttc-test-build
+
+ttc-test-nightly: # ttc: run tests for the latest Stackage nightly release (Stack only)
+> @make ttc-test MODE=stack RESOLVER=nightly
+.PHONY: ttc-test-nightly
+
+version: # show current versions
+> @echo "ttc           $(call get_version, ttc/ttc.cabal)"
+> @echo "ttc-examples  $(call get_version, ttc-examples/ttc-examples.cabal)"
 .PHONY: version

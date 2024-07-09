@@ -1,5 +1,9 @@
 resolver: lts-21.25
 
 packages:
-  - .
-  - ./examples
+  - ./ttc
+  - ./ttc-examples
+
+flags:
+  ttc-examples:
+    optparse-applicative_ge_0_18: false
