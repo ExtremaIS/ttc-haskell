@@ -4,9 +4,10 @@ category:       Data, Text
 synopsis:       Textual Type Classes Examples
 description:
   This package is used for building TTC examples.  Please see the README on
-  GitHub at <https://github.com/ExtremaIS/ttc-haskell#readme>.
+  GitHub at
+  <https://github.com/ExtremaIS/ttc-haskell/tree/main/ttc-examples#readme>.
 
-homepage:       https://github.com/ExtremaIS/ttc-haskell#readme
+homepage:       https://github.com/ExtremaIS/ttc-haskell/tree/main/ttc#readme
 bug-reports:    https://github.com/ExtremaIS/ttc-haskell/issues
 author:         Travis Cardwell <travis.cardwell@extrema.is>
 maintainer:     Travis Cardwell <travis.cardwell@extrema.is>

@@ -5,9 +5,9 @@ synopsis:       Textual Type Classes
 description:
   This library provides type classes for conversion between data types and
   textual data types (strings).  Please see the README on GitHub at
-  <https://github.com/ExtremaIS/ttc-haskell#ttc-textual-type-classes>.
+  <https://github.com/ExtremaIS/ttc-haskell/tree/main/ttc#readme>.
 
-homepage:       https://github.com/ExtremaIS/ttc-haskell#readme
+homepage:       https://github.com/ExtremaIS/ttc-haskell/tree/main/ttc#readme
 bug-reports:    https://github.com/ExtremaIS/ttc-haskell/issues
 author:         Travis Cardwell <travis.cardwell@extrema.is>
 maintainer:     Travis Cardwell <travis.cardwell@extrema.is>
