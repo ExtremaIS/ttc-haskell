@@ -71,7 +71,7 @@ jobs:
           echo "CACHE_STACK_KEY_PREFIX=${CACHE_STACK_KEY_PREFIX}" | tee -a "${GITHUB_ENV}"
 
       - name: "stack: restore cache"
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: cache-stack
         with:
           path: ~/.stack
@@ -84,7 +84,7 @@ jobs:
           cabal build ttc --dry-run $CABAL_OPTS
 
       - name: "ttc: cabal: restore cache"
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: cache-cabal-ttc
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
@@ -97,7 +97,7 @@ jobs:
       - if: ${{ !steps.cache-cabal-ttc.outputs.cache-hit
           || steps.cache-cabal-ttc.outputs.cache-primary-key != steps.cache-cabal-ttc.outputs.cache-matched-key }}
         name: "ttc: cabal: save cache"
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-cabal-ttc.outputs.cache-primary-key }}
@@ -118,7 +118,7 @@ jobs:
         run: stack --system-ghc ls dependencies json > stack-deps.json
 
       - name: "ttc: stack: restore cache"
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: cache-stack-ttc
         with:
           path: .stack-work
@@ -140,7 +140,7 @@ jobs:
       - if: ${{ !steps.cache-stack-ttc.outputs.cache-hit
           || steps.cache-stack-ttc.outputs.cache-primary-key != steps.cache-stack-ttc.outputs.cache-matched-key }}
         name: "ttc: stack: save cache"
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: .stack-work
           key: ${{ steps.cache-stack-ttc.outputs.cache-primary-key }}
@@ -148,7 +148,7 @@ jobs:
       - if: ${{ !steps.cache-stack.outputs.cache-hit
           || steps.cache-stack.outputs.cache-primary-key != steps.cache-stack.outputs.cache-matched-key }}
         name: "stack: save cache"
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: ~/.stack
           key: ${{ steps.cache-stack.outputs.cache-primary-key }}
@@ -169,7 +169,7 @@ jobs:
 
       - if: matrix.ghc == '8.2.2'
         name: "ttc: lower bounds: restore cache"
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: cache-ttc-bounds-lower
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
@@ -182,7 +182,7 @@ jobs:
 
       - if: ${{ matrix.ghc == '8.2.2' && (!steps.cache-ttc-bounds-lower.outputs.cache-hit || steps.cache-ttc-bounds-lower.outputs.cache-primary-key != steps.cache-ttc-bounds-lower.outputs.cache-matched-key) }}
         name: "ttc: lower bounds: save cache"
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-ttc-bounds-lower.outputs.cache-primary-key }}
@@ -219,7 +219,7 @@ jobs:
 
       - if: matrix.ghc == '9.10.1'
         name: "ttc: upper bounds: restore cache"
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: cache-ttc-bounds-upper
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
@@ -232,7 +232,7 @@ jobs:
 
       - if: ${{ matrix.ghc == '9.10.1' && (!steps.cache-ttc-bounds-upper.outputs.cache-hit || steps.cache-ttc-bounds-upper.outputs.cache-primary-key != steps.cache-ttc-bounds-upper.outputs.cache-matched-key) }}
         name: "ttc: upper bounds: save cache"
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-ttc-bounds-upper.outputs.cache-primary-key }}
@@ -298,7 +298,7 @@ jobs:
           cabal v2-build ttc --dry-run $CABAL_OPTS
 
       - name: "ttc: restore cache"
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         id: cache-cabal-ttc
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
@@ -311,7 +311,7 @@ jobs:
       - if: ${{ !steps.cache-cabal-ttc.outputs.cache-hit
           || steps.cache-cabal-ttc.outputs.cache-primary-key != steps.cache-cabal-ttc.outputs.cache-matched-key }}
         name: "ttc: save cache"
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-cabal-ttc.outputs.cache-primary-key }}
