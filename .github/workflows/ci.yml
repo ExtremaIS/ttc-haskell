@@ -35,7 +35,7 @@ jobs:
           - "9.10.1"
     steps:
       - name: "checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "setup Haskell"
         uses: haskell-actions/setup@v2
@@ -267,7 +267,7 @@ jobs:
           - "2.4.1.0"
     steps:
       - name: "checkout"
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: "setup Haskell"
         uses: haskell-actions/setup@v2
