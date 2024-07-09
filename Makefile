@@ -27,6 +27,12 @@ ifeq ($(MODE), cabal)
       CABAL_ARGS += "--project-file=$(PROJECT_FILE_AUTO)"
     endif
   endif
+  ifneq ($(origin CONFIG), undefined)
+    $(error CONFIG set in cabal MODE)
+  endif
+  ifneq ($(origin RESOLVER), undefined)
+    $(error RESOLVER set in cabal MODE)
+  endif
 else ifeq ($(MODE), stack)
   STACK_ARGS :=
   ifneq ($(origin CONFIG), undefined)
@@ -34,6 +40,12 @@ else ifeq ($(MODE), stack)
   endif
   ifneq ($(origin RESOLVER), undefined)
     STACK_ARGS += --resolver "$(RESOLVER)"
+  endif
+  ifneq ($(origin GHC_VERSION), undefined)
+    $(error GHC_VERSION set in stack MODE)
+  endif
+  ifneq ($(origin CABAL_ARGS), undefined)
+    $(error CABAL_ARGS set in stack MODE)
   endif
 else
   $(error unknown MODE: $(MODE))
