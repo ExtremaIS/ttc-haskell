@@ -162,7 +162,7 @@ directory:
 
     $ make ttc-example-mkuvalid
 
-## `uvalidqq`
+## `mkuvalidqq`
 
 This is an example of using `mkUntypedValidQQ` to make a `valid` quasi-quoter
 to validate a constant at compile-time.  Note that HLint works fine because
@@ -170,10 +170,10 @@ typed expression slices are not used.
 
 Source:
 
-* [Username.hs](uvalidqq/Username.hs)
-* [uvalidqq.hs](uvalidqq/uvalidqq.hs)
+* [Username.hs](mkuvalidqq/Username.hs)
+* [mkuvalidqq.hs](mkuvalidqq/mkuvalidqq.hs)
 
 To run the example, run the following command from the `ttc-haskell` project
 directory:
 
-    $ make ttc-example-uvalidqq
+    $ make ttc-example-mkuvalidqq

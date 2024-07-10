@@ -143,9 +143,9 @@ executable ttc-example-uvalidof
   default-language: Haskell2010
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
 
-executable ttc-example-uvalidqq
-  hs-source-dirs: uvalidqq
-  main-is: uvalidqq.hs
+executable ttc-example-mkuvalidqq
+  hs-source-dirs: mkuvalidqq
+  main-is: mkuvalidqq.hs
   other-modules:
       Username
   build-depends:

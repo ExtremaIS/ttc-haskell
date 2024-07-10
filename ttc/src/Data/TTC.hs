@@ -845,6 +845,9 @@ instance RenderDefault SBS.ShortByteString where
 -- renderWithShow @Text foo
 -- @
 --
+-- See the @enum@ example program in the @ttc-examples@ directory of the
+-- source repository.
+--
 -- @since 0.1.0.0
 renderWithShow :: forall t a. (Show a, Textual t) => a -> t
 renderWithShow = convert . show
@@ -2141,8 +2144,8 @@ mkUntypedValid funName typeName = do
 
 -- | Make a @valid@ quasi-quoter using 'untypedValidOf' for the given type
 --
--- See the @uvalidqq@ example program in the @ttc-examples@ directory of the
--- source repository.  The following is example usage from the @uvalidqq@
+-- See the @mkuvalidqq@ example program in the @ttc-examples@ directory of the
+-- source repository.  The following is example usage from the @mkuvalidqq@
 -- example:
 --
 -- @

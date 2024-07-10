@@ -361,14 +361,14 @@ else
 endif
 .PHONY: ttc-example-uvalidof
 
-ttc-example-uvalidqq: hr
-ttc-example-uvalidqq: # build and run ttc-example-uvalidqq *
+ttc-example-mkuvalidqq: hr
+ttc-example-mkuvalidqq: # build and run ttc-example-mkuvalidqq *
 ifeq ($(MODE), stack)
-> stack run $(STACK_ARGS) ttc-example-uvalidqq
+> stack run $(STACK_ARGS) ttc-example-mkuvalidqq
 else
-> cabal run $(CABAL_ARGS) ttc-example-uvalidqq
+> cabal run $(CABAL_ARGS) ttc-example-mkuvalidqq
 endif
-.PHONY: ttc-example-uvalidqq
+.PHONY: ttc-example-mkuvalidqq
 
 ttc-example-valid: hr
 ttc-example-valid: # build and run ttc-example-valid *
