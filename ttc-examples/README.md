@@ -13,7 +13,7 @@ Source:
 To run the example, run the following command from the `ttc-haskell` project
 directory:
 
-    $ make example-uname
+    $ make ttc-example-uname
 
 ## `prompt`
 
@@ -29,7 +29,7 @@ Source:
 To run the example, run the following command from the `ttc-haskell` project
 directory:
 
-    $ make example-prompt
+    $ make ttc-example-prompt
 
 ## `enum`
 
@@ -43,7 +43,7 @@ Source:
 To run the example, run the following command from the `ttc-haskell` project
 directory:
 
-    $ make example-enum
+    $ make ttc-example-enum
 
 ## `valid`
 
@@ -61,7 +61,7 @@ Source:
 To run the example, run the following command from the `ttc-haskell` project
 directory:
 
-    $ make example-valid
+    $ make ttc-example-valid
 
 ## `invalid`
 
@@ -77,7 +77,7 @@ Source:
 To run the example, run the following command from the `ttc-haskell` project
 directory:
 
-    $ make example-invalid
+    $ make ttc-example-invalid
 
 The compilation fails due to the invalid username.
 
@@ -94,7 +94,7 @@ Source:
 To run the example, run the following command from the `ttc-haskell` project
 directory:
 
-    $ make example-lift
+    $ make ttc-example-lift
 
 ## `validof`
 
@@ -111,7 +111,7 @@ Source:
 To run the example, run the following command from the `ttc-haskell` project
 directory:
 
-    $ make example-validof
+    $ make ttc-example-validof
 
 ## `mkvalid`
 
@@ -126,7 +126,7 @@ Source:
 To run the example, run the following command from the `ttc-haskell` project
 directory:
 
-    $ make example-mkvalid
+    $ make ttc-example-mkvalid
 
 ## `uvalidof`
 
@@ -144,7 +144,7 @@ Source:
 To run the example, run the following command from the `ttc-haskell` project
 directory:
 
-    $ make example-uvalidof
+    $ make ttc-example-uvalidof
 
 ## `mkuvalid`
 
@@ -160,7 +160,7 @@ Source:
 To run the example, run the following command from the `ttc-haskell` project
 directory:
 
-    $ make example-mkuvalid
+    $ make ttc-example-mkuvalid
 
 ## `uvalidqq`
 
@@ -176,4 +176,4 @@ Source:
 To run the example, run the following command from the `ttc-haskell` project
 directory:
 
-    $ make example-uvalidqq
+    $ make ttc-example-uvalidqq
