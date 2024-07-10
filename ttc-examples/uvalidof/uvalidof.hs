@@ -19,7 +19,7 @@ import Data.Proxy (Proxy(Proxy))
 -- https://hackage.haskell.org/package/ttc
 import qualified Data.TTC as TTC
 
--- (ttc-examples:example-valid)
+-- (ttc-examples:ttc-example-uvalidof)
 import Username (Username)
 
 ------------------------------------------------------------------------------

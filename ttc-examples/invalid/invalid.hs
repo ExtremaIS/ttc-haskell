@@ -16,7 +16,7 @@ module Main (main) where
 -- https://hackage.haskell.org/package/ttc
 import qualified Data.TTC as TTC
 
--- (ttc-examples:example-valid)
+-- (ttc-examples:ttc-example-invalid)
 import Username (Username)
 
 ------------------------------------------------------------------------------

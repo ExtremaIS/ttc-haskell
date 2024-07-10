@@ -18,10 +18,10 @@ import qualified System.IO as IO
 import qualified Data.Time.Calendar as Calendar
 import qualified Data.Time.Clock as Clock
 
--- (ttc)
+-- https://hackage.haskell.org/package/ttc
 import qualified Data.TTC as TTC
 
--- (ttc:example-prompt)
+-- (ttc-examples:ttc-example-prompt)
 import qualified CreditCard as CC
 import CreditCard (CreditCard(CreditCard), ExpirationDate(ExpirationDate))
 

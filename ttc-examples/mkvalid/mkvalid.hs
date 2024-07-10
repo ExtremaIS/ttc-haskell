@@ -13,7 +13,7 @@
 
 module Main (main) where
 
--- (ttc-examples:example-valid)
+-- (ttc-examples:ttc-example-mkvalid)
 import qualified Username
 import Username (Username)
 

@@ -40,7 +40,7 @@ import Text.Read (readMaybe)
 -- http://hackage.haskell.org/package/time
 import qualified Data.Time.Calendar as Calendar
 
--- (ttc)
+-- https://hackage.haskell.org/package/ttc
 import qualified Data.TTC as TTC
 
 ------------------------------------------------------------------------------

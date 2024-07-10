@@ -8,10 +8,10 @@
 
 module Main (main) where
 
--- (ttc)
+-- https://hackage.haskell.org/package/ttc
 import qualified Data.TTC as TTC
 
--- (ttc:example-uname)
+-- (ttc-examples:ttc-example-uname)
 import Username (Username)
 
 ------------------------------------------------------------------------------
