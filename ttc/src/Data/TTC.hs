@@ -1,13 +1,40 @@
 ------------------------------------------------------------------------------
 -- |
 -- Module      : Data.TTC
--- Description : textual type classes
+-- Description : Textual Type Classes
 -- Copyright   : Copyright (c) 2019-2024 Travis Cardwell
 -- License     : MIT
 --
 -- TTC, an initialism of /Textual Type Classes/, is a library that provides
 -- type classes for conversion between data types and textual data types
 -- (strings).
+--
+-- The 'Render' type class renders a data type as a textual data type, similar
+-- to 'Show'.  Use 'Render' in your business logic, and only use 'Show' for
+-- debugging, as use of 'Show' instances in business logic is a common source
+-- of bugs.
+--
+-- The 'Parse' type class parses a data type from a textual data type, similar
+-- to 'Read'.  Unlike 'Read', 'Parse' allows you to specify meaningful error
+-- messages.
+--
+-- 'Render' and 'Parse' work with multiple textual data types.  They are not
+-- limited to 'String' (like 'Show' and 'Read'), and implementations can use
+-- the textual data type that is most appropriate for each data type.
+--
+-- Conversion between textual data types is managed by the 'Textual' type
+-- class.  This library provides instances to support the following textual
+-- data types:
+--
+-- * 'String' (@S@)
+-- * Strict 'T.Text' (@T@)
+-- * Lazy 'TL.Text' (@TL@)
+-- * @Text@ 'TLB.Builder' (@TLB@)
+-- * 'ST.ShortText' (@ST@)
+-- * Strict 'BS.ByteString' (@BS@)
+-- * Lazy 'BSL.ByteString' (@BSL@)
+-- * @ByteString@ 'BSB.Builder' (@BSB@)
+-- * 'SBS.ShortByteString' (@SBS@)
 --
 -- This library is meant to be imported qualified, as follows:
 --
@@ -18,14 +45,11 @@
 
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-
-#if __GLASGOW_HASKELL__ >= 900
-{-# LANGUAGE ExplicitForAll #-}
-#endif
 
 module Data.TTC
   ( -- * Textual
@@ -67,6 +91,9 @@ module Data.TTC
     -- * Render
   , Render(..)
   , RenderDefault(..)
+    -- ** Render Utility Functions
+    -- $RenderUtilityFunctions
+  , renderWithShow
     -- ** Rendering Specific Types
     -- $RenderSpecific
   , renderS
@@ -78,11 +105,42 @@ module Data.TTC
   , renderBSL
   , renderBSB
   , renderSBS
-    -- ** Render Utilities
-  , renderWithShow
     -- * Parse
   , Parse(..)
   , ParseDefault(..)
+    -- ** Parse Utility Functions
+    -- $ParseUtilityFunctions
+    -- *** Parse With A Single Error Message
+    -- $ParseWithASingleErrorMessage
+  , withError
+  , withErrorS
+  , withErrorT
+  , withErrorTL
+  , withErrorTLB
+  , withErrorST
+  , withErrorBS
+  , withErrorBSL
+  , withErrorBSB
+  , withErrorSBS
+    -- *** Parse With An Error Prefix
+    -- $ParseWithAnErrorPrefix
+  , prefixError
+  , prefixErrorS
+  , prefixErrorT
+  , prefixErrorTL
+  , prefixErrorTLB
+  , prefixErrorST
+  , prefixErrorBS
+  , prefixErrorBSL
+  , prefixErrorBSB
+  , prefixErrorSBS
+    -- *** 'Read' Parsing
+  , parseWithRead
+  , parseWithRead'
+  , maybeParseWithRead
+    -- *** 'Enum' Parsing
+  , parseEnum
+  , parseEnum'
     -- ** Parsing From Specific Types
     -- $ParseSpecific
   , parseS
@@ -130,49 +188,20 @@ module Data.TTC
   , parseUnsafeBSL
   , parseUnsafeBSB
   , parseUnsafeSBS
-    -- ** Parse With A Single Error Message
-    -- $ParseWithASingleErrorMessage
-  , withError
-  , withErrorS
-  , withErrorT
-  , withErrorTL
-  , withErrorTLB
-  , withErrorST
-  , withErrorBS
-  , withErrorBSL
-  , withErrorBSB
-  , withErrorSBS
-    -- ** Parse With An Error Prefix
-    -- $ParseWithAnErrorPrefix
-  , prefixError
-  , prefixErrorS
-  , prefixErrorT
-  , prefixErrorTL
-  , prefixErrorTLB
-  , prefixErrorST
-  , prefixErrorBS
-  , prefixErrorBSL
-  , prefixErrorBSB
-  , prefixErrorSBS
-    -- ** Parse Enums
-  , parseEnum
-  , parseEnum'
-    -- ** Read Instances
-  , parseWithRead
-  , parseWithRead'
-  , maybeParseWithRead
-  , readsEnum
+    -- ** 'ReadS' Instances
   , readsWithParse
+  , readsEnum
+    -- * Template Haskell
     -- ** Constant Validation
-    -- $ParseValid
+    -- $ConstantValidation
   , valid
   , validOf
   , mkValid
   , untypedValidOf
   , mkUntypedValid
   , mkUntypedValidQQ
-    -- * Template Haskell
-    -- $TemplateHaskell
+    -- * Default Instances
+    -- $DefaultInstances
   , defaultRenderInstance
   , defaultRenderInstances
   , defaultParseInstance
@@ -185,10 +214,10 @@ module Data.TTC
 #if __GLASGOW_HASKELL__ <= 806
 import Control.Monad.Fail (MonadFail)
 #endif
-import Data.Int (Int16, Int32, Int64, Int8)
+import Data.Int (Int8, Int16, Int32, Int64)
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
 import Data.String (IsString(fromString))
-import Data.Word (Word16, Word32, Word64, Word8)
+import Data.Word (Word8, Word16, Word32, Word64)
 import GHC.Stack (HasCallStack)
 import Text.Read (readMaybe)
 
@@ -217,8 +246,9 @@ import qualified Data.Text.Short as ST
 ------------------------------------------------------------------------------
 -- $Textual
 
--- | The 'Textual' type class is used to convert between the following textual
--- data types:
+-- | Convert from one textual data type to another
+--
+-- The following textual data types are supported:
 --
 -- * 'String' (@S@)
 -- * Strict 'T.Text' (@T@)
@@ -227,78 +257,69 @@ import qualified Data.Text.Short as ST
 -- * 'ST.ShortText' (@ST@)
 -- * Strict 'BS.ByteString' (@BS@)
 -- * Lazy 'BSL.ByteString' (@BSL@)
--- * @ByteString@ 'BSB.Builder' (@BSB@) (Note: @Data.Binary.Builder@
---   re-exports this type, so TTC can be used with @binary@ as well.)
+-- * @ByteString@ 'BSB.Builder' (@BSB@)
 -- * 'SBS.ShortByteString' (@SBS@)
 --
--- @ByteString@ values are assumed to be UTF-8 encoded text.  Invalid bytes
--- are replaced with the Unicode replacement character @U+FFFD@.  In cases
--- where different behavior is required, process @ByteString@ values /before/
--- using this class.
+-- Note that support for additional textual data types cannot be implemented
+-- by writing instances.  Adding support for additional textual data types
+-- requires changing the class definition itself.
 --
--- This type class has two key features:
---
--- * Type conversion is /not/ done through a fixed type (such as 'String' or
---   'T.Text').
--- * It has a single type variable, making it easy to write functions that
---   accept arguments and/or return values that may be any of the supported
---   textual data types.
---
--- Note that support for additional data types cannot be implemented by
--- writing instances.  Adding support for additional data types would require
--- changing the class definition itself.
+-- Encoded values are assumed to be valid UTF-8 encoded text.  Conversions
+-- must be pure, and any invalid bytes must be replaced with the Unicode
+-- replacement character @U+FFFD@.  In cases where different behavior is
+-- required, process encoded values separately.
 --
 -- For more details, see the following article:
 -- <https://www.extrema.is/articles/ttc-textual-type-classes/textual-type-class>
 --
 -- @since 0.1.0.0
 class Textual t where
-  -- | Convert to a 'String'
+  -- | Convert from a textual data type to a 'String'
   --
   -- @since 0.1.0.0
   toS :: t -> String
 
-  -- | Convert to strict 'T.Text'
+  -- | Convert from a textual data type to strict 'T.Text'
   --
   -- @since 0.1.0.0
   toT :: t -> T.Text
 
-  -- | Convert to lazy 'TL.Text'
+  -- | Convert from a textual data type to lazy 'TL.Text'
   --
   -- @since 0.1.0.0
   toTL :: t -> TL.Text
 
-  -- | Convert to a @Text@ 'TLB.Builder'
+  -- | Convert from a textual data type to a @Text@ 'TLB.Builder'
   --
   -- @since 1.1.0.0
   toTLB :: t -> TLB.Builder
 
-  -- | Convert to 'ST.ShortText'
+  -- | Convert from a textual data type to 'ST.ShortText'
   --
   -- @since 1.4.0.0
   toST :: t -> ST.ShortText
 
-  -- | Convert to a strict 'BS.ByteString'
+  -- | Convert from a textual data type to a strict 'BS.ByteString'
   --
   -- @since 0.1.0.0
   toBS :: t -> BS.ByteString
 
-  -- | Convert to a lazy 'BS.ByteString'
+  -- | Convert from a textual data type to a lazy 'BS.ByteString'
   --
   -- @since 0.1.0.0
   toBSL :: t -> BSL.ByteString
 
-  -- | Convert to a @ByteString@ 'BSB.Builder'
+  -- | Convert from a textual data type to a @ByteString@ 'BSB.Builder'
   --
   -- @since 1.1.0.0
   toBSB :: t -> BSB.Builder
 
-  -- | Convert to a 'SBS.ShortByteString'
+  -- | Convert from a textual data type to a 'SBS.ShortByteString'
   --
   -- @since 1.1.0.0
   toSBS :: t -> SBS.ShortByteString
 
-  -- | Convert between any supported textual data types
+  -- | Convert from one textual data type to another
   --
   -- @since 0.1.0.0
   convert :: Textual t' => t' -> t
@@ -515,71 +536,73 @@ instance Textual SBS.ShortByteString where
 --
 -- These functions are equivalent to 'convert', but they specify the type
 -- being converted to.  Use them to avoid having to write type annotations in
--- cases where the type is ambiguous.
+-- cases where the type is ambiguous.  Using these functions may make code
+-- easier to understand even in cases where the types are not ambiguous.
 
 -- $TextualFrom
 --
 -- These functions are equivalent to 'convert', but they specify the type
 -- being converted from.  Use them to avoid having to write type annotations
--- in cases where the type is ambiguous.
+-- in cases where the type is ambiguous.  Using these functions may make code
+-- easier to understand even in cases where the types are not ambiguous.
 
--- | Convert from a 'String'
+-- | Convert from a 'String' to a textual data type
 --
 -- @since 0.1.0.0
 fromS :: Textual t => String -> t
 fromS = convert
 {-# INLINE fromS #-}
 
--- | Convert from strict 'T.Text'
+-- | Convert from strict 'T.Text' to a textual data type
 --
 -- @since 0.1.0.0
 fromT :: Textual t => T.Text -> t
 fromT = convert
 {-# INLINE fromT #-}
 
--- | Convert from lazy 'TL.Text'
+-- | Convert from lazy 'TL.Text' to a textual data type
 --
 -- @since 0.1.0.0
 fromTL :: Textual t => TL.Text -> t
 fromTL = convert
 {-# INLINE fromTL #-}
 
--- | Convert from a @Text@ 'TLB.Builder'
+-- | Convert from a @Text@ 'TLB.Builder' to a textual data type
 --
 -- @since 1.1.0.0
 fromTLB :: Textual t => TLB.Builder -> t
 fromTLB = convert
 {-# INLINE fromTLB #-}
 
--- | Convert from a 'ST.ShortText'
+-- | Convert from a 'ST.ShortText' to a textual data type
 --
 -- @since 1.4.0.0
 fromST :: Textual t => ST.ShortText -> t
 fromST = convert
 {-# INLINE fromST #-}
 
--- | Convert from a strict 'BS.ByteString'
+-- | Convert from a strict 'BS.ByteString' to a textual data type
 --
 -- @since 0.1.0.0
 fromBS :: Textual t => BS.ByteString -> t
 fromBS = convert
 {-# INLINE fromBS #-}
 
--- | Convert from a lazy 'BSL.ByteString'
+-- | Convert from a lazy 'BSL.ByteString' to a textual data type
 --
 -- @since 0.1.0.0
 fromBSL :: Textual t => BSL.ByteString -> t
 fromBSL = convert
 {-# INLINE fromBSL #-}
 
--- | Convert from a @ByteString@ 'TLB.Builder'
+-- | Convert from a @ByteString@ 'TLB.Builder' to a textual data type
 --
 -- @since 1.1.0.0
 fromBSB :: Textual t => BSB.Builder -> t
 fromBSB = convert
 {-# INLINE fromBSB #-}
 
--- | Convert from a 'SBS.ShortByteString'
+-- | Convert from a 'SBS.ShortByteString' to a textual data type
 --
 -- @since 1.1.0.0
 fromSBS :: Textual t => SBS.ShortByteString -> t
@@ -589,67 +612,67 @@ fromSBS = convert
 ------------------------------------------------------------------------------
 -- $TextualAs
 --
--- These functions are used to convert a 'Textual' argument of a function to a
+-- These functions are used to convert a textual data type argument to a
 -- specific type.  Use them to reduce boilerplate in small function
 -- definitions.
 
--- | Convert an argument to a 'String'
+-- | Convert a textual data type argument to a 'String'
 --
 -- @since 0.1.0.0
 asS :: Textual t => (String -> a) -> t -> a
 asS f = f . convert
 {-# INLINE asS #-}
 
--- | Convert an argument to strict 'T.Text'
+-- | Convert a textual data type argument to strict 'T.Text'
 --
 -- @since 0.1.0.0
 asT :: Textual t => (T.Text -> a) -> t -> a
 asT f = f . convert
 {-# INLINE asT #-}
 
--- | Convert an argument to lazy 'TL.Text'
+-- | Convert a textual data type argument to lazy 'TL.Text'
 --
 -- @since 0.1.0.0
 asTL :: Textual t => (TL.Text -> a) -> t -> a
 asTL f = f . convert
 {-# INLINE asTL #-}
 
--- | Convert an argument to a @Text@ 'TLB.Builder'
+-- | Convert a textual data type argument to a @Text@ 'TLB.Builder'
 --
 -- @since 1.1.0.0
 asTLB :: Textual t => (TLB.Builder -> a) -> t -> a
 asTLB f = f . convert
 {-# INLINE asTLB #-}
 
--- | Convert an argument to a 'ST.ShortText'
+-- | Convert a textual data type argument to a 'ST.ShortText'
 --
 -- @since 1.4.0.0
 asST :: Textual t => (ST.ShortText -> a) -> t -> a
 asST f = f . convert
 {-# INLINE asST #-}
 
--- | Convert an argument to a strict 'BS.ByteString'
+-- | Convert a textual data type argument to a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
 asBS :: Textual t => (BS.ByteString -> a) -> t -> a
 asBS f = f . convert
 {-# INLINE asBS #-}
 
--- | Convert an argument to a lazy 'BSL.ByteString'
+-- | Convert a textual data type argument to a lazy 'BSL.ByteString'
 --
 -- @since 0.1.0.0
 asBSL :: Textual t => (BSL.ByteString -> a) -> t -> a
 asBSL f = f . convert
 {-# INLINE asBSL #-}
 
--- | Convert an argument to a @ByteString@ 'TLB.Builder'
+-- | Convert a textual data type argument to a @ByteString@ 'TLB.Builder'
 --
 -- @since 1.1.0.0
 asBSB :: Textual t => (BSB.Builder -> a ) -> t -> a
 asBSB f = f . convert
 {-# INLINE asBSB #-}
 
--- | Convert an argument to a 'SBS.ShortByteString'
+-- | Convert a textual data type argument to a 'SBS.ShortByteString'
 --
 -- @since 1.1.0.0
 asSBS :: Textual t => (SBS.ShortByteString -> a) -> t -> a
@@ -659,36 +682,59 @@ asSBS f = f . convert
 ------------------------------------------------------------------------------
 -- $Render
 
--- | The 'Render' type class renders a data type as a textual data type.
+-- | Render a data type as a textual data type
+--
+-- Use 'Render' in your business logic, and only use 'Show' for debugging, as
+-- use of 'Show' instances in business logic is a common source of bugs.
+--
+-- When defining an instance, render to the textual data type that is most
+-- natural for the data type, and then use 'convert' to handle the conversion
+-- to any textual data type.  This is particularly wrappers around a textual
+-- data type.  Example:
+--
+-- @
+-- newtype Username = Username { usernameText :: Text }
+--
+-- instance TTC.Render Username where
+--   render = TTC.convert . usernameText
+-- @
+--
+-- To use @render@ in a context where the types are ambiguous, use the
+-- [@TypeApplications@](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/type_applications.html)
+-- GHC extension to specify one or both types.  Example:
+--
+-- @
+-- -- Render to Text
+-- render @_ @Text foo
+-- @
+--
+-- Alternatively, use one of the functions that render to a specific textual
+-- data type (such as 'renderS').  Using these functions may make code easier
+-- to understand even in cases where the types are not ambiguous.
+--
+-- See the @uname@ and @prompt@ example programs in the @ttc-examples@
+-- directory of the source repository.
+--
+-- For more details, see the following article:
+-- <https://www.extrema.is/articles/ttc-textual-type-classes/render-and-parse>
 --
 -- Since a type may have at most one instance of a given type class, special
 -- care must be taken when defining type class instances in a shared library.
 -- In particular, orphan instances should generally not be used in shared
 -- libraries since they prevent users of the libraries from writing their own
--- instances.
+-- instances.  Use @newtype@ wrappers instead.
 --
 -- There are no default instances for the 'Render' type class, so that all
 -- instances can be customized per project when desired.  Instances for some
 -- basic data types are defined for the 'RenderDefault' type class, however,
--- and you can load such an instance as follows:
---
--- @
--- instance TTC.Render Int
--- @
---
--- See the 'RenderDefault' documentation to see which types have default
--- instances defined.  Note that loading such default instances should be
--- avoided in libraries.  See the Template Haskell section below for an
--- alternative way to load default instances (in bulk).
---
--- See the @uname@ and @prompt@ example programs in the @ttc-examples@
--- directory.
---
--- For more details, see the following article:
--- <https://www.extrema.is/articles/ttc-textual-type-classes/render-and-parse>
+-- and the Template Haskell functions documented below can be used to load
+-- these definitions with minimal boilerplate.
 --
 -- @since 0.1.0.0
 class Render a where
+  -- | Render a data type as a textual data type
+  --
+  -- @since 0.1.0.0
   render :: Textual t => a -> t
 
   default render :: (RenderDefault a, Textual t) => a -> t
@@ -696,15 +742,23 @@ class Render a where
 
 ------------------------------------------------------------------------------
 
--- | The 'RenderDefault' type class provides some default 'Render' instances.
+-- | Default 'Render' instances for some common types
 --
+-- * The 'Bool' instance renders using the 'Show' instance.  This instance was
+--   added in version 1.5.0.0.
 -- * The 'Char' instance renders a single-character string.
 -- * Numeric type instances all render using the 'Show' instance.
--- * Textual type instances all convert to the target 'Textual' data type.
+-- * Textual type instances all convert to the target textual data type.
 --
 -- @since 1.1.0.0
 class RenderDefault a where
+  -- | Render a data type as a textual data type
+  --
+  -- @since 1.1.0.0
   renderDefault :: Textual t => a -> t
+
+instance RenderDefault Bool where
+  renderDefault = renderWithShow
 
 instance RenderDefault Char where
   renderDefault c = fromS [c]
@@ -776,11 +830,34 @@ instance RenderDefault SBS.ShortByteString where
   renderDefault = fromSBS
 
 ------------------------------------------------------------------------------
+-- $RenderUtilityFunctions
+--
+-- These functions are used to implement 'Render' instances.
+
+-- | Render a value to a textual data type using a 'Show' instance
+--
+-- To use this function in a context where the types are ambiguous, use the
+-- [@TypeApplications@](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/type_applications.html)
+-- GHC extension to specify one or both types.  Example:
+--
+-- @
+-- -- Render to Text
+-- renderWithShow @Text foo
+-- @
+--
+-- @since 0.1.0.0
+renderWithShow :: forall t a. (Show a, Textual t) => a -> t
+renderWithShow = convert . show
+{-# INLINE renderWithShow #-}
+
+------------------------------------------------------------------------------
 -- $RenderSpecific
 --
--- These functions are equivalent to 'render', but they specify the type being
--- rendered to.  Use them to avoid having to write type annotations in cases
--- where the type is ambiguous.
+-- These functions are equivalent to 'render', but they specify the textual
+-- data type being rendered to.  Use them to avoid having to write type
+-- annotations in cases where the type is ambiguous.  Using these functions
+-- may make code easier to understand even in cases where the types are not
+-- ambiguous.
 
 -- | Render to a 'String'
 --
@@ -846,48 +923,72 @@ renderSBS = render
 {-# INLINE renderSBS #-}
 
 ------------------------------------------------------------------------------
--- $RenderUtils
-
--- | Render a value to a textual data type using the 'Show' instance
---
--- @since 0.1.0.0
-renderWithShow :: (Show a, Textual t) => a -> t
-renderWithShow = convert . show
-{-# INLINE renderWithShow #-}
-
-------------------------------------------------------------------------------
 -- $Parse
 
--- | The 'Parse' type class parses a data type from a textual data type.
+-- | Parse a data type from a textual data type
+--
+-- Unlike 'Read', 'Parse' allows you to specify meaningful error messages.
+--
+-- When defining an instance, first convert the textual data type to the
+-- textual data type that is most natural for the data type.  The @as@
+-- functions (such as 'asS') provide a convenient way to do this.  Note that
+-- error is also a textual data type.  The 'withError' and 'prefixError'
+-- functions can be used to reduce boilerplate.  Example:
+--
+-- @
+-- newtype Username = Username { usernameText :: Text }
+--
+-- instance TTC.Parse Username where
+--   parse = TTC.asT $ \t -> TTC.prefixErrorS "invalid username: " $ do
+--     unless (T.all isAsciiLower t) $ Left "not only lowercase ASCII letters"
+--     let len = T.length t
+--     when (len < 3) $ Left "fewer than 3 characters"
+--     when (len > 12) $ Left "more than 12 characters"
+--     pure $ Username t
+-- @
+--
+-- To use @parse@ in a context where the types are ambiguous, use the
+-- [@TypeApplications@](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/type_applications.html)
+-- GHC extension to specify one or more types.  Example:
+--
+-- @
+-- -- Parse from Text
+-- parse @_ @Text foo
+--
+-- -- Parse using String errors
+-- parse @_ @_ @String foo
+--
+-- -- Parse from Text using String errors
+-- parse @_ @Text @String foo
+-- @
+--
+-- Alternatively, use one of the functions that parse from a specific textual
+-- data type (such as 'renderS').  Using these functions may make code easier
+-- to understand even in cases where the types are not ambiguous.
+--
+-- See the @uname@ and @prompt@ example programs in the @ttc-examples@
+-- directory of the source repository.
+--
+-- For more details, see the following article:
+-- <https://www.extrema.is/articles/ttc-textual-type-classes/render-and-parse>
 --
 -- Since a type may have at most one instance of a given type class, special
 -- care must be taken when defining type class instances in a shared library.
 -- In particular, orphan instances should generally not be used in shared
 -- libraries since they prevent users of the libraries from writing their own
--- instances.
+-- instances.  Use @newtype@ wrappers instead.
 --
 -- There are no default instances for the 'Parse' type class, so that all
 -- instances can be customized per project when desired.  Instances for some
 -- basic data types are defined for the 'ParseDefault' type class, however,
--- and you can load such an instance as follows:
---
--- @
--- instance TTC.Parse Int
--- @
---
--- See the 'ParseDefault' documentation to see which types have default
--- instances defined.  Note that loading such default instances should be
--- avoided in libraries.  See the Template Haskell section below for an
--- alternative way to load default instances (in bulk).
---
--- See the @uname@ and @prompt@ example programs in the @ttc-examples@
--- directory.
---
--- For more details, see the following article:
--- <https://www.extrema.is/articles/ttc-textual-type-classes/render-and-parse>
+-- and the Template Haskell functions documented below can be used to load
+-- these definitions with minimal boilerplate.
 --
 -- @since 0.3.0.0
 class Parse a where
+  -- | Parse a data type from a textual data type
+  --
+  -- @since 0.3.0.0
   parse :: (Textual t, Textual e) => t -> Either e a
 
   default parse :: (Textual t, Textual e, ParseDefault a) => t -> Either e a
@@ -905,13 +1006,21 @@ parse' = parse
 
 -- | The 'ParseDefault' type class provides some default 'Parse' instances.
 --
+-- * The 'Bool' instance parses using the 'Read' instance.  This instance was
+--   added in version 1.5.0.0.
 -- * The 'Char' instance parses single-character strings.
 -- * Numeric type instances all parse using the 'Read' instance.
--- * Textual type instances all convert from the source 'Textual' data type.
+-- * Textual type instances all convert from the source textual data type.
 --
 -- @since 1.1.0.0
 class ParseDefault a where
+  -- | Parse a data type from a textual data type
+  --
+  -- @since 1.1.0.0
   parseDefault :: (Textual t, Textual e) => t -> Either e a
+
+instance ParseDefault Bool where
+  parseDefault = parseWithRead' "Bool"
 
 instance ParseDefault Char where
   parseDefault = asS $ \case
@@ -985,310 +1094,9 @@ instance ParseDefault SBS.ShortByteString where
   parseDefault = Right . toSBS
 
 ------------------------------------------------------------------------------
--- $ParseSpecific
+-- $ParseUtilityFunctions
 --
--- These functions are equivalent to 'parse', but they specify the type being
--- parsed from.  Use them to avoid having to write type annotations in cases
--- where the type is ambiguous.
-
--- | Parse from a 'String'
---
--- @since 0.3.0.0
-parseS :: (Parse a, Textual e) => String -> Either e a
-parseS = parse
-{-# INLINE parseS #-}
-
--- | Parse from strict 'T.Text'
---
--- @since 0.3.0.0
-parseT :: (Parse a, Textual e) => T.Text -> Either e a
-parseT = parse
-{-# INLINE parseT #-}
-
--- | Parse from lazy 'TL.Text'
---
--- @since 0.3.0.0
-parseTL :: (Parse a, Textual e) => TL.Text -> Either e a
-parseTL = parse
-{-# INLINE parseTL #-}
-
--- | Parse from a @Text@ 'TLB.Builder'
---
--- @since 1.1.0.0
-parseTLB :: (Parse a, Textual e) => TLB.Builder -> Either e a
-parseTLB = parse
-{-# INLINE parseTLB #-}
-
--- | Parse from a 'ST.ShortText'
---
--- @since 1.4.0.0
-parseST :: (Parse a, Textual e) => ST.ShortText -> Either e a
-parseST = parse
-{-# INLINE parseST #-}
-
--- | Parse from a strict 'BS.ByteString'
---
--- @since 0.3.0.0
-parseBS :: (Parse a, Textual e) => BS.ByteString -> Either e a
-parseBS = parse
-{-# INLINE parseBS #-}
-
--- | Parse from a lazy 'BSL.ByteString'
---
--- @since 0.3.0.0
-parseBSL :: (Parse a, Textual e) => BSL.ByteString -> Either e a
-parseBSL = parse
-{-# INLINE parseBSL #-}
-
--- | Parse from a @ByteString@ 'BSB.Builder'
---
--- @since 1.1.0.0
-parseBSB :: (Parse a, Textual e) => BSB.Builder -> Either e a
-parseBSB = parse
-{-# INLINE parseBSB #-}
-
--- | Parse from a 'SBS.ShortByteString'
---
--- @since 1.1.0.0
-parseSBS :: (Parse a, Textual e) => SBS.ShortByteString -> Either e a
-parseSBS = parse
-{-# INLINE parseSBS #-}
-
-------------------------------------------------------------------------------
--- $ParseMaybe
---
--- The 'parseMaybe' function parses to a 'Maybe' type instead of an 'Either'
--- type.  The rest of the functions are equivalent to 'parseMaybe', but they
--- specify the type being parsed from.  Use them to avoid having to write type
--- annotations in cases where the type is ambiguous.
-
--- | Parse to a 'Maybe' type
---
--- @since 0.3.0.0
-parseMaybe :: (Parse a, Textual t) => t -> Maybe a
-parseMaybe = either (const Nothing) Just . parse'
-{-# INLINE parseMaybe #-}
-
--- | Parse from a 'String' to a 'Maybe' type
---
--- @since 0.3.0.0
-parseMaybeS :: Parse a => String -> Maybe a
-parseMaybeS = parseMaybe
-{-# INLINE parseMaybeS #-}
-
--- | Parse from strict 'T.Text' to a 'Maybe' type
---
--- @since 0.3.0.0
-parseMaybeT :: Parse a => T.Text -> Maybe a
-parseMaybeT = parseMaybe
-{-# INLINE parseMaybeT #-}
-
--- | Parse from lazy 'TL.Text' to a 'Maybe' type
---
--- @since 0.3.0.0
-parseMaybeTL :: Parse a => TL.Text -> Maybe a
-parseMaybeTL = parseMaybe
-{-# INLINE parseMaybeTL #-}
-
--- | Parse from a @Text@ 'TLB.Builder' to a 'Maybe' type
---
--- @since 1.1.0.0
-parseMaybeTLB :: Parse a => TLB.Builder -> Maybe a
-parseMaybeTLB = parseMaybe
-{-# INLINE parseMaybeTLB #-}
-
--- | Parse from a 'ST.ShortText' to a 'Maybe' type
---
--- @since 1.4.0.0
-parseMaybeST :: Parse a => ST.ShortText -> Maybe a
-parseMaybeST = parseMaybe
-{-# INLINE parseMaybeST #-}
-
--- | Parse from a strict 'BS.ByteString' to a 'Maybe' type
---
--- @since 0.3.0.0
-parseMaybeBS :: Parse a => BS.ByteString -> Maybe a
-parseMaybeBS = parseMaybe
-{-# INLINE parseMaybeBS #-}
-
--- | Parse from a lazy 'BSL.ByteString' to a 'Maybe' type
---
--- @since 0.3.0.0
-parseMaybeBSL :: Parse a => BSL.ByteString -> Maybe a
-parseMaybeBSL = parseMaybe
-{-# INLINE parseMaybeBSL #-}
-
--- | Parse from a @ByteString@ 'BSB.Builder' to a 'Maybe' type
---
--- @since 1.1.0.0
-parseMaybeBSB :: Parse a => BSB.Builder -> Maybe a
-parseMaybeBSB = parseMaybe
-{-# INLINE parseMaybeBSB #-}
-
--- | Parse from a 'SBS.ShortByteString' to a 'Maybe' type
---
--- @since 1.1.0.0
-parseMaybeSBS :: Parse a => SBS.ShortByteString -> Maybe a
-parseMaybeSBS = parseMaybe
-{-# INLINE parseMaybeSBS #-}
-
-------------------------------------------------------------------------------
--- $ParseOrFail
---
--- The 'parseOrFail' function fails using 'MonadFail' on error instead of
--- using an 'Either' type.  The rest of the functions are equivalent to
--- 'parseOrFail', but they specify the type being parsed from.  Use them to
--- avoid having to write type annotations in cases where the type is
--- ambiguous.
-
--- | Parse or fail using 'MonadFail'
---
--- @since 1.3.0.0
-parseOrFail :: (MonadFail m, Parse a, Textual t) => t -> m a
-parseOrFail = either fail pure . parse
-{-# INLINE parseOrFail #-}
-
--- | Parse from a 'String' or fail using 'MonadFail'
---
--- @since 1.3.0.0
-parseOrFailS :: (MonadFail m, Parse a) => String -> m a
-parseOrFailS = parseOrFail
-{-# INLINE parseOrFailS #-}
-
--- | Parse from strict 'T.Text' or fail using 'MonadFail'
---
--- @since 1.3.0.0
-parseOrFailT :: (MonadFail m, Parse a) => T.Text -> m a
-parseOrFailT = parseOrFail
-{-# INLINE parseOrFailT #-}
-
--- | Parse from lazy 'TL.Text' or fail using 'MonadFail'
---
--- @since 1.3.0.0
-parseOrFailTL :: (MonadFail m, Parse a) => TL.Text -> m a
-parseOrFailTL = parseOrFail
-{-# INLINE parseOrFailTL #-}
-
--- | Parse from a @Text@ 'TLB.Builder' or fail using 'MonadFail'
---
--- @since 1.3.0.0
-parseOrFailTLB :: (MonadFail m, Parse a) => TLB.Builder -> m a
-parseOrFailTLB = parseOrFail
-{-# INLINE parseOrFailTLB #-}
-
--- | Parse from a 'ST.ShortText' or fail using 'MonadFail'
---
--- @since 1.4.0.0
-parseOrFailST :: (MonadFail m, Parse a) => ST.ShortText -> m a
-parseOrFailST = parseOrFail
-{-# INLINE parseOrFailST #-}
-
--- | Parse from a strict 'BS.ByteString' or fail using 'MonadFail'
---
--- @since 1.3.0.0
-parseOrFailBS :: (MonadFail m, Parse a) => BS.ByteString -> m a
-parseOrFailBS = parseOrFail
-{-# INLINE parseOrFailBS #-}
-
--- | Parse from a lazy 'BSL.ByteString' or fail using 'MonadFail'
---
--- @since 1.3.0.0
-parseOrFailBSL :: (MonadFail m, Parse a) => BSL.ByteString -> m a
-parseOrFailBSL = parseOrFail
-{-# INLINE parseOrFailBSL #-}
-
--- | Parse from a @ByteString@ 'BSB.Builder' or fail using 'MonadFail'
---
--- @since 1.3.0.0
-parseOrFailBSB :: (MonadFail m, Parse a) => BSB.Builder -> m a
-parseOrFailBSB = parseOrFail
-{-# INLINE parseOrFailBSB #-}
-
--- | Parse from a 'SBS.ShortByteString' or fail using 'MonadFail'
---
--- @since 1.3.0.0
-parseOrFailSBS :: (MonadFail m, Parse a) => SBS.ShortByteString -> m a
-parseOrFailSBS = parseOrFail
-{-# INLINE parseOrFailSBS #-}
-
-------------------------------------------------------------------------------
--- $ParseUnsafe
---
--- The 'parseUnsafe' function raises an exception on error instead of using an
--- 'Either' type.  It should only be used when an error is not possible.  The
--- rest of the functions are equivalent to 'parseUnsafe', but they specify the
--- type being parsed from.  Use them to avoid having to write type annotations
--- in cases where the type is ambiguous.
-
--- | Unsafely parse
---
--- @since 0.1.0.0
-parseUnsafe :: (HasCallStack, Parse a, Textual t) => t -> a
-parseUnsafe = either (error . ("parseUnsafe: " ++)) id . parse
-{-# INLINE parseUnsafe #-}
-
--- | Unsafely parse from a 'String'
---
--- @since 0.1.0.0
-parseUnsafeS :: (HasCallStack, Parse a) => String -> a
-parseUnsafeS = parseUnsafe
-{-# INLINE parseUnsafeS #-}
-
--- | Unsafely parse from strict 'T.Text'
---
--- @since 0.1.0.0
-parseUnsafeT :: (HasCallStack, Parse a) => T.Text -> a
-parseUnsafeT = parseUnsafe
-{-# INLINE parseUnsafeT #-}
-
--- | Unsafely parse from lazy 'TL.Text'
---
--- @since 0.1.0.0
-parseUnsafeTL :: (HasCallStack, Parse a) => TL.Text -> a
-parseUnsafeTL = parseUnsafe
-{-# INLINE parseUnsafeTL #-}
-
--- | Unsafely parse from a @Text@ 'TLB.Builder'
---
--- @since 1.1.0.0
-parseUnsafeTLB :: (HasCallStack, Parse a) => TLB.Builder -> a
-parseUnsafeTLB = parseUnsafe
-{-# INLINE parseUnsafeTLB #-}
-
--- | Unsafely parse from a 'ST.ShortText'
---
--- @since 1.4.0.0
-parseUnsafeST :: (HasCallStack, Parse a) => ST.ShortText -> a
-parseUnsafeST = parseUnsafe
-{-# INLINE parseUnsafeST #-}
-
--- | Unsafely parse from a strict 'BS.ByteString'
---
--- @since 0.1.0.0
-parseUnsafeBS :: (HasCallStack, Parse a) => BS.ByteString -> a
-parseUnsafeBS = parseUnsafe
-{-# INLINE parseUnsafeBS #-}
-
--- | Unsafely parse from a lazy 'BSL.ByteString'
---
--- @since 0.1.0.0
-parseUnsafeBSL :: (HasCallStack, Parse a) => BSL.ByteString -> a
-parseUnsafeBSL = parseUnsafe
-{-# INLINE parseUnsafeBSL #-}
-
--- | Unsafely parse from a @ByteString@ 'BSB.Builder'
---
--- @since 1.1.0.0
-parseUnsafeBSB :: (HasCallStack, Parse a) => BSB.Builder -> a
-parseUnsafeBSB = parseUnsafe
-{-# INLINE parseUnsafeBSB #-}
-
--- | Unsafely parse from a 'SBS.ShortByteString'
---
--- @since 1.1.0.0
-parseUnsafeSBS :: (HasCallStack, Parse a) => SBS.ShortByteString -> a
-parseUnsafeSBS = parseUnsafe
-{-# INLINE parseUnsafeSBS #-}
+-- These functions are used to implement 'Parse' instances.
 
 ------------------------------------------------------------------------------
 -- $ParseWithASingleErrorMessage
@@ -1538,14 +1346,55 @@ prefixErrorSBS = prefixError
 {-# INLINE prefixErrorSBS #-}
 
 ------------------------------------------------------------------------------
--- $ParseEnums
+-- $ReadParsing
+
+-- | Parse a value using a 'Read' instance
+--
+-- @since 0.1.0.0
+parseWithRead
+  :: (Read a, Textual t)
+  => e           -- ^ invalid input error
+  -> t           -- ^ textual input to parse
+  -> Either e a  -- ^ error or parsed value
+parseWithRead invalidError = maybe (Left invalidError) Right . readMaybe . toS
+{-# INLINEABLE parseWithRead #-}
+
+-- | Parse a value using a 'Read' instance with default error messages
+--
+-- The following English error message is returned:
+--
+-- * \"invalid {name}\" when the parse fails
+--
+-- @since 0.3.0.0
+parseWithRead'
+  :: (Read a, Textual t, Textual e)
+  => String      -- ^ name to include in error messages
+  -> t           -- ^ textual input to parse
+  -> Either e a  -- ^ error or parsed value
+parseWithRead' name = parseWithRead (fromS $ "invalid " ++ name)
+{-# INLINEABLE parseWithRead' #-}
+
+-- | Parse a value to a 'Maybe' result using a 'Read' instance
+--
+-- @since 0.3.0.0
+maybeParseWithRead
+  :: (Read a, Textual t)
+  => t        -- ^ textual input to parse
+  -> Maybe a  -- ^ parsed value or 'Nothing' if invalid
+maybeParseWithRead = readMaybe . toS
+
+------------------------------------------------------------------------------
+-- $EnumParsing
 
 -- | Parse a value in an enumeration
+--
+-- The 'Render' instance determines the textual values to parse from.
 --
 -- This function is intended to be used with types that have few choices, as
 -- the implementation uses a linear algorithm.
 --
--- See the @enum@ example program in the @ttc-examples@ directory.
+-- See the @enum@ example program in the @ttc-examples@ directory of the
+-- source repository.
 --
 -- @since 0.1.0.0
 parseEnum
@@ -1569,12 +1418,17 @@ parseEnum allowCI allowPrefix invalidError ambiguousError t =
     match :: T.Text -> T.Text -> Bool
     match = if allowPrefix then T.isPrefixOf else (==)
 
--- | Parse a value in an enumeration, with 'Textual' error messages
+-- | Parse a value in an enumeration using default error messages
+--
+-- The 'Render' instance determines the textual values to parse from.
 --
 -- The following English error messages are returned:
 --
 -- * \"invalid {name}\" when there are no matches
 -- * \"ambiguous {name}\" when there is more than one match
+--
+-- This function is intended to be used with types that have few choices, as
+-- the implementation uses a linear algorithm.
 --
 -- @since 0.4.0.0
 parseEnum'
@@ -1592,42 +1446,338 @@ parseEnum' name allowCI allowPrefix =
 {-# INLINEABLE parseEnum' #-}
 
 ------------------------------------------------------------------------------
--- $ReadInstanced
+-- $ParseSpecific
+--
+-- These functions are equivalent to 'parse', but they specify the textual
+-- data type being parsed from.  Use them to avoid having to write type
+-- annotations in cases where the type is ambiguous.  Using these functions
+-- may make code easier to understand even in cases where the types are not
+-- ambiguous.
 
--- | Parse a value using the 'Read' instance
+-- | Parse from a 'String'
+--
+-- @since 0.3.0.0
+parseS :: (Parse a, Textual e) => String -> Either e a
+parseS = parse
+{-# INLINE parseS #-}
+
+-- | Parse from strict 'T.Text'
+--
+-- @since 0.3.0.0
+parseT :: (Parse a, Textual e) => T.Text -> Either e a
+parseT = parse
+{-# INLINE parseT #-}
+
+-- | Parse from lazy 'TL.Text'
+--
+-- @since 0.3.0.0
+parseTL :: (Parse a, Textual e) => TL.Text -> Either e a
+parseTL = parse
+{-# INLINE parseTL #-}
+
+-- | Parse from a @Text@ 'TLB.Builder'
+--
+-- @since 1.1.0.0
+parseTLB :: (Parse a, Textual e) => TLB.Builder -> Either e a
+parseTLB = parse
+{-# INLINE parseTLB #-}
+
+-- | Parse from a 'ST.ShortText'
+--
+-- @since 1.4.0.0
+parseST :: (Parse a, Textual e) => ST.ShortText -> Either e a
+parseST = parse
+{-# INLINE parseST #-}
+
+-- | Parse from a strict 'BS.ByteString'
+--
+-- @since 0.3.0.0
+parseBS :: (Parse a, Textual e) => BS.ByteString -> Either e a
+parseBS = parse
+{-# INLINE parseBS #-}
+
+-- | Parse from a lazy 'BSL.ByteString'
+--
+-- @since 0.3.0.0
+parseBSL :: (Parse a, Textual e) => BSL.ByteString -> Either e a
+parseBSL = parse
+{-# INLINE parseBSL #-}
+
+-- | Parse from a @ByteString@ 'BSB.Builder'
+--
+-- @since 1.1.0.0
+parseBSB :: (Parse a, Textual e) => BSB.Builder -> Either e a
+parseBSB = parse
+{-# INLINE parseBSB #-}
+
+-- | Parse from a 'SBS.ShortByteString'
+--
+-- @since 1.1.0.0
+parseSBS :: (Parse a, Textual e) => SBS.ShortByteString -> Either e a
+parseSBS = parse
+{-# INLINE parseSBS #-}
+
+------------------------------------------------------------------------------
+-- $ParseMaybe
+--
+-- The 'parseMaybe' function parses to a 'Maybe' result instead of an 'Either'
+-- result.
+--
+-- The rest of the functions are equivalent to 'parseMaybe', but they specify
+-- the type being parsed from.  Use them to avoid having to write type
+-- annotations in cases where the type is ambiguous.  Using these functions
+-- may make code easier to understand even in cases where the types are not
+-- ambiguous.
+
+-- | Parse to a 'Maybe' result
+--
+-- @since 0.3.0.0
+parseMaybe :: (Parse a, Textual t) => t -> Maybe a
+parseMaybe = either (const Nothing) Just . parse'
+{-# INLINE parseMaybe #-}
+
+-- | Parse from a 'String' to a 'Maybe' result
+--
+-- @since 0.3.0.0
+parseMaybeS :: Parse a => String -> Maybe a
+parseMaybeS = parseMaybe
+{-# INLINE parseMaybeS #-}
+
+-- | Parse from strict 'T.Text' to a 'Maybe' result
+--
+-- @since 0.3.0.0
+parseMaybeT :: Parse a => T.Text -> Maybe a
+parseMaybeT = parseMaybe
+{-# INLINE parseMaybeT #-}
+
+-- | Parse from lazy 'TL.Text' to a 'Maybe' result
+--
+-- @since 0.3.0.0
+parseMaybeTL :: Parse a => TL.Text -> Maybe a
+parseMaybeTL = parseMaybe
+{-# INLINE parseMaybeTL #-}
+
+-- | Parse from a @Text@ 'TLB.Builder' to a 'Maybe' result
+--
+-- @since 1.1.0.0
+parseMaybeTLB :: Parse a => TLB.Builder -> Maybe a
+parseMaybeTLB = parseMaybe
+{-# INLINE parseMaybeTLB #-}
+
+-- | Parse from a 'ST.ShortText' to a 'Maybe' result
+--
+-- @since 1.4.0.0
+parseMaybeST :: Parse a => ST.ShortText -> Maybe a
+parseMaybeST = parseMaybe
+{-# INLINE parseMaybeST #-}
+
+-- | Parse from a strict 'BS.ByteString' to a 'Maybe' result
+--
+-- @since 0.3.0.0
+parseMaybeBS :: Parse a => BS.ByteString -> Maybe a
+parseMaybeBS = parseMaybe
+{-# INLINE parseMaybeBS #-}
+
+-- | Parse from a lazy 'BSL.ByteString' to a 'Maybe' result
+--
+-- @since 0.3.0.0
+parseMaybeBSL :: Parse a => BSL.ByteString -> Maybe a
+parseMaybeBSL = parseMaybe
+{-# INLINE parseMaybeBSL #-}
+
+-- | Parse from a @ByteString@ 'BSB.Builder' to a 'Maybe' result
+--
+-- @since 1.1.0.0
+parseMaybeBSB :: Parse a => BSB.Builder -> Maybe a
+parseMaybeBSB = parseMaybe
+{-# INLINE parseMaybeBSB #-}
+
+-- | Parse from a 'SBS.ShortByteString' to a 'Maybe' result
+--
+-- @since 1.1.0.0
+parseMaybeSBS :: Parse a => SBS.ShortByteString -> Maybe a
+parseMaybeSBS = parseMaybe
+{-# INLINE parseMaybeSBS #-}
+
+------------------------------------------------------------------------------
+-- $ParseOrFail
+--
+-- The 'parseOrFail' function fails using 'MonadFail' on error instead of
+-- using an 'Either' result.
+--
+-- The rest of the functions are equivalent to 'parseOrFail', but they specify
+-- the type being parsed from.  Use them to avoid having to write type
+-- annotations in cases where the type is ambiguous.  Using these functions
+-- may make code easier to understand even in cases where the types are not
+-- ambiguous.
+
+-- | Parse or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFail :: (MonadFail m, Parse a, Textual t) => t -> m a
+parseOrFail = either fail pure . parse
+{-# INLINE parseOrFail #-}
+
+-- | Parse from a 'String' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailS :: (MonadFail m, Parse a) => String -> m a
+parseOrFailS = parseOrFail
+{-# INLINE parseOrFailS #-}
+
+-- | Parse from strict 'T.Text' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailT :: (MonadFail m, Parse a) => T.Text -> m a
+parseOrFailT = parseOrFail
+{-# INLINE parseOrFailT #-}
+
+-- | Parse from lazy 'TL.Text' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailTL :: (MonadFail m, Parse a) => TL.Text -> m a
+parseOrFailTL = parseOrFail
+{-# INLINE parseOrFailTL #-}
+
+-- | Parse from a @Text@ 'TLB.Builder' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailTLB :: (MonadFail m, Parse a) => TLB.Builder -> m a
+parseOrFailTLB = parseOrFail
+{-# INLINE parseOrFailTLB #-}
+
+-- | Parse from a 'ST.ShortText' or fail using 'MonadFail'
+--
+-- @since 1.4.0.0
+parseOrFailST :: (MonadFail m, Parse a) => ST.ShortText -> m a
+parseOrFailST = parseOrFail
+{-# INLINE parseOrFailST #-}
+
+-- | Parse from a strict 'BS.ByteString' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailBS :: (MonadFail m, Parse a) => BS.ByteString -> m a
+parseOrFailBS = parseOrFail
+{-# INLINE parseOrFailBS #-}
+
+-- | Parse from a lazy 'BSL.ByteString' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailBSL :: (MonadFail m, Parse a) => BSL.ByteString -> m a
+parseOrFailBSL = parseOrFail
+{-# INLINE parseOrFailBSL #-}
+
+-- | Parse from a @ByteString@ 'BSB.Builder' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailBSB :: (MonadFail m, Parse a) => BSB.Builder -> m a
+parseOrFailBSB = parseOrFail
+{-# INLINE parseOrFailBSB #-}
+
+-- | Parse from a 'SBS.ShortByteString' or fail using 'MonadFail'
+--
+-- @since 1.3.0.0
+parseOrFailSBS :: (MonadFail m, Parse a) => SBS.ShortByteString -> m a
+parseOrFailSBS = parseOrFail
+{-# INLINE parseOrFailSBS #-}
+
+------------------------------------------------------------------------------
+-- $ParseUnsafe
+--
+-- The 'parseUnsafe' function raises an exception on error instead of using an
+-- 'Either' result.  It should only be used when an error is not possible.
+--
+-- The rest of the functions are equivalent to 'parseUnsafe', but they specify
+-- the type being parsed from.  Use them to avoid having to write type
+-- annotations in cases where the type is ambiguous.  Using these functions
+-- may make code easier to understand even in cases where the types are not
+-- ambiguous.
+
+-- | Parse or raise an exception
 --
 -- @since 0.1.0.0
-parseWithRead
-  :: (Read a, Textual t)
-  => e           -- ^ invalid input error
-  -> t           -- ^ textual input to parse
-  -> Either e a  -- ^ error or parsed value
-parseWithRead invalidError = maybe (Left invalidError) Right . readMaybe . toS
-{-# INLINEABLE parseWithRead #-}
+parseUnsafe :: (HasCallStack, Parse a, Textual t) => t -> a
+parseUnsafe = either (error . ("parseUnsafe: " ++)) id . parse
+{-# INLINE parseUnsafe #-}
 
--- | Parse a value using the 'Read' instance, with 'Textual' error messages
+-- | Parse from a 'String' or raise an exception
 --
--- The following English error message is returned:
+-- @since 0.1.0.0
+parseUnsafeS :: (HasCallStack, Parse a) => String -> a
+parseUnsafeS = parseUnsafe
+{-# INLINE parseUnsafeS #-}
+
+-- | Parse from strict 'T.Text' or raise an exception
 --
--- * \"invalid {name}\" when the parse fails
+-- @since 0.1.0.0
+parseUnsafeT :: (HasCallStack, Parse a) => T.Text -> a
+parseUnsafeT = parseUnsafe
+{-# INLINE parseUnsafeT #-}
+
+-- | Parse from lazy 'TL.Text' or raise an exception
+--
+-- @since 0.1.0.0
+parseUnsafeTL :: (HasCallStack, Parse a) => TL.Text -> a
+parseUnsafeTL = parseUnsafe
+{-# INLINE parseUnsafeTL #-}
+
+-- | Parse from a @Text@ 'TLB.Builder' or raise an exception
+--
+-- @since 1.1.0.0
+parseUnsafeTLB :: (HasCallStack, Parse a) => TLB.Builder -> a
+parseUnsafeTLB = parseUnsafe
+{-# INLINE parseUnsafeTLB #-}
+
+-- | Parse from a 'ST.ShortText' or raise an exception
+--
+-- @since 1.4.0.0
+parseUnsafeST :: (HasCallStack, Parse a) => ST.ShortText -> a
+parseUnsafeST = parseUnsafe
+{-# INLINE parseUnsafeST #-}
+
+-- | Parse from a strict 'BS.ByteString' or raise an exception
+--
+-- @since 0.1.0.0
+parseUnsafeBS :: (HasCallStack, Parse a) => BS.ByteString -> a
+parseUnsafeBS = parseUnsafe
+{-# INLINE parseUnsafeBS #-}
+
+-- | Parse from a lazy 'BSL.ByteString' or raise an exception
+--
+-- @since 0.1.0.0
+parseUnsafeBSL :: (HasCallStack, Parse a) => BSL.ByteString -> a
+parseUnsafeBSL = parseUnsafe
+{-# INLINE parseUnsafeBSL #-}
+
+-- | Parse from a @ByteString@ 'BSB.Builder' or raise an exception
+--
+-- @since 1.1.0.0
+parseUnsafeBSB :: (HasCallStack, Parse a) => BSB.Builder -> a
+parseUnsafeBSB = parseUnsafe
+{-# INLINE parseUnsafeBSB #-}
+
+-- | Parse from a 'SBS.ShortByteString' or raise an exception
+--
+-- @since 1.1.0.0
+parseUnsafeSBS :: (HasCallStack, Parse a) => SBS.ShortByteString -> a
+parseUnsafeSBS = parseUnsafe
+{-# INLINE parseUnsafeSBS #-}
+
+------------------------------------------------------------------------------
+-- $ReadSInstances
+
+-- | Implement 'ReadS' using a 'Parse' instance
+--
+-- This implementation expects all of the input to be consumed.
 --
 -- @since 0.3.0.0
-parseWithRead'
-  :: (Read a, Textual t, Textual e)
-  => String      -- ^ name to include in error messages
-  -> t           -- ^ textual input to parse
-  -> Either e a  -- ^ error or parsed value
-parseWithRead' name = parseWithRead (fromS $ "invalid " ++ name)
-{-# INLINEABLE parseWithRead' #-}
-
--- | Parse a value to a 'Maybe' type using the 'Read' instance
---
--- @since 0.3.0.0
-maybeParseWithRead
-  :: (Read a, Textual t)
-  => t        -- ^ textual input to parse
-  -> Maybe a  -- ^ parsed value or 'Nothing' if invalid
-maybeParseWithRead = readMaybe . toS
+readsWithParse
+  :: Parse a
+  => ReadS a
+readsWithParse s = case parseMaybe s of
+    Just v  -> [(v, "")]
+    Nothing -> []
+{-# INLINEABLE readsWithParse #-}
 
 -- | Implement 'ReadS' using 'parseEnum'
 --
@@ -1645,21 +1795,8 @@ readsEnum allowCI allowPrefix s =
       Left{}  -> []
 {-# INLINEABLE readsEnum #-}
 
--- | Implement 'ReadS' using a 'Parse' instance
---
--- This implementation expects all of the input to be consumed.
---
--- @since 0.3.0.0
-readsWithParse
-  :: Parse a
-  => ReadS a
-readsWithParse s = case parseMaybe s of
-    Just v  -> [(v, "")]
-    Nothing -> []
-{-# INLINEABLE readsWithParse #-}
-
 ------------------------------------------------------------------------------
--- $ParseValid
+-- $ConstantValidation
 --
 -- The follow functions provide a number of ways to use a 'Parse' instance to
 -- validate constants at compile-time.
@@ -1718,8 +1855,9 @@ readsWithParse s = case parseMaybe s of
 -- @
 --
 -- This function is used the same way in all GHC versions.  See the @valid@,
--- @invalid@, and @lift@ example programs in the @ttc-examples@ directory.
--- The following is example usage from the @valid@ example:
+-- @invalid@, and @lift@ example programs in the @ttc-examples@ directory of
+-- the source repository.  The following is example usage from the @valid@
+-- example:
 --
 -- @
 -- sample :: Username
@@ -1836,8 +1974,8 @@ instance (Parse a, THS.Lift a) => IsString (TH.Q (TH.TExp a)) where
 -- @
 --
 -- This function is used the same way in all GHC versions.  See the @validof@
--- example program in the @ttc-examples@ directory.  The following is example
--- usage from the @validof@ example:
+-- example program in the @ttc-examples@ directory of the source repository.
+-- The following is example usage from the @validof@ example:
 --
 -- @
 -- sample :: Username
@@ -1899,8 +2037,8 @@ validOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
 -- @
 --
 -- This function is used the same way in all GHC versions.  See the @mkvalid@
--- example program in the @ttc-examples@ directory.  The following is example
--- usage from the @mkvalid@ example:
+-- example program in the @ttc-examples@ directory of the source repository.
+-- The following is example usage from the @mkvalid@ example:
 --
 -- @
 -- \$(TTC.mkValid "valid" ''Username)
@@ -1946,8 +2084,9 @@ mkValid funName typeName = do
 -- run-time.  Since the result is not compiled in, no 'THS.Lift' instance is
 -- required.
 --
--- See the @uvalidof@ example program in the @ttc-examples@ directory.  The
--- following is example usage from the @uvalidof@ example:
+-- See the @uvalidof@ example program in the @ttc-examples@ directory of the
+-- source repository.  The following is example usage from the @uvalidof@
+-- example:
 --
 -- @
 -- sample :: Username
@@ -1969,8 +2108,9 @@ untypedValidOf proxy s = case (`asProxyTypeOf` proxy) <$> parse s of
 -- Create a @valid@ function for a type in order to avoid having to write a
 -- 'Proxy' when defining constants.
 --
--- See the @mkuvalid@ example program in the @ttc-examples@ directory.  The
--- following is example usage from the @mkuvalid@ example:
+-- See the @mkuvalid@ example program in the @ttc-examples@ directory of the
+-- source repository.  The following is example usage from the @mkuvalid@
+-- example:
 --
 -- @
 -- \$(TTC.mkUntypedValid "valid" ''Username)
@@ -2000,8 +2140,9 @@ mkUntypedValid funName typeName = do
 
 -- | Make a @valid@ quasi-quoter using 'untypedValidOf' for the given type
 --
--- See the @uvalidqq@ example program in the @ttc-examples@ directory.  The
--- following is example usage from the @uvalidqq@ example:
+-- See the @uvalidqq@ example program in the @ttc-examples@ directory of the
+-- source repository.  The following is example usage from the @uvalidqq@
+-- example:
 --
 -- @
 -- \$(TTC.mkUntypedValidQQ "valid" ''Username)
@@ -2038,12 +2179,12 @@ mkUntypedValidQQ funName typeName = do
       ]
 
 ------------------------------------------------------------------------------
--- $TemplateHaskell
+-- $DefaultInstances
 --
--- These Template Haskell functions provide an alternative way to load default
--- instances.  See the documentation for 'Render' and 'Parse' for details
--- about default instances.  Remember that loading such default instances
--- should be avoided in libraries.
+-- These Template Haskell functions provide an easy way to load default
+-- 'Render' and 'Parse' instances for common types.  See the documentation for
+-- 'Render' and 'Parse' for details about default instances.  Remember that
+-- loading such default instances should be avoided in libraries.
 
 -- | Load the default 'Render' instance for a type
 --
