@@ -28,11 +28,11 @@ import qualified Data.TTC as TTC
 ------------------------------------------------------------------------------
 
 -- | A 'Username' must consist of 3 to 12 lowercase ASCII letters.
-newtype Username = Username Text
+newtype Username = Username { usernameText :: Text }
   deriving (Eq, Ord, Show)
 
 instance TTC.Render Username where
-  render (Username t) = TTC.convert t
+  render = TTC.convert . usernameText
 
 instance TTC.Parse Username where
   parse = TTC.asT $ \t -> TTC.prefixErrorS "invalid username: " $ do
