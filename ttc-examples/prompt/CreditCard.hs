@@ -14,6 +14,8 @@
 -- serve as "smart constructors," ensuring that all values are valid.
 ------------------------------------------------------------------------------
 
+{-# LANGUAGE RecordWildCards #-}
+
 module CreditCard
   ( -- * CreditCard
     CreditCard(..)
@@ -68,21 +70,21 @@ data CreditCard
 -- Reference:
 --
 -- * https://stackoverflow.com/questions/2004532
-newtype Name = Name String
+newtype Name = Name { nameString :: String }
   deriving (Eq, Ord, Show)
 
 instance TTC.Parse Name where
   parse = TTC.asS $ \s -> first TTC.fromS $ do
-    let name' = map toUpper $ strip s
-        invChars = filter ((||) <$> (< ' ') <*> (> '_')) name'
+    let nameString = map toUpper $ strip s
+        invChars = filter ((||) <$> (< ' ') <*> (> '_')) nameString
     unless (null invChars) . Left $
       "name has invalid character(s): " ++ intersperse ',' invChars
-    when (null name') $ Left "name is empty"
-    when (length name' > 26) $ Left "name has more than 26 characters"
-    pure $ Name name'
+    when (null nameString) $ Left "name is empty"
+    when (length nameString > 26) $ Left "name has more than 26 characters"
+    pure Name{..}
 
 instance TTC.Render Name where
-  render (Name name') = TTC.convert name'
+  render = TTC.convert . nameString
 
 ------------------------------------------------------------------------------
 
@@ -98,23 +100,23 @@ instance TTC.Render Name where
 -- * https://en.wikipedia.org/wiki/Payment_card_number
 -- * https://en.wikipedia.org/wiki/Luhn_algorithm
 -- * http://rosettacode.org/wiki/Luhn_test_of_credit_card_numbers#Haskell
-newtype Number = Number String
+newtype Number = Number { numberString :: String }
   deriving (Eq, Ord, Show)
 
 instance TTC.Parse Number where
   parse = TTC.asS $ \s -> first TTC.fromS $ do
-    let number' = filter ((&&) <$> (/= ' ') <*> (/= '-')) s
-        invChars = filter (not . isDigit) number'
-        len = length number'
+    let numberString = filter ((&&) <$> (/= ' ') <*> (/= '-')) s
+        invChars = filter (not . isDigit) numberString
+        len = length numberString
     unless (null invChars) . Left $
       "number has invalid character(s): " ++ intersperse ',' invChars
     unless (len >= 8) $ Left "number has fewer than 8 characters"
     unless (len <= 19) $ Left "number has more than 19 characters"
-    unless (luhn number') $ Left "number checksum is invalid"
-    pure $ Number number'
+    unless (luhn numberString) $ Left "number checksum is invalid"
+    pure Number{..}
 
 instance TTC.Render Number where
-  render (Number number') = TTC.convert number'
+  render = TTC.convert . numberString
 
 luhn :: String -> Bool
 luhn
@@ -158,35 +160,36 @@ toDay (ExpirationDate (Year year') (Month month')) =
 ------------------------------------------------------------------------------
 
 -- | A year must be in `YYYY` format, between 1900 and 9999.
-newtype Year = Year Int
+newtype Year = Year { yearInt :: Int }
   deriving (Eq, Ord, Show)
 
 instance TTC.Parse Year where
   parse = TTC.asS $ \s -> first TTC.fromS $ do
-    year' <- maybe (Left "year is not in YYYY format") pure $ readMaybe s
-    unless (year' >= 1900) $ Left "year is before 1900"
-    unless (year' <= 9999) $ Left "year is after 9999"
-    pure $ Year year'
+    yearInt <- maybe (Left "year is not in YYYY format") pure $ readMaybe s
+    unless (yearInt >= 1900) $ Left "year is before 1900"
+    unless (yearInt <= 9999) $ Left "year is after 9999"
+    pure Year{..}
 
 instance TTC.Render Year where
-  render (Year year') = TTC.convert $ show year'
+  render = TTC.convert . show . yearInt
 
 ------------------------------------------------------------------------------
 
 -- | A month must be in `MM` format, between 1 (January) and 12 (December).
-newtype Month = Month Int
+newtype Month = Month { monthInt :: Int }
   deriving (Eq, Ord, Show)
 
 instance TTC.Parse Month where
   parse = TTC.asS $ \s -> first TTC.fromS $ do
-    month' <- maybe (Left "month is not in MM format") pure $ readMaybe s
-    unless (month' >= 1 && month' <= 12) $ Left "month is not in 1-12 range"
-    pure $ Month month'
+    monthInt <- maybe (Left "month is not in MM format") pure $ readMaybe s
+    unless (monthInt >= 1 && monthInt <= 12) $
+      Left "month is not in 1-12 range"
+    pure Month{..}
 
 instance TTC.Render Month where
-  render (Month month')
-    | month' < 10 = TTC.convert $ '0' : show month'
-    | otherwise   = TTC.convert $ show month'
+  render Month{..}
+    | monthInt < 10 = TTC.convert $ '0' : show monthInt
+    | otherwise     = TTC.convert $ show monthInt
 
 ------------------------------------------------------------------------------
 
@@ -199,22 +202,22 @@ instance TTC.Render Month where
 -- Reference:
 --
 -- * https://en.wikipedia.org/wiki/Card_security_code
-newtype SecurityCode = SecurityCode String
+newtype SecurityCode = SecurityCode { securityCodeString :: String }
   deriving (Eq, Ord, Show)
 
 instance TTC.Parse SecurityCode where
   parse = TTC.asS $ \s -> first TTC.fromS $ do
-    let securityCode' = strip s
-        invChars = filter (not . isDigit) securityCode'
-        len = length securityCode'
+    let securityCodeString = strip s
+        invChars = filter (not . isDigit) securityCodeString
+        len = length securityCodeString
     unless (null invChars) . Left $
       "security code has invalid character(s): " ++ intersperse ',' invChars
     unless (len >= 3) $ Left "security code has fewer than 3 characters"
     unless (len <= 4) $ Left "security code has more than 4 characters"
-    pure $ SecurityCode securityCode'
+    pure SecurityCode{..}
 
 instance TTC.Render SecurityCode where
-  render (SecurityCode securityCode') = TTC.convert securityCode'
+  render = TTC.convert . securityCodeString
 
 ------------------------------------------------------------------------------
 

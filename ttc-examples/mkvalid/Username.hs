@@ -40,11 +40,8 @@ import qualified Data.TTC as TTC
 -- $Type
 
 -- | A 'Username' must consist of 3 to 12 lowercase ASCII letters.
-newtype Username = Username Text
+newtype Username = Username { usernameText :: Text }
   deriving (Eq, Ord, Show)
-
-instance TTC.Render Username where
-  render (Username t) = TTC.convert t
 
 instance TTC.Parse Username where
   parse = TTC.asT $ \t -> first TTC.fromS $ do
@@ -53,6 +50,9 @@ instance TTC.Parse Username where
     when (len < 3) $ Left "username has fewer than 3 characters"
     when (len > 12) $ Left "username has more than 12 characters"
     pure $ Username t
+
+instance TTC.Render Username where
+  render = TTC.convert . usernameText
 
 ------------------------------------------------------------------------------
 -- $API

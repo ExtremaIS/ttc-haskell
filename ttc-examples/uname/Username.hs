@@ -31,9 +31,6 @@ import qualified Data.TTC as TTC
 newtype Username = Username { usernameText :: Text }
   deriving (Eq, Ord, Show)
 
-instance TTC.Render Username where
-  render = TTC.convert . usernameText
-
 instance TTC.Parse Username where
   parse = TTC.asT $ \t -> TTC.prefixErrorS "invalid username: " $ do
     unless (T.all isAsciiLower t) $ Left "not only lowercase ASCII letters"
@@ -41,3 +38,6 @@ instance TTC.Parse Username where
     when (len < 3) $ Left "fewer than 3 characters"
     when (len > 12) $ Left "more than 12 characters"
     pure $ Username t
+
+instance TTC.Render Username where
+  render = TTC.convert . usernameText
