@@ -748,7 +748,7 @@ class Render a where
 --   added in version 1.5.0.0.
 -- * The 'Char' instance renders a single-character string.
 -- * Numeric type instances all render using the 'Show' instance.
--- * Textual type instances all convert to the target textual data type.
+-- * Textual data type instances all convert to the target textual data type.
 --
 -- @since 1.1.0.0
 class RenderDefault a where
@@ -1010,7 +1010,8 @@ parse' = parse
 --   added in version 1.5.0.0.
 -- * The 'Char' instance parses single-character strings.
 -- * Numeric type instances all parse using the 'Read' instance.
--- * Textual type instances all convert from the source textual data type.
+-- * Textual data type instances all convert from the source textual data
+--   type.
 --
 -- @since 1.1.0.0
 class ParseDefault a where
