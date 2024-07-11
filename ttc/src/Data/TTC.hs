@@ -322,7 +322,7 @@ class Textual t where
   -- | Convert from one textual data type to another
   --
   -- @since 0.1.0.0
-  convert :: Textual t' => t' -> t
+  convert' :: Textual t' => t' -> t
 
 instance Textual String where
   toS = id
@@ -334,7 +334,7 @@ instance Textual String where
   toBSL = TLE.encodeUtf8 . TL.pack
   toBSB = BSB.byteString . TE.encodeUtf8 . T.pack
   toSBS = SBS.toShort . TE.encodeUtf8 . T.pack
-  convert = toS
+  convert' = toS
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -344,7 +344,7 @@ instance Textual String where
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
-  {-# INLINE convert #-}
+  {-# INLINE convert' #-}
 
 instance Textual T.Text where
   toS = T.unpack
@@ -356,7 +356,7 @@ instance Textual T.Text where
   toBSL = TLE.encodeUtf8 . TL.fromStrict
   toBSB = BSB.byteString . TE.encodeUtf8
   toSBS = SBS.toShort . TE.encodeUtf8
-  convert = toT
+  convert' = toT
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -366,7 +366,7 @@ instance Textual T.Text where
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
-  {-# INLINE convert #-}
+  {-# INLINE convert' #-}
 
 instance Textual TL.Text where
   toS = TL.unpack
@@ -378,7 +378,7 @@ instance Textual TL.Text where
   toBSL = TLE.encodeUtf8
   toBSB = BSB.lazyByteString . TLE.encodeUtf8
   toSBS = SBS.toShort . BSL.toStrict . TLE.encodeUtf8
-  convert = toTL
+  convert' = toTL
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -388,7 +388,7 @@ instance Textual TL.Text where
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
-  {-# INLINE convert #-}
+  {-# INLINE convert' #-}
 
 instance Textual TLB.Builder where
   toS = TL.unpack . TLB.toLazyText
@@ -400,7 +400,7 @@ instance Textual TLB.Builder where
   toBSL = TLE.encodeUtf8 . TLB.toLazyText
   toBSB = BSB.lazyByteString . TLE.encodeUtf8 . TLB.toLazyText
   toSBS = SBS.toShort . BSL.toStrict . TLE.encodeUtf8 . TLB.toLazyText
-  convert = toTLB
+  convert' = toTLB
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -410,7 +410,7 @@ instance Textual TLB.Builder where
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
-  {-# INLINE convert #-}
+  {-# INLINE convert' #-}
 
 instance Textual ST.ShortText where
   toS = ST.toString
@@ -422,7 +422,7 @@ instance Textual ST.ShortText where
   toBSL = BSL.fromStrict . ST.toByteString
   toBSB = BSB.byteString . ST.toByteString
   toSBS = ST.toShortByteString
-  convert = toST
+  convert' = toST
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -432,7 +432,7 @@ instance Textual ST.ShortText where
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
-  {-# INLINE convert #-}
+  {-# INLINE convert' #-}
 
 instance Textual BS.ByteString where
   toS = T.unpack . TE.decodeUtf8With TEE.lenientDecode
@@ -444,7 +444,7 @@ instance Textual BS.ByteString where
   toBSL = BSL.fromStrict
   toBSB = BSB.byteString
   toSBS = SBS.toShort
-  convert = toBS
+  convert' = toBS
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -454,7 +454,7 @@ instance Textual BS.ByteString where
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
-  {-# INLINE convert #-}
+  {-# INLINE convert' #-}
 
 instance Textual BSL.ByteString where
   toS = TL.unpack . TLE.decodeUtf8With TEE.lenientDecode
@@ -466,7 +466,7 @@ instance Textual BSL.ByteString where
   toBSL = id
   toBSB = BSB.lazyByteString
   toSBS = SBS.toShort . BSL.toStrict
-  convert = toBSL
+  convert' = toBSL
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -476,7 +476,7 @@ instance Textual BSL.ByteString where
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
-  {-# INLINE convert #-}
+  {-# INLINE convert' #-}
 
 instance Textual BSB.Builder where
   toS =
@@ -497,7 +497,7 @@ instance Textual BSB.Builder where
   toBSL = BSB.toLazyByteString
   toBSB = id
   toSBS = SBS.toShort . BSL.toStrict . BSB.toLazyByteString
-  convert = toBSB
+  convert' = toBSB
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -507,7 +507,7 @@ instance Textual BSB.Builder where
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
-  {-# INLINE convert #-}
+  {-# INLINE convert' #-}
 
 instance Textual SBS.ShortByteString where
   toS = T.unpack . TE.decodeUtf8With TEE.lenientDecode . SBS.fromShort
@@ -519,7 +519,7 @@ instance Textual SBS.ShortByteString where
   toBSL = BSL.fromStrict . SBS.fromShort
   toBSB = BSB.byteString . SBS.fromShort
   toSBS = id
-  convert = toSBS
+  convert' = toSBS
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -529,7 +529,18 @@ instance Textual SBS.ShortByteString where
   {-# INLINE toBSL #-}
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
-  {-# INLINE convert #-}
+  {-# INLINE convert' #-}
+
+------------------------------------------------------------------------------
+
+-- | Convert from one textual data type to another
+--
+-- The order of the type arguments was changed in version 1.5.0.0.
+--
+-- @since 0.1.0.0
+convert :: (Textual t, Textual t') => t -> t'
+convert = convert'
+{-# INLINE convert #-}
 
 ------------------------------------------------------------------------------
 -- $TextualTo
@@ -550,63 +561,63 @@ instance Textual SBS.ShortByteString where
 --
 -- @since 0.1.0.0
 fromS :: Textual t => String -> t
-fromS = convert
+fromS = convert'
 {-# INLINE fromS #-}
 
 -- | Convert from strict 'T.Text' to a textual data type
 --
 -- @since 0.1.0.0
 fromT :: Textual t => T.Text -> t
-fromT = convert
+fromT = convert'
 {-# INLINE fromT #-}
 
 -- | Convert from lazy 'TL.Text' to a textual data type
 --
 -- @since 0.1.0.0
 fromTL :: Textual t => TL.Text -> t
-fromTL = convert
+fromTL = convert'
 {-# INLINE fromTL #-}
 
 -- | Convert from a @Text@ 'TLB.Builder' to a textual data type
 --
 -- @since 1.1.0.0
 fromTLB :: Textual t => TLB.Builder -> t
-fromTLB = convert
+fromTLB = convert'
 {-# INLINE fromTLB #-}
 
 -- | Convert from a 'ST.ShortText' to a textual data type
 --
 -- @since 1.4.0.0
 fromST :: Textual t => ST.ShortText -> t
-fromST = convert
+fromST = convert'
 {-# INLINE fromST #-}
 
 -- | Convert from a strict 'BS.ByteString' to a textual data type
 --
 -- @since 0.1.0.0
 fromBS :: Textual t => BS.ByteString -> t
-fromBS = convert
+fromBS = convert'
 {-# INLINE fromBS #-}
 
 -- | Convert from a lazy 'BSL.ByteString' to a textual data type
 --
 -- @since 0.1.0.0
 fromBSL :: Textual t => BSL.ByteString -> t
-fromBSL = convert
+fromBSL = convert'
 {-# INLINE fromBSL #-}
 
 -- | Convert from a @ByteString@ 'TLB.Builder' to a textual data type
 --
 -- @since 1.1.0.0
 fromBSB :: Textual t => BSB.Builder -> t
-fromBSB = convert
+fromBSB = convert'
 {-# INLINE fromBSB #-}
 
 -- | Convert from a 'SBS.ShortByteString' to a textual data type
 --
 -- @since 1.1.0.0
 fromSBS :: Textual t => SBS.ShortByteString -> t
-fromSBS = convert
+fromSBS = convert'
 {-# INLINE fromSBS #-}
 
 ------------------------------------------------------------------------------
@@ -620,63 +631,63 @@ fromSBS = convert
 --
 -- @since 0.1.0.0
 asS :: Textual t => (String -> a) -> t -> a
-asS f = f . convert
+asS f = f . convert'
 {-# INLINE asS #-}
 
 -- | Convert a textual data type argument to strict 'T.Text'
 --
 -- @since 0.1.0.0
 asT :: Textual t => (T.Text -> a) -> t -> a
-asT f = f . convert
+asT f = f . convert'
 {-# INLINE asT #-}
 
 -- | Convert a textual data type argument to lazy 'TL.Text'
 --
 -- @since 0.1.0.0
 asTL :: Textual t => (TL.Text -> a) -> t -> a
-asTL f = f . convert
+asTL f = f . convert'
 {-# INLINE asTL #-}
 
 -- | Convert a textual data type argument to a @Text@ 'TLB.Builder'
 --
 -- @since 1.1.0.0
 asTLB :: Textual t => (TLB.Builder -> a) -> t -> a
-asTLB f = f . convert
+asTLB f = f . convert'
 {-# INLINE asTLB #-}
 
 -- | Convert a textual data type argument to a 'ST.ShortText'
 --
 -- @since 1.4.0.0
 asST :: Textual t => (ST.ShortText -> a) -> t -> a
-asST f = f . convert
+asST f = f . convert'
 {-# INLINE asST #-}
 
 -- | Convert a textual data type argument to a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
 asBS :: Textual t => (BS.ByteString -> a) -> t -> a
-asBS f = f . convert
+asBS f = f . convert'
 {-# INLINE asBS #-}
 
 -- | Convert a textual data type argument to a lazy 'BSL.ByteString'
 --
 -- @since 0.1.0.0
 asBSL :: Textual t => (BSL.ByteString -> a) -> t -> a
-asBSL f = f . convert
+asBSL f = f . convert'
 {-# INLINE asBSL #-}
 
 -- | Convert a textual data type argument to a @ByteString@ 'TLB.Builder'
 --
 -- @since 1.1.0.0
 asBSB :: Textual t => (BSB.Builder -> a ) -> t -> a
-asBSB f = f . convert
+asBSB f = f . convert'
 {-# INLINE asBSB #-}
 
 -- | Convert a textual data type argument to a 'SBS.ShortByteString'
 --
 -- @since 1.1.0.0
 asSBS :: Textual t => (SBS.ShortByteString -> a) -> t -> a
-asSBS f = f . convert
+asSBS f = f . convert'
 {-# INLINE asSBS #-}
 
 ------------------------------------------------------------------------------
@@ -850,7 +861,7 @@ instance RenderDefault SBS.ShortByteString where
 --
 -- @since 0.1.0.0
 renderWithShow :: forall t a. (Show a, Textual t) => a -> t
-renderWithShow = convert . show
+renderWithShow = convert' . show
 {-# INLINE renderWithShow #-}
 
 ------------------------------------------------------------------------------
@@ -1122,7 +1133,7 @@ withError
   => e'
   -> Maybe a
   -> Either e a
-withError err = maybe (Left $ convert err) Right
+withError err = maybe (Left $ convert' err) Right
 {-# INLINE withError #-}
 
 -- | Create a 'Parse' result from a 'String' error message and a 'Maybe' value
@@ -1247,7 +1258,7 @@ prefixError
   => e'
   -> Either e' a
   -> Either e a
-prefixError prefix = either (Left . convert . mappend prefix) Right
+prefixError prefix = either (Left . convert' . mappend prefix) Right
 {-# INLINE prefixError #-}
 
 -- | Add a prefix to 'String' error messages of a 'Parse' result
