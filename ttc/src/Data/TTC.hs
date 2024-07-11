@@ -551,7 +551,7 @@ instance Textual SBS.ShortByteString where
 -- The order of the type arguments was changed in version 1.5.0.0.
 --
 -- @since 0.1.0.0
-convert :: (Textual t, Textual t') => t -> t'
+convert :: forall t t'. (Textual t, Textual t') => t -> t'
 convert = convert'
 {-# INLINE convert #-}
 
@@ -643,63 +643,63 @@ fromSBS = convert'
 -- | Convert a textual data type argument to a 'String'
 --
 -- @since 0.1.0.0
-asS :: Textual t => (String -> a) -> t -> a
+asS :: forall t a. Textual t => (String -> a) -> t -> a
 asS f = f . convert'
 {-# INLINE asS #-}
 
 -- | Convert a textual data type argument to strict 'T.Text'
 --
 -- @since 0.1.0.0
-asT :: Textual t => (T.Text -> a) -> t -> a
+asT :: forall t a. Textual t => (T.Text -> a) -> t -> a
 asT f = f . convert'
 {-# INLINE asT #-}
 
 -- | Convert a textual data type argument to lazy 'TL.Text'
 --
 -- @since 0.1.0.0
-asTL :: Textual t => (TL.Text -> a) -> t -> a
+asTL :: forall t a. Textual t => (TL.Text -> a) -> t -> a
 asTL f = f . convert'
 {-# INLINE asTL #-}
 
 -- | Convert a textual data type argument to a @Text@ 'TLB.Builder'
 --
 -- @since 1.1.0.0
-asTLB :: Textual t => (TLB.Builder -> a) -> t -> a
+asTLB :: forall t a. Textual t => (TLB.Builder -> a) -> t -> a
 asTLB f = f . convert'
 {-# INLINE asTLB #-}
 
 -- | Convert a textual data type argument to a 'ST.ShortText'
 --
 -- @since 1.4.0.0
-asST :: Textual t => (ST.ShortText -> a) -> t -> a
+asST :: forall t a. Textual t => (ST.ShortText -> a) -> t -> a
 asST f = f . convert'
 {-# INLINE asST #-}
 
 -- | Convert a textual data type argument to a strict 'BS.ByteString'
 --
 -- @since 0.1.0.0
-asBS :: Textual t => (BS.ByteString -> a) -> t -> a
+asBS :: forall t a. Textual t => (BS.ByteString -> a) -> t -> a
 asBS f = f . convert'
 {-# INLINE asBS #-}
 
 -- | Convert a textual data type argument to a lazy 'BSL.ByteString'
 --
 -- @since 0.1.0.0
-asBSL :: Textual t => (BSL.ByteString -> a) -> t -> a
+asBSL :: forall t a. Textual t => (BSL.ByteString -> a) -> t -> a
 asBSL f = f . convert'
 {-# INLINE asBSL #-}
 
 -- | Convert a textual data type argument to a @ByteString@ 'TLB.Builder'
 --
 -- @since 1.1.0.0
-asBSB :: Textual t => (BSB.Builder -> a ) -> t -> a
+asBSB :: forall t a. Textual t => (BSB.Builder -> a ) -> t -> a
 asBSB f = f . convert'
 {-# INLINE asBSB #-}
 
 -- | Convert a textual data type argument to a 'SBS.ShortByteString'
 --
 -- @since 1.1.0.0
-asSBS :: Textual t => (SBS.ShortByteString -> a) -> t -> a
+asSBS :: forall t a. Textual t => (SBS.ShortByteString -> a) -> t -> a
 asSBS f = f . convert'
 {-# INLINE asSBS #-}
 
@@ -1025,7 +1025,7 @@ class Parse a where
 -- 'String', used internally when the error is ignored.
 --
 -- @since 0.3.0.0
-parse' :: (Parse a, Textual t) => t -> Either String a
+parse' :: forall t a. (Parse a, Textual t) => t -> Either String a
 parse' = parse
 {-# INLINE parse' #-}
 
@@ -1142,7 +1142,7 @@ instance ParseDefault SBS.ShortByteString where
 --
 -- @since 1.2.0.0
 withError
-  :: (Textual e', Textual e)
+  :: forall e' e a. (Textual e', Textual e)
   => e'
   -> Maybe a
   -> Either e a
@@ -1153,7 +1153,7 @@ withError err = maybe (Left $ convert' err) Right
 --
 -- @since 1.2.0.0
 withErrorS
-  :: Textual e
+  :: forall e a. Textual e
   => String
   -> Maybe a
   -> Either e a
@@ -1164,7 +1164,7 @@ withErrorS = withError
 --
 -- @since 1.2.0.0
 withErrorT
-  :: Textual e
+  :: forall e a. Textual e
   => T.Text
   -> Maybe a
   -> Either e a
@@ -1176,7 +1176,7 @@ withErrorT = withError
 --
 -- @since 1.2.0.0
 withErrorTL
-  :: Textual e
+  :: forall e a. Textual e
   => TL.Text
   -> Maybe a
   -> Either e a
@@ -1188,7 +1188,7 @@ withErrorTL = withError
 --
 -- @since 1.2.0.0
 withErrorTLB
-  :: Textual e
+  :: forall e a. Textual e
   => TLB.Builder
   -> Maybe a
   -> Either e a
@@ -1200,7 +1200,7 @@ withErrorTLB = withError
 --
 -- @since 1.4.0.0
 withErrorST
-  :: Textual e
+  :: forall e a. Textual e
   => ST.ShortText
   -> Maybe a
   -> Either e a
@@ -1212,7 +1212,7 @@ withErrorST = withError
 --
 -- @since 1.2.0.0
 withErrorBS
-  :: Textual e
+  :: forall e a. Textual e
   => BS.ByteString
   -> Maybe a
   -> Either e a
@@ -1224,7 +1224,7 @@ withErrorBS = withError
 --
 -- @since 1.2.0.0
 withErrorBSL
-  :: Textual e
+  :: forall e a. Textual e
   => BSL.ByteString
   -> Maybe a
   -> Either e a
@@ -1236,7 +1236,7 @@ withErrorBSL = withError
 --
 -- @since 1.2.0.0
 withErrorBSB
-  :: Textual e
+  :: forall e a. Textual e
   => BSB.Builder
   -> Maybe a
   -> Either e a
@@ -1248,7 +1248,7 @@ withErrorBSB = withError
 --
 -- @since 1.2.0.0
 withErrorSBS
-  :: Textual e
+  :: forall e a. Textual e
   => SBS.ShortByteString
   -> Maybe a
   -> Either e a
@@ -1267,7 +1267,7 @@ withErrorSBS = withError
 --
 -- @since 1.2.0.0
 prefixError
-  :: (Monoid e', Textual e', Textual e)
+  :: forall e' e a. (Monoid e', Textual e', Textual e)
   => e'
   -> Either e' a
   -> Either e a
@@ -1278,7 +1278,7 @@ prefixError prefix = either (Left . convert' . mappend prefix) Right
 --
 -- @since 1.2.0.0
 prefixErrorS
-  :: Textual e
+  :: forall e a. Textual e
   => String
   -> Either String a
   -> Either e a
@@ -1289,7 +1289,7 @@ prefixErrorS = prefixError
 --
 -- @since 1.2.0.0
 prefixErrorT
-  :: Textual e
+  :: forall e a. Textual e
   => T.Text
   -> Either T.Text a
   -> Either e a
@@ -1300,7 +1300,7 @@ prefixErrorT = prefixError
 --
 -- @since 1.2.0.0
 prefixErrorTL
-  :: Textual e
+  :: forall e a. Textual e
   => TL.Text
   -> Either TL.Text a
   -> Either e a
@@ -1311,7 +1311,7 @@ prefixErrorTL = prefixError
 --
 -- @since 1.2.0.0
 prefixErrorTLB
-  :: Textual e
+  :: forall e a. Textual e
   => TLB.Builder
   -> Either TLB.Builder a
   -> Either e a
@@ -1322,7 +1322,7 @@ prefixErrorTLB = prefixError
 --
 -- @since 1.4.0.0
 prefixErrorST
-  :: Textual e
+  :: forall e a. Textual e
   => ST.ShortText
   -> Either ST.ShortText a
   -> Either e a
@@ -1333,7 +1333,7 @@ prefixErrorST = prefixError
 --
 -- @since 1.2.0.0
 prefixErrorBS
-  :: Textual e
+  :: forall e a. Textual e
   => BS.ByteString
   -> Either BS.ByteString a
   -> Either e a
@@ -1344,7 +1344,7 @@ prefixErrorBS = prefixError
 --
 -- @since 1.2.0.0
 prefixErrorBSL
-  :: Textual e
+  :: forall e a. Textual e
   => BSL.ByteString
   -> Either BSL.ByteString a
   -> Either e a
@@ -1355,7 +1355,7 @@ prefixErrorBSL = prefixError
 --
 -- @since 1.2.0.0
 prefixErrorBSB
-  :: Textual e
+  :: forall e a. Textual e
   => BSB.Builder
   -> Either BSB.Builder a
   -> Either e a
@@ -1366,7 +1366,7 @@ prefixErrorBSB = prefixError
 --
 -- @since 1.2.0.0
 prefixErrorSBS
-  :: Textual e
+  :: forall e a. Textual e
   => SBS.ShortByteString
   -> Either SBS.ShortByteString a
   -> Either e a
