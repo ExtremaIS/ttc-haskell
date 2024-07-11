@@ -12,14 +12,14 @@ import qualified Data.TTC as TTC
 ------------------------------------------------------------------------------
 -- $Type
 
-newtype TestString = TestString String
+newtype TestString = TestString { testStringString :: String }
   deriving (Eq, Ord, Show, THS.Lift)
 
-instance TTC.Render TestString where
-  render (TestString s) = TTC.convert s
-
 instance TTC.Parse TestString where
-  parse = TTC.asS $ Right . TestString
+  parse = TTC.asS $ pure . TestString
+
+instance TTC.Render TestString where
+  render = TTC.convert . testStringString
 
 ------------------------------------------------------------------------------
 -- $API

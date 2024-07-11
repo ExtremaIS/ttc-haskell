@@ -1,8 +1,10 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeApplications #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
@@ -10,10 +12,9 @@ module Data.TTC.Test (tests) where
 
 -- https://hackage.haskell.org/package/base
 import Control.Exception (ErrorCall, Exception, evaluate, handle)
-import Control.Monad (when)
-import Data.Int (Int16, Int32, Int64, Int8)
+import Data.Int (Int8, Int16, Int32, Int64)
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
-import Data.Word (Word16, Word32, Word64, Word8)
+import Data.Word (Word8, Word16, Word32, Word64)
 import GHC.Stack (HasCallStack)
 import Text.Read (readMaybe)
 
@@ -48,7 +49,7 @@ import TestString (TestString(TestString))
 -- $Instances
 
 TTC.defaultRenderAndParseInstances
-  [ ''Char, ''Double, ''Float, ''Integer
+  [ ''Bool, ''Char, ''Double, ''Float, ''Integer
   , ''Int, ''Int8, ''Int16, ''Int32, ''Int64
   , ''Word, ''Word8, ''Word16, ''Word32, ''Word64
   , ''String
@@ -139,10 +140,7 @@ xiSBS = "test \xfffd"
 ------------------------------------------------------------------------------
 
 newtype PosInt = PosInt Int
-  deriving Eq
-
-instance Show PosInt where
-  show (PosInt i) = "(PosInt " ++ show i ++ ")"
+  deriving (Eq, Show)
 
 instance TTC.Parse PosInt where
   parse = TTC.asS $ \ s -> case readMaybe s of
@@ -204,11 +202,12 @@ instance Read Color where
   readsPrec _ = TTC.readsEnum True True
 
 instance TTC.Render Color where
-  render Red   = TTC.fromT "red"
-  render Green = TTC.fromT "green"
-  render Blue  = TTC.fromT "blue"
-  render White = TTC.fromT "white"
-  render Black = TTC.fromT "black"
+  render = TTC.fromT . \case
+    Red   -> "red"
+    Green -> "green"
+    Blue  -> "blue"
+    White -> "white"
+    Black -> "black"
 
 data ColorError
   = ColorInvalid
@@ -248,153 +247,20 @@ newtype PartialParser = PartialParser String
   deriving (Eq, Show)
 
 instance TTC.Parse PartialParser where
-  parse = TTC.asS $ \s -> do
-    when (null s) $ Left (TTC.fromT undefined)
-    pure $ PartialParser s
+  parse = TTC.asS $ \case
+    "" -> Left $ TTC.fromT undefined
+    s  -> Right $ PartialParser s
 
 ------------------------------------------------------------------------------
 -- $Textual
 
-testToS :: TestTree
-testToS = testGroup "toS"
-    [ testCase "S" $ xS @=? TTC.toS xS
-    , testCase "T" $ xS @=? TTC.toS xT
-    , testCase "TL" $ xS @=? TTC.toS xTL
-    , testCase "TLB" $ xS @=? TTC.toS xTLB
-    , testCase "ST" $ xS @=? TTC.toS xST
-    , testCase "BS" $ xS @=? TTC.toS xBS
-    , testCase "BS/invalid" $ xiS @=? TTC.toS xiBS
-    , testCase "BSL" $ xS @=? TTC.toS xBSL
-    , testCase "BSL/invalid" $ xiS @=? TTC.toS xiBSL
-    , testCase "BSB" $ xS @=? TTC.toS xBSB
-    , testCase "BSB/invalid" $ xiS @=? TTC.toS xiBSB
-    , testCase "SBS" $ xS @=? TTC.toS xSBS
-    , testCase "SBS/invalid" $ xiS @=? TTC.toS xiSBS
-    ]
-
-testToT :: TestTree
-testToT = testGroup "toT"
-    [ testCase "S" $ xT @=? TTC.toT xS
-    , testCase "T" $ xT @=? TTC.toT xT
-    , testCase "TL" $ xT @=? TTC.toT xTL
-    , testCase "TLB" $ xT @=? TTC.toT xTLB
-    , testCase "ST" $ xT @=? TTC.toT xST
-    , testCase "BS" $ xT @=? TTC.toT xBS
-    , testCase "BS/invalid" $ xiT @=? TTC.toT xiBS
-    , testCase "BSL" $ xT @=? TTC.toT xBSL
-    , testCase "BSL/invalid" $ xiT @=? TTC.toT xiBSL
-    , testCase "BSB" $  xT @=? TTC.toT xBSB
-    , testCase "BSB/invalid" $ xiT @=? TTC.toT xiBSB
-    , testCase "SBS" $  xT @=? TTC.toT xSBS
-    , testCase "SBS/invalid" $ xiT @=? TTC.toT xiSBS
-    ]
-
-testToTL :: TestTree
-testToTL = testGroup "toTL"
-    [ testCase "S" $ xTL @=? TTC.toTL xS
-    , testCase "T" $ xTL @=? TTC.toTL xT
-    , testCase "TL" $ xTL @=? TTC.toTL xTL
-    , testCase "TLB" $ xTL @=? TTC.toTL xTLB
-    , testCase "ST" $ xTL @=? TTC.toTL xST
-    , testCase "BS" $ xTL @=? TTC.toTL xBS
-    , testCase "BS/invalid" $ xiTL @=? TTC.toTL xiBS
-    , testCase "BSL" $ xTL @=? TTC.toTL xBSL
-    , testCase "BSL/invalid" $ xiTL @=? TTC.toTL xiBSL
-    , testCase "BSB" $ xTL @=? TTC.toTL xBSB
-    , testCase "BSB/invalid" $ xiTL @=? TTC.toTL xiBSB
-    , testCase "SBS" $ xTL @=? TTC.toTL xSBS
-    , testCase "SBS/invalid" $ xiTL @=? TTC.toTL xiSBS
-    ]
-
-testToTLB :: TestTree
-testToTLB = testGroup "toTLB"
-    [ testCase "S" $ xTLB @=? TTC.toTLB xS
-    , testCase "T" $ xTLB @=? TTC.toTLB xT
-    , testCase "TL" $ xTLB @=? TTC.toTLB xTL
-    , testCase "TLB" $ xTLB @=? TTC.toTLB xTLB
-    , testCase "ST" $ xTLB @=? TTC.toTLB xST
-    , testCase "BS" $ xTLB @=? TTC.toTLB xBS
-    , testCase "BS/invalid" $ xiTLB @=? TTC.toTLB xiBS
-    , testCase "BSL" $ xTLB @=? TTC.toTLB xBSL
-    , testCase "BSL/invalid" $ xiTLB @=? TTC.toTLB xiBSL
-    , testCase "BSB" $ xTLB @=? TTC.toTLB xBSB
-    , testCase "BSB/invalid" $ xiTLB @=? TTC.toTLB xiBSB
-    , testCase "SBS" $ xTLB @=? TTC.toTLB xSBS
-    , testCase "SBS/invalid" $ xiTLB @=? TTC.toTLB xiSBS
-    ]
-
-testToST :: TestTree
-testToST = testGroup "toST"
-    [ testCase "S" $ xST @=? TTC.toST xS
-    , testCase "T" $ xST @=? TTC.toST xT
-    , testCase "TL" $ xST @=? TTC.toST xTL
-    , testCase "TLB" $ xST @=? TTC.toST xTLB
-    , testCase "ST" $ xST @=? TTC.toST xST
-    , testCase "BS" $ xST @=? TTC.toST xBS
-    , testCase "BS/invalid" $ xiST @=? TTC.toST xiBS
-    , testCase "BSL" $ xST @=? TTC.toST xBSL
-    , testCase "BSL/invalid" $ xiST @=? TTC.toST xiBSL
-    , testCase "BSB" $ xST @=? TTC.toST xBSB
-    , testCase "BSB/invalid" $ xiST @=? TTC.toST xiBSB
-    , testCase "SBS" $ xST @=? TTC.toST xSBS
-    , testCase "SBS/invalid" $ xiST @=? TTC.toST xiSBS
-    ]
-
-testToBS :: TestTree
-testToBS = testGroup "toBS"
-    [ testCase "S" $ xBS @=? TTC.toBS xS
-    , testCase "T" $ xBS @=? TTC.toBS xT
-    , testCase "TL" $ xBS @=? TTC.toBS xTL
-    , testCase "TLB" $ xBS @=? TTC.toBS xTLB
-    , testCase "ST" $ xBS @=? TTC.toBS xST
-    , testCase "BS" $ xBS @=? TTC.toBS xBS
-    , testCase "BSL" $ xBS @=? TTC.toBS xBSL
-    , testCase "BSB" $ xBS @=? TTC.toBS xBSB
-    , testCase "SBS" $ xBS @=? TTC.toBS xSBS
-    ]
-
-testToBSL :: TestTree
-testToBSL = testGroup "toBSL"
-    [ testCase "S" $ xBSL @=? TTC.toBSL xS
-    , testCase "T" $ xBSL @=? TTC.toBSL xT
-    , testCase "TL" $ xBSL @=? TTC.toBSL xTL
-    , testCase "TLB" $ xBSL @=? TTC.toBSL xTLB
-    , testCase "ST" $ xBSL @=? TTC.toBSL xST
-    , testCase "BS" $ xBSL @=? TTC.toBSL xBS
-    , testCase "BSL" $ xBSL @=? TTC.toBSL xBSL
-    , testCase "BSB" $ xBSL @=? TTC.toBSL xBSB
-    , testCase "SBS" $ xBSL @=? TTC.toBSL xSBS
-    ]
-
-testToBSB :: TestTree
-testToBSB = testGroup "toBSB"
-    [ testCase "S" $ xBSB @=? TTC.toBSB xS
-    , testCase "T" $ xBSB @=? TTC.toBSB xT
-    , testCase "TL" $ xBSB @=? TTC.toBSB xTL
-    , testCase "TLB" $ xBSB @=? TTC.toBSB xTLB
-    , testCase "ST" $ xBSB @=? TTC.toBSB xST
-    , testCase "BS" $ xBSB @=? TTC.toBSB xBS
-    , testCase "BSL" $ xBSB @=? TTC.toBSB xBSL
-    , testCase "BSB" $ xBSB @=? TTC.toBSB xBSB
-    , testCase "SBS" $ xBSB @=? TTC.toBSB xSBS
-    ]
-
-testToSBS :: TestTree
-testToSBS = testGroup "toSBS"
-    [ testCase "S" $ xSBS @=? TTC.toSBS xS
-    , testCase "T" $ xSBS @=? TTC.toSBS xT
-    , testCase "TL" $ xSBS @=? TTC.toSBS xTL
-    , testCase "TLB" $ xSBS @=? TTC.toSBS xTLB
-    , testCase "ST" $ xSBS @=? TTC.toSBS xST
-    , testCase "BS" $ xSBS @=? TTC.toSBS xBS
-    , testCase "BSL" $ xSBS @=? TTC.toSBS xBSL
-    , testCase "BSB" $ xSBS @=? TTC.toSBS xBSB
-    , testCase "SBS" $ xSBS @=? TTC.toSBS xSBS
-    ]
-
 testConvert :: TestTree
 testConvert = testGroup "convert"
-    [ testCase "S->S" $ xS @=? TTC.convert xS
+    [ testCase "@@" $
+        "test テスト" @=? TTC.convert @String @String "test テスト"
+    , testCase "@_" $ xT @=? TTC.convert @String "test テスト"
+    , testCase "_@" $ "test テスト" @=? TTC.convert @_ @TL.Text xT
+    , testCase "S->S" $ xS @=? TTC.convert xS
     , testCase "S->T" $ xT @=? TTC.convert xS
     , testCase "S->TL" $ xTL @=? TTC.convert xS
     , testCase "S->TLB" $ xTLB @=? TTC.convert xS
@@ -468,9 +334,160 @@ testConvert = testGroup "convert"
     , testCase "SBS->SBS" $ xSBS @=? TTC.convert xSBS
     ]
 
+------------------------------------------------------------------------------
+
+testToS :: TestTree
+testToS = testGroup "toS"
+    [ testCase "@" $ xS @=? TTC.toS @T.Text "test テスト"
+    , testCase "S" $ xS @=? TTC.toS xS
+    , testCase "T" $ xS @=? TTC.toS xT
+    , testCase "TL" $ xS @=? TTC.toS xTL
+    , testCase "TLB" $ xS @=? TTC.toS xTLB
+    , testCase "ST" $ xS @=? TTC.toS xST
+    , testCase "BS" $ xS @=? TTC.toS xBS
+    , testCase "BS/invalid" $ xiS @=? TTC.toS xiBS
+    , testCase "BSL" $ xS @=? TTC.toS xBSL
+    , testCase "BSL/invalid" $ xiS @=? TTC.toS xiBSL
+    , testCase "BSB" $ xS @=? TTC.toS xBSB
+    , testCase "BSB/invalid" $ xiS @=? TTC.toS xiBSB
+    , testCase "SBS" $ xS @=? TTC.toS xSBS
+    , testCase "SBS/invalid" $ xiS @=? TTC.toS xiSBS
+    ]
+
+testToT :: TestTree
+testToT = testGroup "toT"
+    [ testCase "@" $ xT @=? TTC.toT @TL.Text "test テスト"
+    , testCase "S" $ xT @=? TTC.toT xS
+    , testCase "T" $ xT @=? TTC.toT xT
+    , testCase "TL" $ xT @=? TTC.toT xTL
+    , testCase "TLB" $ xT @=? TTC.toT xTLB
+    , testCase "ST" $ xT @=? TTC.toT xST
+    , testCase "BS" $ xT @=? TTC.toT xBS
+    , testCase "BS/invalid" $ xiT @=? TTC.toT xiBS
+    , testCase "BSL" $ xT @=? TTC.toT xBSL
+    , testCase "BSL/invalid" $ xiT @=? TTC.toT xiBSL
+    , testCase "BSB" $  xT @=? TTC.toT xBSB
+    , testCase "BSB/invalid" $ xiT @=? TTC.toT xiBSB
+    , testCase "SBS" $  xT @=? TTC.toT xSBS
+    , testCase "SBS/invalid" $ xiT @=? TTC.toT xiSBS
+    ]
+
+testToTL :: TestTree
+testToTL = testGroup "toTL"
+    [ testCase "@" $ xTL @=? TTC.toTL @T.Text "test テスト"
+    , testCase "S" $ xTL @=? TTC.toTL xS
+    , testCase "T" $ xTL @=? TTC.toTL xT
+    , testCase "TL" $ xTL @=? TTC.toTL xTL
+    , testCase "TLB" $ xTL @=? TTC.toTL xTLB
+    , testCase "ST" $ xTL @=? TTC.toTL xST
+    , testCase "BS" $ xTL @=? TTC.toTL xBS
+    , testCase "BS/invalid" $ xiTL @=? TTC.toTL xiBS
+    , testCase "BSL" $ xTL @=? TTC.toTL xBSL
+    , testCase "BSL/invalid" $ xiTL @=? TTC.toTL xiBSL
+    , testCase "BSB" $ xTL @=? TTC.toTL xBSB
+    , testCase "BSB/invalid" $ xiTL @=? TTC.toTL xiBSB
+    , testCase "SBS" $ xTL @=? TTC.toTL xSBS
+    , testCase "SBS/invalid" $ xiTL @=? TTC.toTL xiSBS
+    ]
+
+testToTLB :: TestTree
+testToTLB = testGroup "toTLB"
+    [ testCase "@" $ xTLB @=? TTC.toTLB @TL.Text "test テスト"
+    , testCase "S" $ xTLB @=? TTC.toTLB xS
+    , testCase "T" $ xTLB @=? TTC.toTLB xT
+    , testCase "TL" $ xTLB @=? TTC.toTLB xTL
+    , testCase "TLB" $ xTLB @=? TTC.toTLB xTLB
+    , testCase "ST" $ xTLB @=? TTC.toTLB xST
+    , testCase "BS" $ xTLB @=? TTC.toTLB xBS
+    , testCase "BS/invalid" $ xiTLB @=? TTC.toTLB xiBS
+    , testCase "BSL" $ xTLB @=? TTC.toTLB xBSL
+    , testCase "BSL/invalid" $ xiTLB @=? TTC.toTLB xiBSL
+    , testCase "BSB" $ xTLB @=? TTC.toTLB xBSB
+    , testCase "BSB/invalid" $ xiTLB @=? TTC.toTLB xiBSB
+    , testCase "SBS" $ xTLB @=? TTC.toTLB xSBS
+    , testCase "SBS/invalid" $ xiTLB @=? TTC.toTLB xiSBS
+    ]
+
+testToST :: TestTree
+testToST = testGroup "toST"
+    [ testCase "@" $ xST @=? TTC.toST @T.Text "test テスト"
+    , testCase "S" $ xST @=? TTC.toST xS
+    , testCase "T" $ xST @=? TTC.toST xT
+    , testCase "TL" $ xST @=? TTC.toST xTL
+    , testCase "TLB" $ xST @=? TTC.toST xTLB
+    , testCase "ST" $ xST @=? TTC.toST xST
+    , testCase "BS" $ xST @=? TTC.toST xBS
+    , testCase "BS/invalid" $ xiST @=? TTC.toST xiBS
+    , testCase "BSL" $ xST @=? TTC.toST xBSL
+    , testCase "BSL/invalid" $ xiST @=? TTC.toST xiBSL
+    , testCase "BSB" $ xST @=? TTC.toST xBSB
+    , testCase "BSB/invalid" $ xiST @=? TTC.toST xiBSB
+    , testCase "SBS" $ xST @=? TTC.toST xSBS
+    , testCase "SBS/invalid" $ xiST @=? TTC.toST xiSBS
+    ]
+
+testToBS :: TestTree
+testToBS = testGroup "toBS"
+    [ testCase "@" $ xBS @=? TTC.toBS @T.Text "test テスト"
+    , testCase "S" $ xBS @=? TTC.toBS xS
+    , testCase "T" $ xBS @=? TTC.toBS xT
+    , testCase "TL" $ xBS @=? TTC.toBS xTL
+    , testCase "TLB" $ xBS @=? TTC.toBS xTLB
+    , testCase "ST" $ xBS @=? TTC.toBS xST
+    , testCase "BS" $ xBS @=? TTC.toBS xBS
+    , testCase "BSL" $ xBS @=? TTC.toBS xBSL
+    , testCase "BSB" $ xBS @=? TTC.toBS xBSB
+    , testCase "SBS" $ xBS @=? TTC.toBS xSBS
+    ]
+
+testToBSL :: TestTree
+testToBSL = testGroup "toBSL"
+    [ testCase "@" $ xBSL @=? TTC.toBSL @TL.Text "test テスト"
+    , testCase "S" $ xBSL @=? TTC.toBSL xS
+    , testCase "T" $ xBSL @=? TTC.toBSL xT
+    , testCase "TL" $ xBSL @=? TTC.toBSL xTL
+    , testCase "TLB" $ xBSL @=? TTC.toBSL xTLB
+    , testCase "ST" $ xBSL @=? TTC.toBSL xST
+    , testCase "BS" $ xBSL @=? TTC.toBSL xBS
+    , testCase "BSL" $ xBSL @=? TTC.toBSL xBSL
+    , testCase "BSB" $ xBSL @=? TTC.toBSL xBSB
+    , testCase "SBS" $ xBSL @=? TTC.toBSL xSBS
+    ]
+
+testToBSB :: TestTree
+testToBSB = testGroup "toBSB"
+    [ testCase "@" $ xBSB @=? TTC.toBSB @TL.Text "test テスト"
+    , testCase "S" $ xBSB @=? TTC.toBSB xS
+    , testCase "T" $ xBSB @=? TTC.toBSB xT
+    , testCase "TL" $ xBSB @=? TTC.toBSB xTL
+    , testCase "TLB" $ xBSB @=? TTC.toBSB xTLB
+    , testCase "ST" $ xBSB @=? TTC.toBSB xST
+    , testCase "BS" $ xBSB @=? TTC.toBSB xBS
+    , testCase "BSL" $ xBSB @=? TTC.toBSB xBSL
+    , testCase "BSB" $ xBSB @=? TTC.toBSB xBSB
+    , testCase "SBS" $ xBSB @=? TTC.toBSB xSBS
+    ]
+
+testToSBS :: TestTree
+testToSBS = testGroup "toSBS"
+    [ testCase "@" $ xSBS @=? TTC.toSBS @T.Text "test テスト"
+    , testCase "S" $ xSBS @=? TTC.toSBS xS
+    , testCase "T" $ xSBS @=? TTC.toSBS xT
+    , testCase "TL" $ xSBS @=? TTC.toSBS xTL
+    , testCase "TLB" $ xSBS @=? TTC.toSBS xTLB
+    , testCase "ST" $ xSBS @=? TTC.toSBS xST
+    , testCase "BS" $ xSBS @=? TTC.toSBS xBS
+    , testCase "BSL" $ xSBS @=? TTC.toSBS xBSL
+    , testCase "BSB" $ xSBS @=? TTC.toSBS xBSB
+    , testCase "SBS" $ xSBS @=? TTC.toSBS xSBS
+    ]
+
+------------------------------------------------------------------------------
+
 testFromS :: TestTree
 testFromS = testGroup "fromS"
-    [ testCase "S" $ xS @=? TTC.fromS xS
+    [ testCase "@" $ "test テスト" @=? TTC.fromS @String xS
+    , testCase "S" $ xS @=? TTC.fromS xS
     , testCase "T" $ xT @=? TTC.fromS xS
     , testCase "TL" $ xTL @=? TTC.fromS xS
     , testCase "TLB" $ xTLB @=? TTC.fromS xS
@@ -483,7 +500,8 @@ testFromS = testGroup "fromS"
 
 testFromT :: TestTree
 testFromT = testGroup "fromT"
-    [ testCase "S" $ xS @=? TTC.fromT xT
+    [ testCase "@" $ "test テスト" @=? TTC.fromT @String xT
+    , testCase "S" $ xS @=? TTC.fromT xT
     , testCase "T" $ xT @=? TTC.fromT xT
     , testCase "TL" $ xTL @=? TTC.fromT xT
     , testCase "TLB" $ xTLB @=? TTC.fromT xT
@@ -496,7 +514,8 @@ testFromT = testGroup "fromT"
 
 testFromTL :: TestTree
 testFromTL = testGroup "fromTL"
-    [ testCase "S" $ xS @=? TTC.fromTL xTL
+    [ testCase "@" $ "test テスト" @=? TTC.fromTL @String xTL
+    , testCase "S" $ xS @=? TTC.fromTL xTL
     , testCase "T" $ xT @=? TTC.fromTL xTL
     , testCase "TL" $ xTL @=? TTC.fromTL xTL
     , testCase "TLB" $ xTLB @=? TTC.fromTL xTL
@@ -509,7 +528,8 @@ testFromTL = testGroup "fromTL"
 
 testFromTLB :: TestTree
 testFromTLB = testGroup "fromTLB"
-    [ testCase "S" $ xS @=? TTC.fromTLB xTLB
+    [ testCase "@" $ "test テスト" @=? TTC.fromTLB @String xTLB
+    , testCase "S" $ xS @=? TTC.fromTLB xTLB
     , testCase "T" $ xT @=? TTC.fromTLB xTLB
     , testCase "TL" $ xTL @=? TTC.fromTLB xTLB
     , testCase "TLB" $ xTLB @=? TTC.fromTLB xTLB
@@ -522,7 +542,8 @@ testFromTLB = testGroup "fromTLB"
 
 testFromBS :: TestTree
 testFromBS = testGroup "fromBS"
-    [ testCase "S" $ xS @=? TTC.fromBS xBS
+    [ testCase "@" $ "test テスト" @=? TTC.fromBS @String xBS
+    , testCase "S" $ xS @=? TTC.fromBS xBS
     , testCase "T" $ xT @=? TTC.fromBS xBS
     , testCase "TL" $ xTL @=? TTC.fromBS xBS
     , testCase "TLB" $ xTLB @=? TTC.fromBS xBS
@@ -535,7 +556,8 @@ testFromBS = testGroup "fromBS"
 
 testFromBSL :: TestTree
 testFromBSL = testGroup "fromBSL"
-    [ testCase "S" $ xS @=? TTC.fromBSL xBSL
+    [ testCase "@" $ "test テスト" @=? TTC.fromBSL @String xBSL
+    , testCase "S" $ xS @=? TTC.fromBSL xBSL
     , testCase "T" $ xT @=? TTC.fromBSL xBSL
     , testCase "TL" $ xTL @=? TTC.fromBSL xBSL
     , testCase "TLB" $ xTLB @=? TTC.fromBSL xBSL
@@ -548,7 +570,8 @@ testFromBSL = testGroup "fromBSL"
 
 testFromBSB :: TestTree
 testFromBSB = testGroup "fromBSB"
-    [ testCase "S" $ xS @=? TTC.fromBSB xBSB
+    [ testCase "@" $ "test テスト" @=? TTC.fromBSB @String xBSB
+    , testCase "S" $ xS @=? TTC.fromBSB xBSB
     , testCase "T" $ xT @=? TTC.fromBSB xBSB
     , testCase "TL" $ xTL @=? TTC.fromBSB xBSB
     , testCase "TLB" $ xTLB @=? TTC.fromBSB xBSB
@@ -561,7 +584,8 @@ testFromBSB = testGroup "fromBSB"
 
 testFromSBS :: TestTree
 testFromSBS = testGroup "fromSBS"
-    [ testCase "S" $ xS @=? TTC.fromSBS xSBS
+    [ testCase "@" $ "test テスト" @=? TTC.fromSBS @String xSBS
+    , testCase "S" $ xS @=? TTC.fromSBS xSBS
     , testCase "T" $ xT @=? TTC.fromSBS xSBS
     , testCase "TL" $ xTL @=? TTC.fromSBS xSBS
     , testCase "TLB" $ xTLB @=? TTC.fromSBS xSBS
@@ -572,9 +596,12 @@ testFromSBS = testGroup "fromSBS"
     , testCase "SBS" $ xSBS @=? TTC.fromSBS xSBS
     ]
 
+------------------------------------------------------------------------------
+
 testAsS :: TestTree
 testAsS = testGroup "asS"
-    [ testCase "S" $ xS @=? TTC.asS id xS
+    [ testCase "@" $ xS @=? TTC.asS @T.Text id "test テスト"
+    , testCase "S" $ xS @=? TTC.asS id xS
     , testCase "T" $ xS @=? TTC.asS id xT
     , testCase "TL" $ xS @=? TTC.asS id xTL
     , testCase "TLB" $ xS @=? TTC.asS id xTLB
@@ -587,7 +614,8 @@ testAsS = testGroup "asS"
 
 testAsT :: TestTree
 testAsT = testGroup "asT"
-    [ testCase "S" $ xT @=? TTC.asT id xS
+    [ testCase "@" $ xT @=? TTC.asT @String id "test テスト"
+    , testCase "S" $ xT @=? TTC.asT id xS
     , testCase "T" $ xT @=? TTC.asT id xT
     , testCase "TL" $ xT @=? TTC.asT id xTL
     , testCase "TLB" $ xT @=? TTC.asT id xTLB
@@ -600,7 +628,8 @@ testAsT = testGroup "asT"
 
 testAsTL :: TestTree
 testAsTL = testGroup "asTL"
-    [ testCase "S" $ xTL @=? TTC.asTL id xS
+    [ testCase "@" $ xTL @=? TTC.asTL @T.Text id "test テスト"
+    , testCase "S" $ xTL @=? TTC.asTL id xS
     , testCase "T" $ xTL @=? TTC.asTL id xT
     , testCase "TL" $ xTL @=? TTC.asTL id xTL
     , testCase "TLB" $ xTL @=? TTC.asTL id xTLB
@@ -613,7 +642,8 @@ testAsTL = testGroup "asTL"
 
 testAsTLB :: TestTree
 testAsTLB = testGroup "asTLB"
-    [ testCase "S" $ xTLB @=? TTC.asTLB id xS
+    [ testCase "@" $ xTLB @=? TTC.asTLB @TL.Text id "test テスト"
+    , testCase "S" $ xTLB @=? TTC.asTLB id xS
     , testCase "T" $ xTLB @=? TTC.asTLB id xT
     , testCase "TL" $ xTLB @=? TTC.asTLB id xTL
     , testCase "TLB" $ xTLB @=? TTC.asTLB id xTLB
@@ -626,7 +656,8 @@ testAsTLB = testGroup "asTLB"
 
 testAsBS :: TestTree
 testAsBS = testGroup "asBS"
-    [ testCase "S" $ xBS @=? TTC.asBS id xS
+    [ testCase "@" $ xBS @=? TTC.asBS @T.Text id "test テスト"
+    , testCase "S" $ xBS @=? TTC.asBS id xS
     , testCase "T" $ xBS @=? TTC.asBS id xT
     , testCase "TL" $ xBS @=? TTC.asBS id xTL
     , testCase "TLB" $ xBS @=? TTC.asBS id xTLB
@@ -639,7 +670,8 @@ testAsBS = testGroup "asBS"
 
 testAsBSL :: TestTree
 testAsBSL = testGroup "asBSL"
-    [ testCase "S" $ xBSL @=? TTC.asBSL id xS
+    [ testCase "@" $ xBSL @=? TTC.asBSL @String id "test テスト"
+    , testCase "S" $ xBSL @=? TTC.asBSL id xS
     , testCase "T" $ xBSL @=? TTC.asBSL id xT
     , testCase "TL" $ xBSL @=? TTC.asBSL id xTL
     , testCase "TLB" $ xBSL @=? TTC.asBSL id xTLB
@@ -652,7 +684,8 @@ testAsBSL = testGroup "asBSL"
 
 testAsBSB :: TestTree
 testAsBSB = testGroup "asBSB"
-    [ testCase "S" $ xBSB @=? TTC.asBSB id xS
+    [ testCase "@" $ xBSB @=? TTC.asBSB @String id "test テスト"
+    , testCase "S" $ xBSB @=? TTC.asBSB id xS
     , testCase "T" $ xBSB @=? TTC.asBSB id xT
     , testCase "TL" $ xBSB @=? TTC.asBSB id xTL
     , testCase "TLB" $ xBSB @=? TTC.asBSB id xTLB
@@ -665,7 +698,8 @@ testAsBSB = testGroup "asBSB"
 
 testAsSBS :: TestTree
 testAsSBS = testGroup "asSBS"
-    [ testCase "S" $ xSBS @=? TTC.asSBS id xS
+    [ testCase "@" $ xSBS @=? TTC.asSBS @String id "test テスト"
+    , testCase "S" $ xSBS @=? TTC.asSBS id xS
     , testCase "T" $ xSBS @=? TTC.asSBS id xT
     , testCase "TL" $ xSBS @=? TTC.asSBS id xTL
     , testCase "TLB" $ xSBS @=? TTC.asSBS id xTLB
@@ -681,7 +715,8 @@ testAsSBS = testGroup "asSBS"
 
 testRender :: TestTree
 testRender = testGroup "render"
-    [ testCase "S" $ answerS @=? TTC.render answer
+    [ testCase "_@" $ "42" @=? TTC.render @_ @String answer
+    , testCase "S" $ answerS @=? TTC.render answer
     , testCase "T" $ answerT @=? TTC.render answer
     , testCase "TL" $ answerTL @=? TTC.render answer
     , testCase "TLB" $ answerTLB @=? TTC.render answer
@@ -692,13 +727,18 @@ testRender = testGroup "render"
     , testCase "SBS" $ answerSBS @=? TTC.render answer
     ]
 
+------------------------------------------------------------------------------
+
 testRenderDefault :: TestTree
 testRenderDefault = testGroup "RenderDefault"
-    [ testCase "Char" $ "*" @=? TTC.renderS '*'
+    [ testCase "Bool" $ "True" @=? TTC.render @_ @String True
+    , testCase "Char" $ "*" @=? TTC.renderS '*'
     , let x = 3.14159 :: Double
       in  testCase "Double" $ show x @=? TTC.renderS x
     , let x = 3.14159 :: Float
       in  testCase "Float" $ show x @=? TTC.renderS x
+    , let n = 42 :: Integer
+      in  testCase "Integer" $ show n @=? TTC.renderS n
     , let n = 42 :: Int
       in  testCase "Int" $ show n @=? TTC.renderS n
     , let n = 42 :: Int8
@@ -709,8 +749,6 @@ testRenderDefault = testGroup "RenderDefault"
       in  testCase "Int32" $ show n @=? TTC.renderS n
     , let n = 42 :: Int64
       in  testCase "Int64" $ show n @=? TTC.renderS n
-    , let n = 42 :: Integer
-      in  testCase "Integer" $ show n @=? TTC.renderS n
     , let w = 42 :: Word
       in  testCase "Word" $ show w @=? TTC.renderS w
     , let w = 42 :: Word8
@@ -731,6 +769,24 @@ testRenderDefault = testGroup "RenderDefault"
     , testCase "BSB.Builder" $ xS @=? TTC.renderS xBSB
     , testCase "SBS.ShortByteString" $ xS @=? TTC.renderS xSBS
     ]
+
+------------------------------------------------------------------------------
+
+testRenderWithShow :: TestTree
+testRenderWithShow = testGroup "renderWithShow"
+    [ testCase "@" $ "42" @=? TTC.renderWithShow @String answerZ
+    , testCase "S" $ answerS @=? TTC.renderWithShow answerZ
+    , testCase "T" $ answerT @=? TTC.renderWithShow answerZ
+    , testCase "TL" $ answerTL @=? TTC.renderWithShow answerZ
+    , testCase "TLB" $ answerTLB @=? TTC.renderWithShow answerZ
+    , testCase "ST" $ answerST @=? TTC.renderWithShow answerZ
+    , testCase "BS" $ answerBS @=? TTC.renderWithShow answerZ
+    , testCase "BSL" $ answerBSL @=? TTC.renderWithShow answerZ
+    , testCase "BSB" $ answerBSB @=? TTC.renderWithShow answerZ
+    , testCase "SBS" $ answerSBS @=? TTC.renderWithShow answerZ
+    ]
+
+------------------------------------------------------------------------------
 
 testRenderS :: TestTree
 testRenderS = testCase "renderS" $ answerS @=? TTC.renderS answer
@@ -760,459 +816,345 @@ testRenderBSB = testCase "renderBSB" $
 testRenderSBS :: TestTree
 testRenderSBS = testCase "renderSBS" $ answerSBS @=? TTC.renderSBS answer
 
-testRenderWithShow :: TestTree
-testRenderWithShow = testGroup "renderWithShow"
-    [ testCase "S" $ answerS @=? TTC.renderWithShow answerZ
-    , testCase "T" $ answerT @=? TTC.renderWithShow answerZ
-    , testCase "TL" $ answerTL @=? TTC.renderWithShow answerZ
-    , testCase "TLB" $ answerTLB @=? TTC.renderWithShow answerZ
-    , testCase "ST" $ answerST @=? TTC.renderWithShow answerZ
-    , testCase "BS" $ answerBS @=? TTC.renderWithShow answerZ
-    , testCase "BSL" $ answerBSL @=? TTC.renderWithShow answerZ
-    , testCase "BSB" $ answerBSB @=? TTC.renderWithShow answerZ
-    , testCase "SBS" $ answerSBS @=? TTC.renderWithShow answerZ
-    ]
-
 ------------------------------------------------------------------------------
 -- $Parse
 
 testParse :: TestTree
 testParse = testGroup "parse"
-    [ testCase "S" $ Just answer @=? TTC.parseMaybe answerS
-    , testCase "T" $ Just answer @=? TTC.parseMaybe answerT
-    , testCase "TL" $ Just answer @=? TTC.parseMaybe answerTL
-    , testCase "TLB" $ Just answer @=? TTC.parseMaybe answerTLB
-    , testCase "ST" $ Just answer @=? TTC.parseMaybe answerST
-    , testCase "BS" $ Just answer @=? TTC.parseMaybe answerBS
-    , testCase "BSL" $ Just answer @=? TTC.parseMaybe answerBSL
-    , testCase "BSB" $ Just answer @=? TTC.parseMaybe answerBSB
-    , testCase "SBS" $ Just answer @=? TTC.parseMaybe answerSBS
-    , testCase "negative" $ Left "not positive" @=?
-        (TTC.parse ('-' : answerS) :: Either String PosInt)
-    , testCase "invalid" $ Left "not an integer" @=?
-        (TTC.parse ('a' : answerS) :: Either String PosInt)
+    [ testCase "_@@" $ Right answer @=? TTC.parse @_ @String @String "42"
+    , testCase "S" $ Right answer @=? parse answerS
+    , testCase "T" $ Right answer @=? parse answerT
+    , testCase "TL" $ Right answer @=? parse answerTL
+    , testCase "TLB" $ Right answer @=? parse answerTLB
+    , testCase "ST" $ Right answer @=? parse answerST
+    , testCase "BS" $ Right answer @=? parse answerBS
+    , testCase "BSL" $ Right answer @=? parse answerBSL
+    , testCase "BSB" $ Right answer @=? parse answerBSB
+    , testCase "SBS" $ Right answer @=? parse answerSBS
+    , testCase "negative" $ Left "not positive" @=? parse @String "-42"
+    , testCase "invalid" $ Left "not an integer" @=? parse @String "4a2"
     ]
+  where
+    parse :: TTC.Textual t => t -> Either String PosInt
+    parse = TTC.parse
+
+------------------------------------------------------------------------------
+
 
 testParseDefault :: TestTree
 testParseDefault = testGroup "ParseDefault"
-    [ let parse = TTC.parse :: String -> Either String Char
-      in  testGroup "Char"
-            [ testCase "OK" $ Right '*' @=? parse "*"
-            , testCase "empty" $ Left "invalid Char" @=? parse ""
-            , testCase "multiple" $ Left "invalid Char" @=? parse "**"
-            ]
-    , let parse = TTC.parse :: String -> Either String Double
-          s = show (3.14159 :: Double)
+    [ testGroup "Bool"
+        [ testCase "True" $ Right True @=? parse "True"
+        , testCase "False" $ Right False @=? parse "False"
+        , testCase "invalid" $ Left "invalid Bool" @=? parse @Bool "false"
+        ]
+    , testGroup "Char"
+        [ testCase "valid" $ Right '*' @=? parse "*"
+        , testCase "empty" $ Left "invalid Char" @=? parse @Char ""
+        , testCase "multiple" $ Left "invalid Char" @=? parse @Char "**"
+        ]
+    , let s = show (3.14159 :: Double)
       in  testGroup "Double"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Double" @=? parse "invalid"
+            [ testCase "valid" $ Right (read s) @=? parse @Double s
+            , testCase "invalid" $
+                Left "invalid Double" @=? parse @Double "invalid"
             ]
-    , let parse = TTC.parse :: String -> Either String Float
-          s = show (3.14159 :: Float)
+    , let s = show (3.14159 :: Float)
       in  testGroup "Float"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Float" @=? parse "invalid"
+            [ testCase "valid" $ Right (read s) @=? parse @Float s
+            , testCase "invalid" $
+                Left "invalid Float" @=? parse @Float "invalid"
             ]
-    , let parse = TTC.parse :: String -> Either String Int
-          s = show (42 :: Int)
-      in  testGroup "Int"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Int" @=? parse "invalid"
-            ]
-    , let parse = TTC.parse :: String -> Either String Int8
-          s = show (42 :: Int8)
-      in  testGroup "Int8"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Int8" @=? parse "invalid"
-            ]
-    , let parse = TTC.parse :: String -> Either String Int16
-          s = show (42 :: Int16)
-      in  testGroup "Int16"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Int16" @=? parse "invalid"
-            ]
-    , let parse = TTC.parse :: String -> Either String Int32
-          s = show (42 :: Int32)
-      in  testGroup "Int32"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Int32" @=? parse "invalid"
-            ]
-    , let parse = TTC.parse :: String -> Either String Int64
-          s = show (42 :: Int64)
-      in  testGroup "Int64"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Int64" @=? parse "invalid"
-            ]
-    , let parse = TTC.parse :: String -> Either String Integer
-          s = show (42 :: Integer)
-      in  testGroup "Integer"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Integer" @=? parse "invalid"
-            ]
-    , let parse = TTC.parse :: String -> Either String Word
-          s = show (42 :: Word)
-      in  testGroup "Word"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Word" @=? parse "invalid"
-            ]
-    , let parse = TTC.parse :: String -> Either String Word8
-          s = show (42 :: Word8)
-      in  testGroup "Word8"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Word8" @=? parse "invalid"
-            ]
-    , let parse = TTC.parse :: String -> Either String Word16
-          s = show (42 :: Word16)
-      in  testGroup "Word16"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Word16" @=? parse "invalid"
-            ]
-    , let parse = TTC.parse :: String -> Either String Word32
-          s = show (42 :: Word32)
-      in  testGroup "Word32"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Word32" @=? parse "invalid"
-            ]
-    , let parse = TTC.parse :: String -> Either String Word64
-          s = show (42 :: Word64)
-      in  testGroup "Word64"
-            [ testCase "OK" $ Right (read s) @=? parse s
-            , testCase "invalid" $ Left "invalid Word64" @=? parse "invalid"
-            ]
-    , let parse = TTC.parse :: String -> Either String String
-      in  testGroup "String"
-            [ testCase "empty" $ Right "" @=? parse ""
-            , testCase "nonempty" $ Right xS @=? parse xS
-            ]
-    , let parse = TTC.parse :: String -> Either String T.Text
-      in  testGroup "T.Text"
-            [ testCase "empty" $ Right T.empty @=? parse ""
-            , testCase "nonempty" $ Right xT @=? parse xS
-            ]
-    , let parse = TTC.parse :: String -> Either String TL.Text
-      in  testGroup "TL.Text"
-            [ testCase "empty" $ Right TL.empty @=? parse ""
-            , testCase "nonempty" $ Right xTL @=? parse xS
-            ]
-    , let parse = TTC.parse :: String -> Either String TLB.Builder
-      in  testGroup "TLB.Builder"
-            [ testCase "empty" $ Right (TLB.fromString "") @=? parse ""
-            , testCase "nonempty" $ Right xTLB @=? parse xS
-            ]
-    , let parse = TTC.parse :: String -> Either String ST.ShortText
-      in  testGroup "ST.ShortText"
-            [ testCase "empty" $ Right ST.empty @=? parse ""
-            , testCase "nonempty" $ Right xST @=? parse xS
-            ]
-    , let parse = TTC.parse :: String -> Either String BS.ByteString
-      in  testGroup "BS.ByteString"
-            [ testCase "empty" $ Right BS.empty @=? parse ""
-            , testCase "nonempty" $ Right xBS @=? parse xS
-            ]
-    , let parse = TTC.parse :: String -> Either String BSL.ByteString
-      in  testGroup "BSL.ByteString"
-            [ testCase "empty" $ Right BSL.empty @=? parse ""
-            , testCase "nonempty" $ Right xBSL @=? parse xS
-            ]
-    , let parse = TTC.parse :: String -> Either String BSB.Builder
-      in  testGroup "BSB.Builder"
-            [ testCase "empty" $ Right (BSB.byteString BS.empty) @=? parse ""
-            , testCase "nonempty" $ Right xBSB @=? parse xS
-            ]
-    , let parse = TTC.parse :: String -> Either String SBS.ShortByteString
-      in  testGroup "SBS.ShortByteString"
-            [ testCase "empty" $ Right SBS.empty @=? parse ""
-            , testCase "nonempty" $ Right xSBS @=? parse xS
-            ]
+    , testGroup "Integer"
+        [ testCase "valid" $ Right 42 @=? parse @Integer "42"
+        , testCase "invalid" $
+            Left "invalid Integer" @=? parse @Integer "invalid"
+        ]
+    , testGroup "Int"
+        [ testCase "valid" $ Right 42 @=? parse @Int "42"
+        , testCase "invalid" $ Left "invalid Int" @=? parse @Int "invalid"
+        ]
+    , testGroup "Int8"
+        [ testCase "valid" $ Right 42 @=? parse @Int8 "42"
+        , testCase "invalid" $ Left "invalid Int8" @=? parse @Int8 "invalid"
+        ]
+    , testGroup "Int16"
+        [ testCase "valid" $ Right 42 @=? parse @Int16 "42"
+        , testCase "invalid" $ Left "invalid Int16" @=? parse @Int16 "invalid"
+        ]
+    , testGroup "Int32"
+        [ testCase "valid" $ Right 42 @=? parse @Int32 "42"
+        , testCase "invalid" $ Left "invalid Int32" @=? parse @Int32 "invalid"
+        ]
+    , testGroup "Int64"
+        [ testCase "valid" $ Right 42 @=? parse @Int64 "42"
+        , testCase "invalid" $ Left "invalid Int64" @=? parse @Int64 "invalid"
+        ]
+    , testGroup "Word"
+        [ testCase "valid" $ Right 42 @=? parse @Word "42"
+        , testCase "invalid" $ Left "invalid Word" @=? parse @Word "invalid"
+        ]
+    , testGroup "Word8"
+        [ testCase "valid" $ Right 42 @=? parse @Word8 "42"
+        , testCase "invalid" $ Left "invalid Word8" @=? parse @Word8 "invalid"
+        ]
+    , testGroup "Word16"
+        [ testCase "valid" $ Right 42 @=? parse @Word16 "42"
+        , testCase "invalid" $
+            Left "invalid Word16" @=? parse @Word16 "invalid"
+        ]
+    , testGroup "Word32"
+        [ testCase "valid" $ Right 42 @=? parse @Word32 "42"
+        , testCase "invalid" $
+            Left "invalid Word32" @=? parse @Word32 "invalid"
+        ]
+    , testGroup "Word64"
+        [ testCase "valid" $ Right 42 @=? parse @Word64 "42"
+        , testCase "invalid" $
+            Left "invalid Word64" @=? parse @Word64 "invalid"
+        ]
+    , testGroup "String"
+        [ testCase "empty" $ Right "" @=? parse @String ""
+        , testCase "nonempty" $ Right xS @=? parse xS
+        ]
+    , testGroup "T.Text"
+        [ testCase "empty" $ Right T.empty @=? parse ""
+        , testCase "nonempty" $ Right xT @=? parse xS
+        ]
+    , testGroup "TL.Text"
+        [ testCase "empty" $ Right TL.empty @=? parse ""
+        , testCase "nonempty" $ Right xTL @=? parse xS
+        ]
+    , testGroup "TLB.Builder"
+        [ testCase "empty" $ Right (TLB.fromString "") @=? parse ""
+        , testCase "nonempty" $ Right xTLB @=? parse xS
+        ]
+    , testGroup "ST.ShortString"
+        [ testCase "empty" $ Right ST.empty @=? parse ""
+        , testCase "nonempty" $ Right xST @=? parse xS
+        ]
+    , testGroup "BS.ByteString"
+        [ testCase "empty" $ Right BS.empty @=? parse ""
+        , testCase "nonempty" $ Right xBS @=? parse xS
+        ]
+    , testGroup "BSL.ByteString"
+        [ testCase "empty" $ Right BSL.empty @=? parse ""
+        , testCase "nonempty" $ Right xBSL @=? parse xS
+        ]
+    , testGroup "BSB.Builder"
+        [ testCase "empty" $ Right (BSB.byteString BS.empty) @=? parse ""
+        , testCase "nonempty" $ Right xBSB @=? parse xS
+        ]
+    , testGroup "SBS.ShortByteString"
+        [ testCase "empty" $ Right SBS.empty @=? parse ""
+        , testCase "nonempty" $ Right xSBS @=? parse xS
+        ]
     ]
+  where
+    parse :: TTC.Parse a => String -> Either String a
+    parse = TTC.parse
 
-testParseS :: TestTree
-testParseS =
-    let parseS = TTC.parseS :: String -> Either String PosInt
-    in  testCase "parseS" $ Right answer @=? parseS answerS
-
-testParseT :: TestTree
-testParseT =
-    let parseT = TTC.parseT :: T.Text -> Either String PosInt
-    in  testCase "parseT" $ Right answer @=? parseT answerT
-
-testParseTL :: TestTree
-testParseTL =
-    let parseTL = TTC.parseTL :: TL.Text -> Either String PosInt
-    in  testCase "parseTL" $ Right answer @=? parseTL answerTL
-
-testParseTLB :: TestTree
-testParseTLB =
-    let parseTLB = TTC.parseTLB :: TLB.Builder -> Either String PosInt
-    in  testCase "parseTLB" $ Right answer @=? parseTLB answerTLB
-
-testParseST :: TestTree
-testParseST =
-    let parseST = TTC.parseST :: ST.ShortText -> Either String PosInt
-    in  testCase "parseST" $ Right answer @=? parseST answerST
-
-testParseBS :: TestTree
-testParseBS =
-    let parseBS = TTC.parseBS :: BS.ByteString -> Either String PosInt
-    in  testCase "parseBS" $ Right answer @=? parseBS answerBS
-
-testParseBSL :: TestTree
-testParseBSL =
-    let parseBSL = TTC.parseBSL :: BSL.ByteString -> Either String PosInt
-    in  testCase "parseBSL" $ Right answer @=? parseBSL answerBSL
-
-testParseBSB :: TestTree
-testParseBSB =
-    let parseBSB = TTC.parseBSB :: BSB.Builder -> Either String PosInt
-    in  testCase "parseBSB" $ Right answer @=? parseBSB answerBSB
-
-testParseSBS :: TestTree
-testParseSBS =
-    let parseSBS = TTC.parseSBS :: SBS.ShortByteString -> Either String PosInt
-    in  testCase "parseSBS" $ Right answer @=? parseSBS answerSBS
-
-testParseMaybe :: TestTree
-testParseMaybe = testGroup "parseMaybe"
-    [ testCase "S" $ Just answer @=? TTC.parseMaybe answerS
-    , testCase "T" $ Just answer @=? TTC.parseMaybe answerT
-    , testCase "TL" $ Just answer @=? TTC.parseMaybe answerTL
-    , testCase "TLB" $ Just answer @=? TTC.parseMaybe answerTLB
-    , testCase "ST" $ Just answer @=? TTC.parseMaybe answerST
-    , testCase "BS" $ Just answer @=? TTC.parseMaybe answerBS
-    , testCase "BSL" $ Just answer @=? TTC.parseMaybe answerBSL
-    , testCase "BSB" $ Just answer @=? TTC.parseMaybe answerBSB
-    , testCase "SBS" $ Just answer @=? TTC.parseMaybe answerSBS
-    -- successful 'parseMaybe' does not have any error type conversion:
-    , testCase "noerror" $
-        Just (PartialParser "test") @=? TTC.parseMaybe ("test" :: String)
-    , testCase "negative" $
-        Nothing @=? (TTC.parseMaybe ('-' : answerS) :: Maybe PosInt)
-    , testCase "invalid" $
-        Nothing @=? (TTC.parseMaybe ('a' : answerS) :: Maybe PosInt)
-    ]
-
-testParseMaybeS :: TestTree
-testParseMaybeS = testCase "parseMaybeS" $
-    Just answer @=? TTC.parseMaybeS answerS
-
-testParseMaybeT :: TestTree
-testParseMaybeT = testCase "parseMaybeT" $
-    Just answer @=? TTC.parseMaybeT answerT
-
-testParseMaybeTL :: TestTree
-testParseMaybeTL = testCase "parseMaybeTL" $
-    Just answer @=? TTC.parseMaybeTL answerTL
-
-testParseMaybeTLB :: TestTree
-testParseMaybeTLB = testCase "parseMaybeTLB" $
-    Just answer @=? TTC.parseMaybeTLB answerTLB
-
-testParseMaybeST :: TestTree
-testParseMaybeST = testCase "parseMaybeST" $
-    Just answer @=? TTC.parseMaybeST answerST
-
-testParseMaybeBS :: TestTree
-testParseMaybeBS = testCase "parseMaybeBS" $
-    Just answer @=? TTC.parseMaybeBS answerBS
-
-testParseMaybeBSL :: TestTree
-testParseMaybeBSL = testCase "parseMaybeBSL" $
-    Just answer @=? TTC.parseMaybeBSL answerBSL
-
-testParseMaybeBSB :: TestTree
-testParseMaybeBSB = testCase "parseMaybeBSB" $
-    Just answer @=? TTC.parseMaybeBSB answerBSB
-
-testParseMaybeSBS :: TestTree
-testParseMaybeSBS = testCase "parseMaybeSBS" $
-    Just answer @=? TTC.parseMaybeSBS answerSBS
-
-testParseOrFail :: TestTree
-testParseOrFail = testGroup "parseOrFail"
-    [ testCase "S" $ Just answer @=? TTC.parseOrFail answerS
-    , testCase "T" $ Just answer @=? TTC.parseOrFail answerT
-    , testCase "TL" $ Just answer @=? TTC.parseOrFail answerTL
-    , testCase "TLB" $ Just answer @=? TTC.parseOrFail answerTLB
-    , testCase "ST" $ Just answer @=? TTC.parseOrFail answerST
-    , testCase "BS" $ Just answer @=? TTC.parseOrFail answerBS
-    , testCase "BSL" $ Just answer @=? TTC.parseOrFail answerBSL
-    , testCase "BSB" $ Just answer @=? TTC.parseOrFail answerBSB
-    , testCase "SBS" $ Just answer @=? TTC.parseOrFail answerSBS
-    -- successful 'parseOrFail' does not have any error type conversion:
-    , testCase "noerror" $
-        Just (PartialParser "test") @=? TTC.parseOrFail ("test" :: String)
-    , testCase "negative" $
-        Nothing @=? (TTC.parseOrFail ('-' : answerS) :: Maybe PosInt)
-    , testCase "invalid" $
-        Nothing @=? (TTC.parseOrFail ('a' : answerS) :: Maybe PosInt)
-    ]
-
-testParseOrFailS :: TestTree
-testParseOrFailS = testCase "parseOrFailS" $
-    Just answer @=? TTC.parseOrFailS answerS
-
-testParseOrFailT :: TestTree
-testParseOrFailT = testCase "parseOrFailT" $
-    Just answer @=? TTC.parseOrFailT answerT
-
-testParseOrFailTL :: TestTree
-testParseOrFailTL = testCase "parseOrFailTL" $
-    Just answer @=? TTC.parseOrFailTL answerTL
-
-testParseOrFailTLB :: TestTree
-testParseOrFailTLB = testCase "parseOrFailTLB" $
-    Just answer @=? TTC.parseOrFailTLB answerTLB
-
-testParseOrFailST :: TestTree
-testParseOrFailST = testCase "parseOrFailST" $
-    Just answer @=? TTC.parseOrFailST answerST
-
-testParseOrFailBS :: TestTree
-testParseOrFailBS = testCase "parseOrFailBS" $
-    Just answer @=? TTC.parseOrFailBS answerBS
-
-testParseOrFailBSL :: TestTree
-testParseOrFailBSL = testCase "parseOrFailBSL" $
-    Just answer @=? TTC.parseOrFailBSL answerBSL
-
-testParseOrFailBSB :: TestTree
-testParseOrFailBSB = testCase "parseOrFailBSB" $
-    Just answer @=? TTC.parseOrFailBSB answerBSB
-
-testParseOrFailSBS :: TestTree
-testParseOrFailSBS = testCase "parseOrFailSBS" $
-    Just answer @=? TTC.parseOrFailSBS answerSBS
-
-testParseUnsafe :: TestTree
-testParseUnsafe = testGroup "parseUnsafe"
-    [ testCase "S" $ answer @=? TTC.parseUnsafe answerS
-    , testCase "T" $ answer @=? TTC.parseUnsafe answerT
-    , testCase "TL" $ answer @=? TTC.parseUnsafe answerTL
-    , testCase "TLB" $ answer @=? TTC.parseUnsafe answerTLB
-    , testCase "ST" $ answer @=? TTC.parseUnsafe answerST
-    , testCase "BS" $ answer @=? TTC.parseUnsafe answerBS
-    , testCase "BSL" $ answer @=? TTC.parseUnsafe answerBSL
-    , testCase "BSB" $ answer @=? TTC.parseUnsafe answerBSB
-    , testCase "SBS" $ answer @=? TTC.parseUnsafe answerSBS
-    , testCase "negative" $ assertRaises (Proxy :: Proxy ErrorCall)
-        (TTC.parseUnsafe ('-' : answerS) :: PosInt)
-    , testCase "invalid" $ assertRaises (Proxy :: Proxy ErrorCall)
-        (TTC.parseUnsafe ('a' : answerS) :: PosInt)
-    ]
-
-testParseUnsafeS :: TestTree
-testParseUnsafeS = testCase "parseUnsafeS" $
-    answer @=? TTC.parseUnsafeS answerS
-
-testParseUnsafeT :: TestTree
-testParseUnsafeT = testCase "parseUnsafeT" $
-    answer @=? TTC.parseUnsafeT answerT
-
-testParseUnsafeTL :: TestTree
-testParseUnsafeTL = testCase "parseUnsafeTL" $
-    answer @=? TTC.parseUnsafeTL answerTL
-
-testParseUnsafeTLB :: TestTree
-testParseUnsafeTLB = testCase "parseUnsafeTLB" $
-    answer @=? TTC.parseUnsafeTLB answerTLB
-
-testParseUnsafeST :: TestTree
-testParseUnsafeST = testCase "parseUnsafeST" $
-    answer @=? TTC.parseUnsafeST answerST
-
-testParseUnsafeBS :: TestTree
-testParseUnsafeBS = testCase "parseUnsafeBS" $
-    answer @=? TTC.parseUnsafeBS answerBS
-
-testParseUnsafeBSL :: TestTree
-testParseUnsafeBSL = testCase "parseUnsafeBSL" $
-    answer @=? TTC.parseUnsafeBSL answerBSL
-
-testParseUnsafeBSB :: TestTree
-testParseUnsafeBSB = testCase "parseUnsafeBSB" $
-    answer @=? TTC.parseUnsafeBSB answerBSB
-
-testParseUnsafeSBS :: TestTree
-testParseUnsafeSBS = testCase "parseUnsafeSBS" $
-    answer @=? TTC.parseUnsafeSBS answerSBS
+------------------------------------------------------------------------------
 
 testWithError :: TestTree
 testWithError = testGroup "withError"
-    [ testCase "OK" $ Right answer @=?
-        (TTC.withError undefString (Just answer) :: Either T.Text PosInt)
-    , testCase "S" $ Left "err" @=?
-        (TTC.withErrorS "err" Nothing :: Either T.Text PosInt)
-    , testCase "T" $ Left "err" @=?
-        (TTC.withErrorT "err" Nothing :: Either String PosInt)
-    , testCase "TL" $ Left "err" @=?
-        (TTC.withErrorTL "err" Nothing :: Either String PosInt)
-    , testCase "TLB" $ Left "err" @=?
-        (TTC.withErrorTLB "err" Nothing :: Either String PosInt)
-    , testCase "ST" $ Left "err" @=?
-        (TTC.withErrorST "err" Nothing :: Either String PosInt)
-    , testCase "BS" $ Left "err" @=?
-        (TTC.withErrorBS "err" Nothing :: Either String PosInt)
-    , testCase "BSL" $ Left "err" @=?
-        (TTC.withErrorBSL "err" Nothing :: Either String PosInt)
-    , testCase "BSB" $ Left "err" @=?
-        (TTC.withErrorBSB "err" Nothing :: Either String PosInt)
-    , testCase "SBS" $ Left "err" @=?
-        (TTC.withErrorSBS "err" Nothing :: Either String PosInt)
+    [ testCase "valid" $
+        Right answer @=? TTC.withError @String @String undefined (Just answer)
+    , testCase "invalid" $
+        Left "err" @=? TTC.withError @String @String @PosInt "err" Nothing
     ]
-  where
-    undefString :: String
-    undefString = undefined
+
+testWithErrorS :: TestTree
+testWithErrorS = testGroup "withErrorS"
+    [ testCase "valid" $
+        Right answer @=? TTC.withErrorS @String undefined (Just answer)
+    , testCase "invalid" $
+        Left "err" @=? TTC.withErrorS @String @PosInt "err" Nothing
+    ]
+
+testWithErrorT :: TestTree
+testWithErrorT = testGroup "withErrorT"
+    [ testCase "valid" $
+        Right answer @=? TTC.withErrorT @String undefined (Just answer)
+    , testCase "invalid" $
+        Left "err" @=? TTC.withErrorT @String @PosInt "err" Nothing
+    ]
+
+testWithErrorTL :: TestTree
+testWithErrorTL = testGroup "withErrorTL"
+    [ testCase "valid" $
+        Right answer @=? TTC.withErrorTL @String undefined (Just answer)
+    , testCase "invalid" $
+        Left "err" @=? TTC.withErrorTL @String @PosInt "err" Nothing
+    ]
+
+testWithErrorTLB :: TestTree
+testWithErrorTLB = testGroup "withErrorTLB"
+    [ testCase "valid" $
+        Right answer @=? TTC.withErrorTLB @String undefined (Just answer)
+    , testCase "invalid" $
+        Left "err" @=? TTC.withErrorTLB @String @PosInt "err" Nothing
+    ]
+
+testWithErrorST :: TestTree
+testWithErrorST = testGroup "withErrorST"
+    [ testCase "valid" $
+        Right answer @=? TTC.withErrorST @String undefined (Just answer)
+    , testCase "invalid" $
+        Left "err" @=? TTC.withErrorST @String @PosInt "err" Nothing
+    ]
+
+testWithErrorBS :: TestTree
+testWithErrorBS = testGroup "withErrorBS"
+    [ testCase "valid" $
+        Right answer @=? TTC.withErrorBS @String undefined (Just answer)
+    , testCase "invalid" $
+        Left "err" @=? TTC.withErrorBS @String @PosInt "err" Nothing
+    ]
+
+testWithErrorBSL :: TestTree
+testWithErrorBSL = testGroup "withErrorBSL"
+    [ testCase "valid" $
+        Right answer @=? TTC.withErrorBSL @String undefined (Just answer)
+    , testCase "invalid" $
+        Left "err" @=? TTC.withErrorBSL @String @PosInt "err" Nothing
+    ]
+
+testWithErrorBSB :: TestTree
+testWithErrorBSB = testGroup "withErrorBSB"
+    [ testCase "valid" $
+        Right answer @=? TTC.withErrorBSB @String undefined (Just answer)
+    , testCase "invalid" $
+        Left "err" @=? TTC.withErrorBSB @String @PosInt "err" Nothing
+    ]
+
+testWithErrorSBS :: TestTree
+testWithErrorSBS = testGroup "withErrorSBS"
+    [ testCase "valid" $
+        Right answer @=? TTC.withErrorSBS @String undefined (Just answer)
+    , testCase "invalid" $
+        Left "err" @=? TTC.withErrorSBS @String @PosInt "err" Nothing
+    ]
+
+------------------------------------------------------------------------------
 
 testPrefixError :: TestTree
 testPrefixError = testGroup "prefixError"
-    [ testCase "OK" $ Right answer @=?
-        (TTC.prefixError undefString (Right answer) :: Either String PosInt)
-    , testCase "S" $ Left err @=?
-        (TTC.prefixErrorS "error: " (Left "uh-oh") :: Either String PosInt)
-    , testCase "T" $ Left err @=?
-        (TTC.prefixErrorT "error: " (Left "uh-oh") :: Either String PosInt)
-    , testCase "TL" $ Left err @=?
-        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
-    , testCase "TLB" $ Left err @=?
-        (TTC.prefixErrorTLB "error: " (Left "uh-oh") :: Either String PosInt)
-    , testCase "ST" $ Left err @=?
-        (TTC.prefixErrorTLB "error: " (Left "uh-oh") :: Either String PosInt)
-    , testCase "BS" $ Left err @=?
-        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
-    , testCase "BSL" $ Left err @=?
-        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
-    , testCase "BSB" $ Left err @=?
-        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
-    , testCase "SBS" $ Left err @=?
-        (TTC.prefixErrorTL "error: " (Left "uh-oh") :: Either String PosInt)
+    [ testCase "valid" $
+        Right answer
+          @=? TTC.prefixError @String @String "oops: " (Right answer)
+    , testCase "invalid" $
+        Left "oops: err"
+          @=? TTC.prefixError @String @String @PosInt "oops: " (Left "err")
     ]
-  where
-    undefString, err :: String
-    undefString = undefined
-    err = "error: uh-oh"
+
+testPrefixErrorS :: TestTree
+testPrefixErrorS = testGroup "prefixErrorS"
+    [ testCase "valid" $
+        Right answer @=? TTC.prefixErrorS @String "oops: " (Right answer)
+    , testCase "invalid" $
+        Left "oops: err"
+          @=? TTC.prefixErrorS @String @PosInt "oops: " (Left "err")
+    ]
+
+testPrefixErrorT :: TestTree
+testPrefixErrorT = testGroup "prefixErrorT"
+    [ testCase "valid" $
+        Right answer @=? TTC.prefixErrorT @String "oops: " (Right answer)
+    , testCase "invalid" $
+        Left "oops: err"
+          @=? TTC.prefixErrorT @String @PosInt "oops: " (Left "err")
+    ]
+
+testPrefixErrorTL :: TestTree
+testPrefixErrorTL = testGroup "prefixErrorTL"
+    [ testCase "valid" $
+        Right answer @=? TTC.prefixErrorTL @String "oops: " (Right answer)
+    , testCase "invalid" $
+        Left "oops: err"
+          @=? TTC.prefixErrorTL @String @PosInt "oops: " (Left "err")
+    ]
+
+testPrefixErrorTLB :: TestTree
+testPrefixErrorTLB = testGroup "prefixErrorTLB"
+    [ testCase "valid" $
+        Right answer @=? TTC.prefixErrorTLB @String "oops: " (Right answer)
+    , testCase "invalid" $
+        Left "oops: err"
+          @=? TTC.prefixErrorTLB @String @PosInt "oops: " (Left "err")
+    ]
+
+testPrefixErrorST :: TestTree
+testPrefixErrorST = testGroup "prefixErrorST"
+    [ testCase "valid" $
+        Right answer @=? TTC.prefixErrorST @String "oops: " (Right answer)
+    , testCase "invalid" $
+        Left "oops: err"
+          @=? TTC.prefixErrorST @String @PosInt "oops: " (Left "err")
+    ]
+
+testPrefixErrorBS :: TestTree
+testPrefixErrorBS = testGroup "prefixErrorBS"
+    [ testCase "valid" $
+        Right answer @=? TTC.prefixErrorBS @String "oops: " (Right answer)
+    , testCase "invalid" $
+        Left "oops: err"
+          @=? TTC.prefixErrorBS @String @PosInt "oops: " (Left "err")
+    ]
+
+testPrefixErrorBSL :: TestTree
+testPrefixErrorBSL = testGroup "prefixErrorBSL"
+    [ testCase "valid" $
+        Right answer @=? TTC.prefixErrorBSL @String "oops: " (Right answer)
+    , testCase "invalid" $
+        Left "oops: err"
+          @=? TTC.prefixErrorBSL @String @PosInt "oops: " (Left "err")
+    ]
+
+testPrefixErrorBSB :: TestTree
+testPrefixErrorBSB = testGroup "prefixErrorBSB"
+    [ testCase "valid" $
+        Right answer @=? TTC.prefixErrorBSB @String "oops: " (Right answer)
+    , testCase "invalid" $
+        Left "oops: err"
+          @=? TTC.prefixErrorBSB @String @PosInt "oops: " (Left "err")
+    ]
+
+testPrefixErrorSBS :: TestTree
+testPrefixErrorSBS = testGroup "prefixErrorSBS"
+    [ testCase "valid" $
+        Right answer @=? TTC.prefixErrorSBS @String "oops: " (Right answer)
+    , testCase "invalid" $
+        Left "oops: err"
+          @=? TTC.prefixErrorSBS @String @PosInt "oops: " (Left "err")
+    ]
+
+------------------------------------------------------------------------------
 
 testParseWithRead :: TestTree
 testParseWithRead = testGroup "parseWithRead"
-    [ testCase "S" $ Right answerZ @=? TTC.parseWithRead IntInvalid answerS
-    , testCase "T" $ Right answerZ @=? TTC.parseWithRead IntInvalid answerT
-    , testCase "TL" $ Right answerZ @=? TTC.parseWithRead IntInvalid answerTL
-    , testCase "TLB" $
-        Right answerZ @=? TTC.parseWithRead IntInvalid answerTLB
-    , testCase "ST" $ Right answerZ @=? TTC.parseWithRead IntInvalid answerST
-    , testCase "BS" $ Right answerZ @=? TTC.parseWithRead IntInvalid answerBS
-    , testCase "BSL" $
-        Right answerZ @=? TTC.parseWithRead IntInvalid answerBSL
-    , testCase "BSB" $
-        Right answerZ @=? TTC.parseWithRead IntInvalid answerBSB
-    , testCase "SBS" $
-        Right answerZ @=? TTC.parseWithRead IntInvalid answerSBS
-    , testCase "invalid" $ Left IntInvalid @=?
-        (TTC.parseWithRead IntInvalid ('a' : answerS) :: Either IntError Int)
+    [ testCase "@" $
+        Right answerZ @=? TTC.parseWithRead @String IntInvalid "42"
+    , testCase "S" $ Right answerZ @=? parseWithRead answerS
+    , testCase "T" $ Right answerZ @=? parseWithRead answerT
+    , testCase "TL" $ Right answerZ @=? parseWithRead answerTL
+    , testCase "TLB" $ Right answerZ @=? parseWithRead answerTLB
+    , testCase "ST" $ Right answerZ @=? parseWithRead answerST
+    , testCase "BS" $ Right answerZ @=? parseWithRead answerBS
+    , testCase "BSL" $ Right answerZ @=? parseWithRead answerBSL
+    , testCase "BSB" $ Right answerZ @=? parseWithRead answerBSB
+    , testCase "SBS" $ Right answerZ @=? parseWithRead answerSBS
+    , testCase "invalid" $ Left IntInvalid @=? parseWithRead @String "4a2"
     ]
+  where
+    parseWithRead :: TTC.Textual t => t -> Either IntError Int
+    parseWithRead = TTC.parseWithRead IntInvalid
 
 testParseWithRead' :: TestTree
 testParseWithRead' = testGroup "parseWithRead'"
-    [ testCase "S" $ Right answerZ @=? parseWithRead' answerS
+    [ testCase "@" $
+        Right answerZ @=? TTC.parseWithRead' @String @String "Int" "42"
+    , testCase "S" $ Right answerZ @=? parseWithRead' answerS
     , testCase "T" $ Right answerZ @=? parseWithRead' answerT
     , testCase "TL" $ Right answerZ @=? parseWithRead' answerTL
     , testCase "TLB" $ Right answerZ @=? parseWithRead' answerTLB
@@ -1221,8 +1163,7 @@ testParseWithRead' = testGroup "parseWithRead'"
     , testCase "BSL" $ Right answerZ @=? parseWithRead' answerBSL
     , testCase "BSB" $ Right answerZ @=? parseWithRead' answerBSB
     , testCase "SBS" $ Right answerZ @=? parseWithRead' answerSBS
-    , testCase "invalid" $
-        Left "invalid Int" @=? parseWithRead' ('a' : answerS)
+    , testCase "invalid" $ Left "invalid Int" @=? parseWithRead' @String "4a2"
     ]
   where
     parseWithRead' :: TTC.Textual t => t -> Either String Int
@@ -1230,7 +1171,8 @@ testParseWithRead' = testGroup "parseWithRead'"
 
 testMaybeParseWithRead :: TestTree
 testMaybeParseWithRead = testGroup "maybeParseWithRead"
-    [ testCase "S" $ Just answerZ @=? TTC.maybeParseWithRead answerS
+    [ testCase "@" $ Just answerZ @=? TTC.maybeParseWithRead @String "42"
+    , testCase "S" $ Just answerZ @=? TTC.maybeParseWithRead answerS
     , testCase "T" $ Just answerZ @=? TTC.maybeParseWithRead answerT
     , testCase "TL" $ Just answerZ @=? TTC.maybeParseWithRead answerTL
     , testCase "TLB" $ Just answerZ @=? TTC.maybeParseWithRead answerTLB
@@ -1239,54 +1181,361 @@ testMaybeParseWithRead = testGroup "maybeParseWithRead"
     , testCase "BSL" $ Just answerZ @=? TTC.maybeParseWithRead answerBSL
     , testCase "BSB" $ Just answerZ @=? TTC.maybeParseWithRead answerBSB
     , testCase "SBS" $ Just answerZ @=? TTC.maybeParseWithRead answerSBS
-    , testCase "invalid" $ Nothing @=?
-        (TTC.maybeParseWithRead ('a' : answerS) :: Maybe Int)
+    , testCase "invalid" $
+        Nothing @=? TTC.maybeParseWithRead @String @Int "4a2"
     ]
+
+------------------------------------------------------------------------------
 
 testParseEnum :: TestTree
 testParseEnum = testGroup "parseEnum"
-    [ testCase "S" $ Right Red @=? parse False False redS
-    , testCase "T" $ Right Red @=? parse False False redT
-    , testCase "TL" $ Right Red @=? parse False False redTL
-    , testCase "TLB" $ Right Red @=? parse False False redTLB
-    , testCase "ST" $ Right Red @=? parse False False redST
-    , testCase "BS" $ Right Red @=? parse False False redBS
-    , testCase "BSL" $ Right Red @=? parse False False redBSL
-    , testCase "BSB" $ Right Red @=? parse False False redBSB
-    , testCase "SBS" $ Right Red @=? parse False False redSBS
-    , testCase "CI" $ Right Red @=? parse True False ("Red" :: String)
-    , testCase "!CI" $ Left ColorInvalid @=?
-        parse False False ("Red" :: String)
-    , testCase "prefix" $ Right Red @=? parse False True ("r" :: String)
-    , testCase "ambiguous" $ Left ColorAmbiguous @=?
-        parse False True ("bl" :: String)
+    [ testCase "@" $
+        Right Red
+          @=? TTC.parseEnum @String
+            False False ColorInvalid ColorAmbiguous "red"
+    , testCase "S" $ Right Red @=? parseEnum False False redS
+    , testCase "T" $ Right Red @=? parseEnum False False redT
+    , testCase "TL" $ Right Red @=? parseEnum False False redTL
+    , testCase "TLB" $ Right Red @=? parseEnum False False redTLB
+    , testCase "ST" $ Right Red @=? parseEnum False False redST
+    , testCase "BS" $ Right Red @=? parseEnum False False redBS
+    , testCase "BSL" $ Right Red @=? parseEnum False False redBSL
+    , testCase "BSB" $ Right Red @=? parseEnum False False redBSB
+    , testCase "SBS" $ Right Red @=? parseEnum False False redSBS
+    , testCase "CI" $ Right Red @=? parseEnum @String True False "Red"
+    , testCase "!CI" $
+        Left ColorInvalid @=? parseEnum @String False False "Red"
+    , testCase "prefix" $ Right Red @=? parseEnum @String False True "r"
+    , testCase "ambiguous" $
+        Left ColorAmbiguous @=? parseEnum @String False True "bl"
     ]
   where
-    parse :: TTC.Textual t => Bool -> Bool -> t -> Either ColorError Color
-    parse allowCI allowPrefix =
+    parseEnum :: TTC.Textual t => Bool -> Bool -> t -> Either ColorError Color
+    parseEnum allowCI allowPrefix =
       TTC.parseEnum allowCI allowPrefix ColorInvalid ColorAmbiguous
 
 testParseEnum' :: TestTree
 testParseEnum' = testGroup "parseEnum'"
-    [ testCase "S" $ Right Red @=? parse False False redS
-    , testCase "T" $ Right Red @=? parse False False redT
-    , testCase "TL" $ Right Red @=? parse False False redTL
-    , testCase "TLB" $ Right Red @=? parse False False redTLB
-    , testCase "ST" $ Right Red @=? parse False False redST
-    , testCase "BS" $ Right Red @=? parse False False redBS
-    , testCase "BSL" $ Right Red @=? parse False False redBSL
-    , testCase "BSB" $ Right Red @=? parse False False redBSB
-    , testCase "SBS" $ Right Red @=? parse False False redSBS
-    , testCase "CI" $ Right Red @=? parse True False ("Red" :: String)
-    , testCase "!CI" $ Left "invalid Color" @=?
-        parse False False ("Red" :: String)
-    , testCase "prefix" $ Right Red @=? parse False True ("r" :: String)
-    , testCase "ambiguous" $ Left "ambiguous Color" @=?
-        parse False True ("bl" :: String)
+    [ testCase "@" $
+        Right Red
+          @=? TTC.parseEnum' @String @String "Color" False False "red"
+    , testCase "S" $ Right Red @=? parseEnum' False False redS
+    , testCase "T" $ Right Red @=? parseEnum' False False redT
+    , testCase "TL" $ Right Red @=? parseEnum' False False redTL
+    , testCase "TLB" $ Right Red @=? parseEnum' False False redTLB
+    , testCase "ST" $ Right Red @=? parseEnum' False False redST
+    , testCase "BS" $ Right Red @=? parseEnum' False False redBS
+    , testCase "BSL" $ Right Red @=? parseEnum' False False redBSL
+    , testCase "BSB" $ Right Red @=? parseEnum' False False redBSB
+    , testCase "SBS" $ Right Red @=? parseEnum' False False redSBS
+    , testCase "CI" $ Right Red @=? parseEnum' @String True False "Red"
+    , testCase "!CI" $
+        Left "invalid Color" @=? parseEnum' @String False False "Red"
+    , testCase "prefix" $ Right Red @=? parseEnum' @String False True "r"
+    , testCase "ambiguous" $
+        Left "ambiguous Color" @=? parseEnum' @String False True "bl"
     ]
   where
-    parse :: TTC.Textual t => Bool -> Bool -> t -> Either String Color
-    parse = TTC.parseEnum' "Color"
+    parseEnum' :: TTC.Textual t => Bool -> Bool -> t -> Either String Color
+    parseEnum' = TTC.parseEnum' "Color"
+
+------------------------------------------------------------------------------
+
+testParseS :: TestTree
+testParseS = testGroup "parseS"
+    [ testCase "valid" $ Right answer @=? TTC.parseS @String answerS
+    , testCase "invalid" $
+        Left "not an integer" @=? TTC.parseS @String @PosInt "4a2"
+    ]
+
+testParseT :: TestTree
+testParseT = testGroup "parseT"
+    [ testCase "valid" $ Right answer @=? TTC.parseT @String answerT
+    , testCase "invalid" $
+        Left "not an integer" @=? TTC.parseT @String @PosInt "4a2"
+    ]
+
+testParseTL :: TestTree
+testParseTL = testGroup "parseTL"
+    [ testCase "valid" $ Right answer @=? TTC.parseTL @String answerTL
+    , testCase "invalid" $
+        Left "not an integer" @=? TTC.parseTL @String @PosInt "4a2"
+    ]
+
+testParseTLB :: TestTree
+testParseTLB = testGroup "parseTLB"
+    [ testCase "valid" $ Right answer @=? TTC.parseTLB @String answerTLB
+    , testCase "invalid" $
+        Left "not an integer" @=? TTC.parseTLB @String @PosInt "4a2"
+    ]
+
+testParseST :: TestTree
+testParseST = testGroup "parseST"
+    [ testCase "valid" $ Right answer @=? TTC.parseST @String answerST
+    , testCase "invalid" $
+        Left "not an integer" @=? TTC.parseST @String @PosInt "4a2"
+    ]
+
+testParseBS :: TestTree
+testParseBS = testGroup "parseBS"
+    [ testCase "valid" $ Right answer @=? TTC.parseBS @String answerBS
+    , testCase "invalid" $
+        Left "not an integer" @=? TTC.parseBS @String @PosInt "4a2"
+    ]
+
+testParseBSL :: TestTree
+testParseBSL = testGroup "parseBSL"
+    [ testCase "valid" $ Right answer @=? TTC.parseBSL @String answerBSL
+    , testCase "invalid" $
+        Left "not an integer" @=? TTC.parseBSL @String @PosInt "4a2"
+    ]
+
+testParseBSB :: TestTree
+testParseBSB = testGroup "parseBSB"
+    [ testCase "valid" $ Right answer @=? TTC.parseBSB @String answerBSB
+    , testCase "invalid" $
+        Left "not an integer" @=? TTC.parseBSB @String @PosInt "4a2"
+    ]
+
+testParseSBS :: TestTree
+testParseSBS = testGroup "parseSBS"
+    [ testCase "valid" $ Right answer @=? TTC.parseSBS @String answerSBS
+    , testCase "invalid" $
+        Left "not an integer" @=? TTC.parseSBS @String @PosInt "4a2"
+    ]
+
+------------------------------------------------------------------------------
+
+testParseMaybe :: TestTree
+testParseMaybe = testGroup "parseMaybe"
+    [ testCase "@" $ Just answer @=? TTC.parseMaybe @String "42"
+    , testCase "S" $ Just answer @=? TTC.parseMaybe answerS
+    , testCase "T" $ Just answer @=? TTC.parseMaybe answerT
+    , testCase "TL" $ Just answer @=? TTC.parseMaybe answerTL
+    , testCase "TLB" $ Just answer @=? TTC.parseMaybe answerTLB
+    , testCase "ST" $ Just answer @=? TTC.parseMaybe answerST
+    , testCase "BS" $ Just answer @=? TTC.parseMaybe answerBS
+    , testCase "BSL" $ Just answer @=? TTC.parseMaybe answerBSL
+    , testCase "BSB" $ Just answer @=? TTC.parseMaybe answerBSB
+    , testCase "SBS" $ Just answer @=? TTC.parseMaybe answerSBS
+    , testCase "noerror" $
+        Just (PartialParser "test") @=? TTC.parseMaybe @String "test"
+    , testCase "negative" $ Nothing @=? TTC.parseMaybe @String @PosInt "-42"
+    , testCase "invalid" $ Nothing @=? TTC.parseMaybe @String @PosInt "4a2"
+    ]
+
+testParseMaybeS :: TestTree
+testParseMaybeS = testGroup "parseMaybeS"
+    [ testCase "valid" $ Just answer @=? TTC.parseMaybeS answerS
+    , testCase "invalid" $ Nothing @=? TTC.parseMaybeS @PosInt "4a2"
+    ]
+
+testParseMaybeT :: TestTree
+testParseMaybeT = testGroup "parseMaybeT"
+    [ testCase "valid" $ Just answer @=? TTC.parseMaybeT answerT
+    , testCase "invalid" $ Nothing @=? TTC.parseMaybeT @PosInt "4a2"
+    ]
+
+testParseMaybeTL :: TestTree
+testParseMaybeTL = testGroup "parseMaybeTL"
+    [ testCase "valid" $ Just answer @=? TTC.parseMaybeTL answerTL
+    , testCase "invalid" $ Nothing @=? TTC.parseMaybeTL @PosInt "4a2"
+    ]
+
+testParseMaybeTLB :: TestTree
+testParseMaybeTLB = testGroup "parseMaybeTLB"
+    [ testCase "valid" $ Just answer @=? TTC.parseMaybeTLB answerTLB
+    , testCase "invalid" $ Nothing @=? TTC.parseMaybeTLB @PosInt "4a2"
+    ]
+
+testParseMaybeST :: TestTree
+testParseMaybeST = testGroup "parseMaybeST"
+    [ testCase "valid" $ Just answer @=? TTC.parseMaybeST answerST
+    , testCase "invalid" $ Nothing @=? TTC.parseMaybeST @PosInt "4a2"
+    ]
+
+testParseMaybeBS :: TestTree
+testParseMaybeBS = testGroup "parseMaybeBS"
+    [ testCase "valid" $ Just answer @=? TTC.parseMaybeBS answerBS
+    , testCase "invalid" $ Nothing @=? TTC.parseMaybeBS @PosInt "4a2"
+    ]
+
+testParseMaybeBSL :: TestTree
+testParseMaybeBSL = testGroup "parseMaybeBSL"
+    [ testCase "valid" $ Just answer @=? TTC.parseMaybeBSL answerBSL
+    , testCase "invalid" $ Nothing @=? TTC.parseMaybeBSL @PosInt "4a2"
+    ]
+
+testParseMaybeBSB :: TestTree
+testParseMaybeBSB = testGroup "parseMaybeBSB"
+    [ testCase "valid" $ Just answer @=? TTC.parseMaybeBSB answerBSB
+    , testCase "invalid" $ Nothing @=? TTC.parseMaybeBSB @PosInt "4a2"
+    ]
+
+testParseMaybeSBS :: TestTree
+testParseMaybeSBS = testGroup "parseMaybeSBS"
+    [ testCase "valid" $ Just answer @=? TTC.parseMaybeSBS answerSBS
+    , testCase "invalid" $ Nothing @=? TTC.parseMaybeSBS @PosInt "4a2"
+    ]
+
+------------------------------------------------------------------------------
+
+testParseOrFail :: TestTree
+testParseOrFail = testGroup "parseOrFail"
+    [ testCase "@" $ Just answer @=? TTC.parseOrFail @String "42"
+    , testCase "S" $ Just answer @=? TTC.parseOrFail answerS
+    , testCase "T" $ Just answer @=? TTC.parseOrFail answerT
+    , testCase "TL" $ Just answer @=? TTC.parseOrFail answerTL
+    , testCase "TLB" $ Just answer @=? TTC.parseOrFail answerTLB
+    , testCase "ST" $ Just answer @=? TTC.parseOrFail answerST
+    , testCase "BS" $ Just answer @=? TTC.parseOrFail answerBS
+    , testCase "BSL" $ Just answer @=? TTC.parseOrFail answerBSL
+    , testCase "BSB" $ Just answer @=? TTC.parseOrFail answerBSB
+    , testCase "SBS" $ Just answer @=? TTC.parseOrFail answerSBS
+    , testCase "noerror" $
+        Just (PartialParser "test") @=? TTC.parseOrFail @String "test"
+    , testCase "negative" $ Nothing @=? TTC.parseOrFail @String @PosInt "-42"
+    , testCase "invalid" $ Nothing @=? TTC.parseOrFail @String @PosInt "4a2"
+    ]
+
+testParseOrFailS :: TestTree
+testParseOrFailS = testGroup "parseOrFailS"
+    [ testCase "valid" $ Just answer @=? TTC.parseOrFailS answerS
+    , testCase "invalid" $ Nothing @=? TTC.parseOrFailS @PosInt "4a2"
+    ]
+
+testParseOrFailT :: TestTree
+testParseOrFailT = testGroup "parseOrFailT"
+    [ testCase "valid" $ Just answer @=? TTC.parseOrFailT answerT
+    , testCase "invalid" $ Nothing @=? TTC.parseOrFailT @PosInt "4a2"
+    ]
+
+testParseOrFailTL :: TestTree
+testParseOrFailTL = testGroup "parseOrFailTL"
+    [ testCase "valid" $ Just answer @=? TTC.parseOrFailTL answerTL
+    , testCase "invalid" $ Nothing @=? TTC.parseOrFailTL @PosInt "4a2"
+    ]
+
+testParseOrFailTLB :: TestTree
+testParseOrFailTLB = testGroup "parseOrFailTLB"
+    [ testCase "valid" $ Just answer @=? TTC.parseOrFailTLB answerTLB
+    , testCase "invalid" $ Nothing @=? TTC.parseOrFailTLB @PosInt "4a2"
+    ]
+
+testParseOrFailST :: TestTree
+testParseOrFailST = testGroup "parseOrFailST"
+    [ testCase "valid" $ Just answer @=? TTC.parseOrFailST answerST
+    , testCase "invalid" $ Nothing @=? TTC.parseOrFailST @PosInt "4a2"
+    ]
+
+testParseOrFailBS :: TestTree
+testParseOrFailBS = testGroup "parseOrFailBS"
+    [ testCase "valid" $ Just answer @=? TTC.parseOrFailBS answerBS
+    , testCase "invalid" $ Nothing @=? TTC.parseOrFailBS @PosInt "4a2"
+    ]
+
+testParseOrFailBSL :: TestTree
+testParseOrFailBSL = testGroup "parseOrFailBSL"
+    [ testCase "valid" $ Just answer @=? TTC.parseOrFailBSL answerBSL
+    , testCase "invalid" $ Nothing @=? TTC.parseOrFailBSL @PosInt "4a2"
+    ]
+
+testParseOrFailBSB :: TestTree
+testParseOrFailBSB = testGroup "parseOrFailBSB"
+    [ testCase "valid" $ Just answer @=? TTC.parseOrFailBSB answerBSB
+    , testCase "invalid" $ Nothing @=? TTC.parseOrFailBSB @PosInt "4a2"
+    ]
+
+testParseOrFailSBS :: TestTree
+testParseOrFailSBS = testGroup "parseOrFailSBS"
+    [ testCase "valid" $ Just answer @=? TTC.parseOrFailSBS answerSBS
+    , testCase "invalid" $ Nothing @=? TTC.parseOrFailSBS @PosInt "4a2"
+    ]
+
+------------------------------------------------------------------------------
+
+testParseUnsafe :: TestTree
+testParseUnsafe = testGroup "parseUnsafe"
+    [ testCase "@" $ answer @=? TTC.parseUnsafe @String "42"
+    , testCase "S" $ answer @=? TTC.parseUnsafe answerS
+    , testCase "T" $ answer @=? TTC.parseUnsafe answerT
+    , testCase "TL" $ answer @=? TTC.parseUnsafe answerTL
+    , testCase "TLB" $ answer @=? TTC.parseUnsafe answerTLB
+    , testCase "ST" $ answer @=? TTC.parseUnsafe answerST
+    , testCase "BS" $ answer @=? TTC.parseUnsafe answerBS
+    , testCase "BSL" $ answer @=? TTC.parseUnsafe answerBSL
+    , testCase "BSB" $ answer @=? TTC.parseUnsafe answerBSB
+    , testCase "SBS" $ answer @=? TTC.parseUnsafe answerSBS
+    , testCase "negative" . assertRaises (Proxy :: Proxy ErrorCall) $
+        TTC.parseUnsafe @String @PosInt "-42"
+    , testCase "invalid" . assertRaises (Proxy :: Proxy ErrorCall) $
+        TTC.parseUnsafe @String @PosInt "4a2"
+    ]
+
+testParseUnsafeS :: TestTree
+testParseUnsafeS = testGroup "parseUnsafeS"
+    [ testCase "valid" $ answer @=? TTC.parseUnsafeS answerS
+    , testCase "invalid" . assertRaises (Proxy :: Proxy ErrorCall) $
+        TTC.parseUnsafeS @PosInt "4a2"
+    ]
+
+testParseUnsafeT :: TestTree
+testParseUnsafeT = testGroup "parseUnsafeT"
+    [ testCase "valid" $ answer @=? TTC.parseUnsafeT answerT
+    , testCase "invalid" . assertRaises (Proxy :: Proxy ErrorCall) $
+        TTC.parseUnsafeT @PosInt "4a2"
+    ]
+
+testParseUnsafeTL :: TestTree
+testParseUnsafeTL = testGroup "parseUnsafeTL"
+    [ testCase "valid" $ answer @=? TTC.parseUnsafeTL answerTL
+    , testCase "invalid" . assertRaises (Proxy :: Proxy ErrorCall) $
+        TTC.parseUnsafeTL @PosInt "4a2"
+    ]
+
+testParseUnsafeTLB :: TestTree
+testParseUnsafeTLB = testGroup "parseUnsafeTLB"
+    [ testCase "valid" $ answer @=? TTC.parseUnsafeTLB answerTLB
+    , testCase "invalid" . assertRaises (Proxy :: Proxy ErrorCall) $
+        TTC.parseUnsafeTLB @PosInt "4a2"
+    ]
+
+testParseUnsafeST :: TestTree
+testParseUnsafeST = testGroup "parseUnsafeST"
+    [ testCase "valid" $ answer @=? TTC.parseUnsafeST answerST
+    , testCase "invalid" . assertRaises (Proxy :: Proxy ErrorCall) $
+        TTC.parseUnsafeST @PosInt "4a2"
+    ]
+
+testParseUnsafeBS :: TestTree
+testParseUnsafeBS = testGroup "parseUnsafeBS"
+    [ testCase "valid" $ answer @=? TTC.parseUnsafeBS answerBS
+    , testCase "invalid" . assertRaises (Proxy :: Proxy ErrorCall) $
+        TTC.parseUnsafeBS @PosInt "4a2"
+    ]
+
+testParseUnsafeBSL :: TestTree
+testParseUnsafeBSL = testGroup "parseUnsafeBSL"
+    [ testCase "valid" $ answer @=? TTC.parseUnsafeBSL answerBSL
+    , testCase "invalid" . assertRaises (Proxy :: Proxy ErrorCall) $
+        TTC.parseUnsafeBSL @PosInt "4a2"
+    ]
+
+testParseUnsafeBSB :: TestTree
+testParseUnsafeBSB = testGroup "parseUnsafeBSB"
+    [ testCase "valid" $ answer @=? TTC.parseUnsafeBSB answerBSB
+    , testCase "invalid" . assertRaises (Proxy :: Proxy ErrorCall) $
+        TTC.parseUnsafeBSB @PosInt "4a2"
+    ]
+
+testParseUnsafeSBS :: TestTree
+testParseUnsafeSBS = testGroup "parseUnsafeSBS"
+    [ testCase "valid" $ answer @=? TTC.parseUnsafeSBS answerSBS
+    , testCase "invalid" . assertRaises (Proxy :: Proxy ErrorCall) $
+        TTC.parseUnsafeSBS @PosInt "4a2"
+    ]
+
+------------------------------------------------------------------------------
 
 testReadsWithParse :: TestTree
 testReadsWithParse = testGroup "readsWithParse"
@@ -1342,7 +1591,8 @@ testMkUntypedValidQQ = testCase "mkUntypedValidQQ" $
 tests :: TestTree
 tests = testGroup "Data.TTC"
     [ testGroup "Textual"
-        [ testToS
+        [ testConvert
+        , testToS
         , testToT
         , testToTL
         , testToTLB
@@ -1351,7 +1601,6 @@ tests = testGroup "Data.TTC"
         , testToBSL
         , testToBSB
         , testToSBS
-        , testConvert
         , testFromS
         , testFromT
         , testFromTL
@@ -1372,6 +1621,7 @@ tests = testGroup "Data.TTC"
     , testGroup "Render"
         [ testRender
         , testRenderDefault
+        , testRenderWithShow
         , testRenderS
         , testRenderT
         , testRenderTL
@@ -1381,11 +1631,35 @@ tests = testGroup "Data.TTC"
         , testRenderBSL
         , testRenderBSB
         , testRenderSBS
-        , testRenderWithShow
         ]
     , testGroup "Parse"
         [ testParse
         , testParseDefault
+        , testWithError
+        , testWithErrorS
+        , testWithErrorT
+        , testWithErrorTL
+        , testWithErrorTLB
+        , testWithErrorST
+        , testWithErrorBS
+        , testWithErrorBSL
+        , testWithErrorBSB
+        , testWithErrorSBS
+        , testPrefixError
+        , testPrefixErrorS
+        , testPrefixErrorT
+        , testPrefixErrorTL
+        , testPrefixErrorTLB
+        , testPrefixErrorST
+        , testPrefixErrorBS
+        , testPrefixErrorBSL
+        , testPrefixErrorBSB
+        , testPrefixErrorSBS
+        , testParseWithRead
+        , testParseWithRead'
+        , testMaybeParseWithRead
+        , testParseEnum
+        , testParseEnum'
         , testParseS
         , testParseT
         , testParseTL
@@ -1425,13 +1699,6 @@ tests = testGroup "Data.TTC"
         , testParseUnsafeBSL
         , testParseUnsafeBSB
         , testParseUnsafeSBS
-        , testWithError
-        , testPrefixError
-        , testParseWithRead
-        , testParseWithRead'
-        , testMaybeParseWithRead
-        , testParseEnum
-        , testParseEnum'
         , testReadsWithParse
         , testReadsEnum
         ]

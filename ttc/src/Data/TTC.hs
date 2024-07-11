@@ -41,6 +41,16 @@
 -- @
 -- import qualified Data.TTC as TTC
 -- @
+--
+-- Note that this library has a similar API to the
+-- [ETTC](https://github.com/ExtremaIS/ttc-haskell/tree/main/ettc) library,
+-- which uses a @Utf8Convertible@ type class instead of 'Textual'.  The TTC
+-- API types are simpler, but it is not possible to add support for additional
+-- textual data types without changing the library itself.  The ETTC API types
+-- are more complex, leading to longer compilation times, but one can add
+-- support for additional textual data types by defining new @Utf8Convertible@
+-- instances.  Both libraries are maintained, allowing you to use the one that
+-- best matches the needs of your project.
 ------------------------------------------------------------------------------
 
 {-# LANGUAGE CPP #-}
@@ -262,7 +272,10 @@ import qualified Data.Text.Short as ST
 --
 -- Note that support for additional textual data types cannot be implemented
 -- by writing instances.  Adding support for additional textual data types
--- requires changing the class definition itself.
+-- requires changing the class definition itself.  If you need support for
+-- additional textual data types, consider using the
+-- [ETTC](https://github.com/ExtremaIS/ttc-haskell/tree/main/ettc) library
+-- instead.
 --
 -- Encoded values are assumed to be valid UTF-8 encoded text.  Conversions
 -- must be pure, and any invalid bytes must be replaced with the Unicode
@@ -1367,7 +1380,7 @@ prefixErrorSBS = prefixError
 --
 -- @since 0.1.0.0
 parseWithRead
-  :: (Read a, Textual t)
+  :: forall t e a. (Read a, Textual t)
   => e           -- ^ invalid input error
   -> t           -- ^ textual input to parse
   -> Either e a  -- ^ error or parsed value
@@ -1382,7 +1395,7 @@ parseWithRead invalidError = maybe (Left invalidError) Right . readMaybe . toS
 --
 -- @since 0.3.0.0
 parseWithRead'
-  :: (Read a, Textual t, Textual e)
+  :: forall t e a. (Read a, Textual t, Textual e)
   => String      -- ^ name to include in error messages
   -> t           -- ^ textual input to parse
   -> Either e a  -- ^ error or parsed value
@@ -1393,7 +1406,7 @@ parseWithRead' name = parseWithRead (fromS $ "invalid " ++ name)
 --
 -- @since 0.3.0.0
 maybeParseWithRead
-  :: (Read a, Textual t)
+  :: forall t a. (Read a, Textual t)
   => t        -- ^ textual input to parse
   -> Maybe a  -- ^ parsed value or 'Nothing' if invalid
 maybeParseWithRead = readMaybe . toS
@@ -1413,7 +1426,7 @@ maybeParseWithRead = readMaybe . toS
 --
 -- @since 0.1.0.0
 parseEnum
-  :: (Bounded a, Enum a, Render a, Textual t)
+  :: forall t e a. (Bounded a, Enum a, Render a, Textual t)
   => Bool        -- ^ case-insensitive when 'True'
   -> Bool        -- ^ accept unique prefixes when 'True'
   -> e           -- ^ invalid input error
@@ -1447,7 +1460,7 @@ parseEnum allowCI allowPrefix invalidError ambiguousError t =
 --
 -- @since 0.4.0.0
 parseEnum'
-  :: (Bounded a, Enum a, Render a, Textual t, Textual e)
+  :: forall t e a. (Bounded a, Enum a, Render a, Textual t, Textual e)
   => String      -- ^ name to include in error messages
   -> Bool        -- ^ case-insensitive when 'True'
   -> Bool        -- ^ accept unique prefixes when 'True'
@@ -1472,63 +1485,66 @@ parseEnum' name allowCI allowPrefix =
 -- | Parse from a 'String'
 --
 -- @since 0.3.0.0
-parseS :: (Parse a, Textual e) => String -> Either e a
+parseS :: forall e a. (Parse a, Textual e) => String -> Either e a
 parseS = parse
 {-# INLINE parseS #-}
 
 -- | Parse from strict 'T.Text'
 --
 -- @since 0.3.0.0
-parseT :: (Parse a, Textual e) => T.Text -> Either e a
+parseT :: forall e a. (Parse a, Textual e) => T.Text -> Either e a
 parseT = parse
 {-# INLINE parseT #-}
 
 -- | Parse from lazy 'TL.Text'
 --
 -- @since 0.3.0.0
-parseTL :: (Parse a, Textual e) => TL.Text -> Either e a
+parseTL :: forall e a. (Parse a, Textual e) => TL.Text -> Either e a
 parseTL = parse
 {-# INLINE parseTL #-}
 
 -- | Parse from a @Text@ 'TLB.Builder'
 --
 -- @since 1.1.0.0
-parseTLB :: (Parse a, Textual e) => TLB.Builder -> Either e a
+parseTLB :: forall e a. (Parse a, Textual e) => TLB.Builder -> Either e a
 parseTLB = parse
 {-# INLINE parseTLB #-}
 
 -- | Parse from a 'ST.ShortText'
 --
 -- @since 1.4.0.0
-parseST :: (Parse a, Textual e) => ST.ShortText -> Either e a
+parseST :: forall e a. (Parse a, Textual e) => ST.ShortText -> Either e a
 parseST = parse
 {-# INLINE parseST #-}
 
 -- | Parse from a strict 'BS.ByteString'
 --
 -- @since 0.3.0.0
-parseBS :: (Parse a, Textual e) => BS.ByteString -> Either e a
+parseBS :: forall e a. (Parse a, Textual e) => BS.ByteString -> Either e a
 parseBS = parse
 {-# INLINE parseBS #-}
 
 -- | Parse from a lazy 'BSL.ByteString'
 --
 -- @since 0.3.0.0
-parseBSL :: (Parse a, Textual e) => BSL.ByteString -> Either e a
+parseBSL :: forall e a. (Parse a, Textual e) => BSL.ByteString -> Either e a
 parseBSL = parse
 {-# INLINE parseBSL #-}
 
 -- | Parse from a @ByteString@ 'BSB.Builder'
 --
 -- @since 1.1.0.0
-parseBSB :: (Parse a, Textual e) => BSB.Builder -> Either e a
+parseBSB :: forall e a. (Parse a, Textual e) => BSB.Builder -> Either e a
 parseBSB = parse
 {-# INLINE parseBSB #-}
 
 -- | Parse from a 'SBS.ShortByteString'
 --
 -- @since 1.1.0.0
-parseSBS :: (Parse a, Textual e) => SBS.ShortByteString -> Either e a
+parseSBS
+  :: forall e a. (Parse a, Textual e)
+  => SBS.ShortByteString
+  -> Either e a
 parseSBS = parse
 {-# INLINE parseSBS #-}
 
@@ -1547,7 +1563,7 @@ parseSBS = parse
 -- | Parse to a 'Maybe' result
 --
 -- @since 0.3.0.0
-parseMaybe :: (Parse a, Textual t) => t -> Maybe a
+parseMaybe :: forall t a. (Parse a, Textual t) => t -> Maybe a
 parseMaybe = either (const Nothing) Just . parse'
 {-# INLINE parseMaybe #-}
 
@@ -1629,70 +1645,73 @@ parseMaybeSBS = parseMaybe
 -- | Parse or fail using 'MonadFail'
 --
 -- @since 1.3.0.0
-parseOrFail :: (MonadFail m, Parse a, Textual t) => t -> m a
+parseOrFail :: forall t a m. (MonadFail m, Parse a, Textual t) => t -> m a
 parseOrFail = either fail pure . parse
 {-# INLINE parseOrFail #-}
 
 -- | Parse from a 'String' or fail using 'MonadFail'
 --
 -- @since 1.3.0.0
-parseOrFailS :: (MonadFail m, Parse a) => String -> m a
+parseOrFailS :: forall a m. (MonadFail m, Parse a) => String -> m a
 parseOrFailS = parseOrFail
 {-# INLINE parseOrFailS #-}
 
 -- | Parse from strict 'T.Text' or fail using 'MonadFail'
 --
 -- @since 1.3.0.0
-parseOrFailT :: (MonadFail m, Parse a) => T.Text -> m a
+parseOrFailT :: forall a m. (MonadFail m, Parse a) => T.Text -> m a
 parseOrFailT = parseOrFail
 {-# INLINE parseOrFailT #-}
 
 -- | Parse from lazy 'TL.Text' or fail using 'MonadFail'
 --
 -- @since 1.3.0.0
-parseOrFailTL :: (MonadFail m, Parse a) => TL.Text -> m a
+parseOrFailTL :: forall a m. (MonadFail m, Parse a) => TL.Text -> m a
 parseOrFailTL = parseOrFail
 {-# INLINE parseOrFailTL #-}
 
 -- | Parse from a @Text@ 'TLB.Builder' or fail using 'MonadFail'
 --
 -- @since 1.3.0.0
-parseOrFailTLB :: (MonadFail m, Parse a) => TLB.Builder -> m a
+parseOrFailTLB :: forall a m. (MonadFail m, Parse a) => TLB.Builder -> m a
 parseOrFailTLB = parseOrFail
 {-# INLINE parseOrFailTLB #-}
 
 -- | Parse from a 'ST.ShortText' or fail using 'MonadFail'
 --
 -- @since 1.4.0.0
-parseOrFailST :: (MonadFail m, Parse a) => ST.ShortText -> m a
+parseOrFailST :: forall a m. (MonadFail m, Parse a) => ST.ShortText -> m a
 parseOrFailST = parseOrFail
 {-# INLINE parseOrFailST #-}
 
 -- | Parse from a strict 'BS.ByteString' or fail using 'MonadFail'
 --
 -- @since 1.3.0.0
-parseOrFailBS :: (MonadFail m, Parse a) => BS.ByteString -> m a
+parseOrFailBS :: forall a m. (MonadFail m, Parse a) => BS.ByteString -> m a
 parseOrFailBS = parseOrFail
 {-# INLINE parseOrFailBS #-}
 
 -- | Parse from a lazy 'BSL.ByteString' or fail using 'MonadFail'
 --
 -- @since 1.3.0.0
-parseOrFailBSL :: (MonadFail m, Parse a) => BSL.ByteString -> m a
+parseOrFailBSL :: forall a m. (MonadFail m, Parse a) => BSL.ByteString -> m a
 parseOrFailBSL = parseOrFail
 {-# INLINE parseOrFailBSL #-}
 
 -- | Parse from a @ByteString@ 'BSB.Builder' or fail using 'MonadFail'
 --
 -- @since 1.3.0.0
-parseOrFailBSB :: (MonadFail m, Parse a) => BSB.Builder -> m a
+parseOrFailBSB :: forall a m. (MonadFail m, Parse a) => BSB.Builder -> m a
 parseOrFailBSB = parseOrFail
 {-# INLINE parseOrFailBSB #-}
 
 -- | Parse from a 'SBS.ShortByteString' or fail using 'MonadFail'
 --
 -- @since 1.3.0.0
-parseOrFailSBS :: (MonadFail m, Parse a) => SBS.ShortByteString -> m a
+parseOrFailSBS
+  :: forall a m. (MonadFail m, Parse a)
+  => SBS.ShortByteString
+  -> m a
 parseOrFailSBS = parseOrFail
 {-# INLINE parseOrFailSBS #-}
 
@@ -1711,7 +1730,7 @@ parseOrFailSBS = parseOrFail
 -- | Parse or raise an exception
 --
 -- @since 0.1.0.0
-parseUnsafe :: (HasCallStack, Parse a, Textual t) => t -> a
+parseUnsafe :: forall t a. (HasCallStack, Parse a, Textual t) => t -> a
 parseUnsafe = either (error . ("parseUnsafe: " ++)) id . parse
 {-# INLINE parseUnsafe #-}
 
