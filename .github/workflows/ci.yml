@@ -53,9 +53,6 @@ jobs:
       - name: "setup environment"
         run: |
           GHC_VERSION=$(ghc --numeric-version)
-          echo "GHC_VERSION=${GHC_VERSION}" | tee -a "${GITHUB_ENV}"
-          CABAL_VERSION=$(cabal --numeric-version)
-          echo "CABAL_VERSION=${CABAL_VERSION}" | tee -a "${GITHUB_ENV}"
           CABAL_OPTS=""
           if [ -f "cabal-${GHC_VERSION}.project" ] ; then
             CABAL_OPTS="--project-file=cabal-${GHC_VERSION}.project"
@@ -65,193 +62,180 @@ jobs:
           echo "STACK_YAML=${STACK_YAML}" | tee -a "${GITHUB_ENV}"
           TS_YYYYMM="$(date +%Y%m)"
           echo "TS_YYYYMM=${TS_YYYYMM}" | tee -a "${GITHUB_ENV}"
-          CACHE_CABAL_KEY_PREFIX="${RUNNER_OS}-${TS_YYYYMM}-ghc-${GHC_VERSION}-cabal-${CABAL_VERSION}"
-          echo "CACHE_CABAL_KEY_PREFIX=${CACHE_CABAL_KEY_PREFIX}" | tee -a "${GITHUB_ENV}"
-          CACHE_STACK_KEY_PREFIX="${RUNNER_OS}-${TS_YYYYMM}-ghc-${GHC_VERSION}-stack"
-          echo "CACHE_STACK_KEY_PREFIX=${CACHE_STACK_KEY_PREFIX}" | tee -a "${GITHUB_ENV}"
 
-      - name: "stack: restore cache"
-        uses: actions/cache/restore@v4
-        id: cache-stack
-        with:
-          path: ~/.stack
-          key: ${{ env.CACHE_STACK_KEY_PREFIX }}
-          restore-keys: ${{ env.CACHE_STACK_KEY_PREFIX }}
-
-      - name: "ttc: cabal: configure build"
+      - name: "cabal: configure build"
         run: |
           cabal configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
-          cabal build ttc --dry-run $CABAL_OPTS
+          cabal build all --dry-run $CABAL_OPTS
 
-      - name: "ttc: cabal: restore cache"
+      - name: "cabal: restore cache"
         uses: actions/cache/restore@v4
-        id: cache-cabal-ttc
+        id: cache-cabal
+        env:
+          key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ env.CACHE_CABAL_KEY_PREFIX }}-ttc-plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.CACHE_CABAL_KEY_PREFIX }}-ttc-plan-
+          key: ${{ env.key }}-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ env.key }}-
 
-      - name: "ttc: cabal: install dependencies"
-        run: cabal build ttc $CABAL_OPTS --only-dependencies
+      - if: ${{ !steps.cache-cabal.outputs.cache-hit }}
+        name: "cabal: install dependencies"
+        run: cabal build all $CABAL_OPTS --only-dependencies
 
-      - if: ${{ !steps.cache-cabal-ttc.outputs.cache-hit
-          || steps.cache-cabal-ttc.outputs.cache-primary-key != steps.cache-cabal-ttc.outputs.cache-matched-key }}
-        name: "ttc: cabal: save cache"
+      - if: ${{ !steps.cache-cabal.outputs.cache-hit }}
+        name: "cabal: save cache"
         uses: actions/cache/save@v4
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ steps.cache-cabal-ttc.outputs.cache-primary-key }}
+          key: ${{ steps.cache-cabal.outputs.cache-primary-key }}
 
-      - name: "ttc: cabal: build"
+      - name: "cabal: ttc: build"
         run: cabal build ttc $CABAL_OPTS
 
-      - name: "ttc: cabal: test"
+      - name: "cabal: ttc: test"
         run: cabal test ttc $CABAL_OPTS
 
-      - name: "ttc: cabal: haddock"
+      - name: "cabal: ttc: haddock"
         run: cabal haddock ttc $CABAL_OPTS
 
-      - name: "ttc: cabal: examples"
+      - name: "cabal: ttc: examples"
         run: cabal build ttc-examples $CABAL_OPTS
 
-      - name: "ttc: stack: configure build"
-        run: stack --system-ghc ls dependencies json > stack-deps.json
-
-      - name: "ttc: stack: restore cache"
-        uses: actions/cache/restore@v4
-        id: cache-stack-ttc
-        with:
-          path: .stack-work
-          key: ${{ env.CACHE_STACK_KEY_PREFIX }}-ttc-deps-${{ hashFiles('stack-deps.json') }}
-          restore-keys: ${{ env.CACHE_STACK_KEY_PREFIX }}-ttc-deps-
-
-      - name: "ttc: stack: build"
-        run: stack build ttc --system-ghc --test --bench --no-run-tests --no-run-benchmarks
-
-      - name: "ttc: stack: test"
-        run: stack test ttc --system-ghc
-
-      - name: "ttc: stack: haddock"
-        run: stack haddock ttc --system-ghc
-
-      - name: "ttc: stack: examples"
-        run: stack build ttc-examples --system-ghc
-
-      - if: ${{ !steps.cache-stack-ttc.outputs.cache-hit
-          || steps.cache-stack-ttc.outputs.cache-primary-key != steps.cache-stack-ttc.outputs.cache-matched-key }}
-        name: "ttc: stack: save cache"
-        uses: actions/cache/save@v4
-        with:
-          path: .stack-work
-          key: ${{ steps.cache-stack-ttc.outputs.cache-primary-key }}
-
-      - if: ${{ !steps.cache-stack.outputs.cache-hit
-          || steps.cache-stack.outputs.cache-primary-key != steps.cache-stack.outputs.cache-matched-key }}
-        name: "stack: save cache"
-        uses: actions/cache/save@v4
-        with:
-          path: ~/.stack
-          key: ${{ steps.cache-stack.outputs.cache-primary-key }}
-
       - if: matrix.ghc == '8.2.2'
-        name: "ttc: lower bounds: setup environment"
+        name: "ttc lower bounds: setup environment"
         run: |
+          cabal clean
+          rm -rf ~/.cabal/store
           CABAL_OPTS="--project-file=cabal-ttc-bounds-lower.project"
           echo "CABAL_OPTS=${CABAL_OPTS}" | tee -a "${GITHUB_ENV}"
-          CACHE_CABAL_KEY_PREFIX="${RUNNER_OS}-${TS_YYYYMM}-ghc-${GHC_VERSION}-cabal-${CABAL_VERSION}-ttc-bounds-lower"
-          echo "CACHE_CABAL_KEY_PREFIX=${CACHE_CABAL_KEY_PREFIX}" | tee -a "${GITHUB_ENV}"
 
       - if: matrix.ghc == '8.2.2'
-        name: "ttc: lower bounds: configure build"
+        name: "ttc lower bounds: configure build"
         run: |
           cabal configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
-          cabal build ttc --dry-run $CABAL_OPTS
+          cabal build ttc ttc-examples --dry-run $CABAL_OPTS
 
       - if: matrix.ghc == '8.2.2'
-        name: "ttc: lower bounds: restore cache"
+        name: "ttc lower bounds: restore cache"
         uses: actions/cache/restore@v4
         id: cache-ttc-bounds-lower
+        env:
+          key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}-ttc-bounds-lower
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ env.CACHE_CABAL_KEY_PREFIX }}-plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.CACHE_CABAL_KEY_PREFIX }}-
+          key: ${{ env.key }}-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ env.key }}-
 
-      - if: matrix.ghc == '8.2.2'
-        name: "ttc: lower bounds: install dependencies"
+      - if: ${{ matrix.ghc == '8.2.2' && !steps.cache-ttc-bounds-lower.outputs.cache-hit }}
+        name: "ttc lower bounds: install dependencies"
         run: cabal build ttc $CABAL_OPTS --only-dependencies
 
-      - if: ${{ matrix.ghc == '8.2.2' && (!steps.cache-ttc-bounds-lower.outputs.cache-hit || steps.cache-ttc-bounds-lower.outputs.cache-primary-key != steps.cache-ttc-bounds-lower.outputs.cache-matched-key) }}
-        name: "ttc: lower bounds: save cache"
+      - if: ${{ matrix.ghc == '8.2.2' && !steps.cache-ttc-bounds-lower.outputs.cache-hit }}
+        name: "ttc lower bounds: save cache"
         uses: actions/cache/save@v4
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-ttc-bounds-lower.outputs.cache-primary-key }}
 
       - if: matrix.ghc == '8.2.2'
-        name: "ttc: lower bounds: build"
+        name: "ttc lower bounds: build"
         run: cabal build ttc $CABAL_OPTS
 
       - if: matrix.ghc == '8.2.2'
-        name: "ttc: lower bounds: test"
+        name: "ttc lower bounds: test"
         run: cabal test ttc $CABAL_OPTS
 
       - if: matrix.ghc == '8.2.2'
-        name: "ttc: lower bounds: haddock"
+        name: "ttc lower bounds: haddock"
         run: cabal haddock ttc $CABAL_OPTS
 
       - if: matrix.ghc == '8.2.2'
-        name: "ttc: lower bounds: examples"
+        name: "ttc lower bounds: examples"
         run: cabal build ttc-examples $CABAL_OPTS
 
       - if: matrix.ghc == '9.10.1'
-        name: "ttc: upper bounds: setup environment"
+        name: "ttc upper bounds: setup environment"
         run: |
+          cabal clean
+          rm -rf ~/.cabal/store
           CABAL_OPTS="--project-file=cabal-ttc-bounds-upper.project"
           echo "CABAL_OPTS=${CABAL_OPTS}" | tee -a "${GITHUB_ENV}"
-          CACHE_CABAL_KEY_PREFIX="${RUNNER_OS}-${TS_YYYYMM}-ghc-${GHC_VERSION}-cabal-${CABAL_VERSION}-ttc-bounds-upper"
-          echo "CACHE_CABAL_KEY_PREFIX=${CACHE_CABAL_KEY_PREFIX}" | tee -a "${GITHUB_ENV}"
 
       - if: matrix.ghc == '9.10.1'
-        name: "ttc: upper bounds: configure build"
+        name: "ttc upper bounds: configure build"
         run: |
           cabal configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
-          cabal build ttc --dry-run $CABAL_OPTS
+          cabal build ttc ttc-examples --dry-run $CABAL_OPTS
 
       - if: matrix.ghc == '9.10.1'
-        name: "ttc: upper bounds: restore cache"
+        name: "ttc upper bounds: restore cache"
         uses: actions/cache/restore@v4
         id: cache-ttc-bounds-upper
+        env:
+          key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}-ttc-bounds-upper
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ env.CACHE_CABAL_KEY_PREFIX }}-plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.CACHE_CABAL_KEY_PREFIX }}-
+          key: ${{ env.key }}-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ env.key }}-
 
-      - if: matrix.ghc == '9.10.1'
-        name: "ttc: upper bounds: install dependencies"
+      - if: ${{ matrix.ghc == '9.10.1' && !steps.cache-ttc-bounds-upper.outputs.cache-hit }}
+        name: "ttc upper bounds: install dependencies"
         run: cabal build ttc $CABAL_OPTS --only-dependencies
 
-      - if: ${{ matrix.ghc == '9.10.1' && (!steps.cache-ttc-bounds-upper.outputs.cache-hit || steps.cache-ttc-bounds-upper.outputs.cache-primary-key != steps.cache-ttc-bounds-upper.outputs.cache-matched-key) }}
-        name: "ttc: upper bounds: save cache"
+      - if: ${{ matrix.ghc == '9.10.1' && !steps.cache-ttc-bounds-upper.outputs.cache-hit }}
+        name: "ttc upper bounds: save cache"
         uses: actions/cache/save@v4
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-ttc-bounds-upper.outputs.cache-primary-key }}
 
       - if: matrix.ghc == '9.10.1'
-        name: "ttc: upper bounds: build"
+        name: "ttc upper bounds: build"
         run: cabal build ttc $CABAL_OPTS
 
       - if: matrix.ghc == '9.10.1'
-        name: "ttc: upper bounds: test"
+        name: "ttc upper bounds: test"
         run: cabal test ttc $CABAL_OPTS
 
       - if: matrix.ghc == '9.10.1'
-        name: "ttc: upper bounds: haddock"
+        name: "ttc upper bounds: haddock"
         run: cabal haddock ttc $CABAL_OPTS
 
       - if: matrix.ghc == '9.10.1'
-        name: "ttc: upper bounds: examples"
+        name: "ttc upper bounds: examples"
         run: cabal build ttc-examples $CABAL_OPTS
+
+      - name: "stack: configure build"
+        run: stack --system-ghc ls dependencies json > stack-deps.json
+
+      - name: "stack: restore cache"
+        uses: actions/cache/restore@v4
+        id: cache-stack
+        env:
+          key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-stack
+        with:
+          path: ~/.stack
+          key: ${{ env.key }}-${{ hashFiles('stack-deps.json') }}
+          restore-keys: ${{ env.key }}-
+
+      - name: "stack: ttc: build"
+        run: stack build ttc --system-ghc --test --bench --no-run-tests --no-run-benchmarks
+
+      - name: "stack: ttc: test"
+        run: stack test ttc --system-ghc
+
+      - name: "stack: ttc: haddock"
+        run: stack haddock ttc --system-ghc
+
+      - name: "stack: ttc: examples"
+        run: stack build ttc-examples --system-ghc
+
+      - if: ${{ !steps.cache-stack.outputs.cache-hit }}
+        name: "stack: save cache"
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.stack
+          key: ${{ steps.cache-stack.outputs.cache-primary-key }}
 
   test-cabal2410-ghc822:
     name: Cabal ${{ matrix.cabal }} (GHC ${{ matrix.ghc }})
@@ -280,41 +264,39 @@ jobs:
       - name: "setup environment"
         run: |
           GHC_VERSION=$(ghc --numeric-version)
-          echo "GHC_VERSION=${GHC_VERSION}" | tee -a "${GITHUB_ENV}"
-          CABAL_VERSION=$(cabal --numeric-version)
-          echo "CABAL_VERSION=${CABAL_VERSION}" | tee -a "${GITHUB_ENV}"
           CABAL_OPTS=""
           if [ -f "cabal-${GHC_VERSION}.project" ] ; then
             CABAL_OPTS="--project-file=cabal-${GHC_VERSION}.project"
           fi
           echo "CABAL_OPTS=${CABAL_OPTS}" | tee -a "${GITHUB_ENV}"
           TS_YYYYMM="$(date +%Y%m)"
-          CACHE_CABAL_KEY_PREFIX="${RUNNER_OS}-${TS_YYYYMM}-ghc-${GHC_VERSION}-cabal-${CABAL_VERSION}"
-          echo "CACHE_CABAL_KEY_PREFIX=${CACHE_CABAL_KEY_PREFIX}" | tee -a "${GITHUB_ENV}"
+          echo "TS_YYYYMM=${TS_YYYYMM}" | tee -a "${GITHUB_ENV}"
 
-      - name: "ttc: configure build"
+      - name: "configure build"
         run: |
           cabal v2-configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
-          cabal v2-build ttc --dry-run $CABAL_OPTS
+          cabal v2-build all --dry-run $CABAL_OPTS
 
-      - name: "ttc: restore cache"
+      - name: "restore cache"
         uses: actions/cache/restore@v4
-        id: cache-cabal-ttc
+        id: cache-cabal
+        env:
+          key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ env.CACHE_CABAL_KEY_PREFIX }}-ttc-plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.CACHE_CABAL_KEY_PREFIX }}-ttc-
+          key: ${{ env.key }}-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ env.key }}-
 
-      - name: "ttc: install dependencies"
-        run: cabal v2-build ttc $CABAL_OPTS --only-dependencies
+      - if: ${{ !steps.cache-cabal.outputs.cache-hit }}
+        name: "install dependencies"
+        run: cabal v2-build all $CABAL_OPTS --only-dependencies
 
-      - if: ${{ !steps.cache-cabal-ttc.outputs.cache-hit
-          || steps.cache-cabal-ttc.outputs.cache-primary-key != steps.cache-cabal-ttc.outputs.cache-matched-key }}
-        name: "ttc: save cache"
+      - if: ${{ !steps.cache-cabal.outputs.cache-hit }}
+        name: "save cache"
         uses: actions/cache/save@v4
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ steps.cache-cabal-ttc.outputs.cache-primary-key }}
+          key: ${{ steps.cache-cabal.outputs.cache-primary-key }}
 
       - name: "ttc: build"
         run: cabal v2-build ttc $CABAL_OPTS
