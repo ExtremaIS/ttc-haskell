@@ -45,7 +45,7 @@ jobs:
           cabal-version: latest
           cabal-update: false
           enable-stack: true
-          stack-version: 2.15.7
+          stack-version: latest
 
       - name: "update Cabal"
         run: cabal update
