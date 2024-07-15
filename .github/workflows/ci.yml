@@ -237,7 +237,7 @@ jobs:
           path: ~/.stack
           key: ${{ steps.cache-stack.outputs.cache-primary-key }}
 
-  test-cabal2410-ghc822:
+  test-ghc822-cabal2410:
     name: Cabal ${{ matrix.cabal }} (GHC ${{ matrix.ghc }})
     runs-on: ${{ matrix.os }}
     strategy:
