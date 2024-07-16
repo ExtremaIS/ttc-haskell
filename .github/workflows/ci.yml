@@ -128,7 +128,7 @@ jobs:
 
       - if: ${{ matrix.ghc == '8.2.2' && !steps.cache-ttc-bounds-lower.outputs.cache-hit }}
         name: "ttc lower bounds: install dependencies"
-        run: cabal build ttc $CABAL_OPTS --only-dependencies
+        run: cabal build ttc ttc-examples $CABAL_OPTS --only-dependencies
 
       - if: ${{ matrix.ghc == '8.2.2' && !steps.cache-ttc-bounds-lower.outputs.cache-hit }}
         name: "ttc lower bounds: save cache"
@@ -180,7 +180,7 @@ jobs:
 
       - if: ${{ matrix.ghc == '9.10.1' && !steps.cache-ttc-bounds-upper.outputs.cache-hit }}
         name: "ttc upper bounds: install dependencies"
-        run: cabal build ttc $CABAL_OPTS --only-dependencies
+        run: cabal build ttc ttc-examples $CABAL_OPTS --only-dependencies
 
       - if: ${{ matrix.ghc == '9.10.1' && !steps.cache-ttc-bounds-upper.outputs.cache-hit }}
         name: "ttc upper bounds: save cache"
