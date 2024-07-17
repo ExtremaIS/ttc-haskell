@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveLift #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module TestString where
+module TestTypes.Ex where
 
 -- https://hackage.haskell.org/package/template-haskell
 import qualified Language.Haskell.TH.Syntax as THS
@@ -12,20 +12,20 @@ import qualified Data.TTC as TTC
 ------------------------------------------------------------------------------
 -- $Type
 
-newtype TestString = TestString { testStringString :: String }
+newtype Ex = Ex { exString :: String }
   deriving (Eq, Ord, Show, THS.Lift)
 
-instance TTC.Parse TestString where
-  parse = TTC.asS $ pure . TestString
+instance TTC.Parse Ex where
+  parse = TTC.asS $ pure . Ex
 
-instance TTC.Render TestString where
-  render = TTC.convert . testStringString
+instance TTC.Render Ex where
+  render = TTC.convert . exString
 
 ------------------------------------------------------------------------------
 -- $API
 
-$(TTC.mkValid "valid" ''TestString)
+$(TTC.mkValid "valid" ''Ex)
 
-$(TTC.mkUntypedValid "untypedValid" ''TestString)
+$(TTC.mkUntypedValid "untypedValid" ''Ex)
 
-$(TTC.mkUntypedValidQQ "untypedValidQQ" ''TestString)
+$(TTC.mkUntypedValidQQ "untypedValidQQ" ''Ex)

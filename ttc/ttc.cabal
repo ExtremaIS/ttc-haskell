@@ -59,7 +59,7 @@ test-suite ttc-test
   main-is: Spec.hs
   other-modules:
       Data.TTC.Test
-    , TestString
+    , TestTypes.Ex
   build-depends:
       base
     , bytestring

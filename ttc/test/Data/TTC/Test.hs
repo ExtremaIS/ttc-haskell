@@ -42,8 +42,8 @@ import qualified Data.Text.Short as ST
 import qualified Data.TTC as TTC
 
 -- (ttc:test)
-import qualified TestString
-import TestString (TestString(TestString))
+import qualified TestTypes.Ex as Ex
+import TestTypes.Ex (Ex(Ex))
 
 ------------------------------------------------------------------------------
 -- $Instances
@@ -1553,38 +1553,36 @@ testReadsEnum = testGroup "readsEnum"
 -- $Valid
 
 testValid :: TestTree
-testValid = testCase "valid" $ TestString "test" @=? validConst
+testValid = testCase "valid" $ Ex "test" @=? validConst
   where
-    validConst :: TestString
+    validConst :: Ex
     validConst = $$(TTC.valid "test")
 
 testValidIsString :: TestTree
 testValidIsString =
-    testCase "validIsString" $ TestString "test" @=? validConst
+    testCase "validIsString" $ Ex "test" @=? validConst
   where
-    validConst :: TestString
+    validConst :: Ex
     validConst = $$("test")
 
 testValidOf :: TestTree
 testValidOf = testCase "validOf" $
-    TestString "test" @=? $$(TTC.validOf (Proxy :: Proxy TestString) "test")
+    Ex "test" @=? $$(TTC.validOf (Proxy :: Proxy Ex) "test")
 
 testMkValid :: TestTree
-testMkValid = testCase "mkValid" $
-    TestString "test" @=? $$(TestString.valid "test")
+testMkValid = testCase "mkValid" $ Ex "test" @=? $$(Ex.valid "test")
 
 testUntypedValidOf :: TestTree
 testUntypedValidOf = testCase "untypedValidOf" $
-    TestString "test" @=?
-      $(TTC.untypedValidOf (Proxy :: Proxy TestString) "test")
+    Ex "test" @=? $(TTC.untypedValidOf (Proxy :: Proxy Ex) "test")
 
 testMkUntypedValid :: TestTree
 testMkUntypedValid = testCase "mkUntypedValid" $
-    TestString "test" @=? $(TestString.untypedValid "test")
+    Ex "test" @=? $(Ex.untypedValid "test")
 
 testMkUntypedValidQQ :: TestTree
 testMkUntypedValidQQ = testCase "mkUntypedValidQQ" $
-    TestString "test" @=? [TestString.untypedValidQQ|test|]
+    Ex "test" @=? [Ex.untypedValidQQ|test|]
 
 ------------------------------------------------------------------------------
 
