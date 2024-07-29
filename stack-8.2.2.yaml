@@ -1,9 +1,0 @@
-resolver: lts-11.22
-
-packages:
-  - ./ttc
-  - ./ttc-examples
-
-flags:
-  ttc-examples:
-    optparse-applicative_ge_0_18: false

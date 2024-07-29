@@ -28,12 +28,13 @@ following conventions:
 
 ### Breaking
 
+* Change type argument order for easier use with `TypeApplications`
 * Add `RenderDefault` `Bool` instance
 * Add `ParseDefault` `Bool` instance
 * Add missing `RenderDefault` and `ParseDefault` instances for `TLB.Builder`,
   `ST.ShortText`, `BSB.Builder`, and `SBS.ShortByteString`
-* Constrain `text-short` lower bound
-* Change type argument order for easier use with `TypeApplications`
+* Remove support for GHC 8.2, constraining lower bounds
+* Change minimal Cabal from 1.24 to 2.2
 
 ### Non-Breaking
 

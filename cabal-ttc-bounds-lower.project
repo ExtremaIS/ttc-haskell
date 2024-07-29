@@ -2,30 +2,30 @@ packages:
   ttc/ttc.cabal
   ttc-examples/ttc-examples.cabal
 
-with-compiler: ghc-8.2.2
+with-compiler: ghc-8.4.4
 
 constraints:
     -- https://hackage.haskell.org/package/base
     -- GHC boot library
-    base == 4.10.1.0
+    base == 4.11.1.0
 
     -- https://hackage.haskell.org/package/bytestring
     -- GHC boot library
   , bytestring == 0.10.8.2
 
     -- https://hackage.haskell.org/package/tasty
-  , tasty == 0.11
+  , tasty == 1.1.0.4
 
     -- https://hackage.haskell.org/package/tasty-hunit
-  , tasty-hunit == 0.8
+  , tasty-hunit == 0.10.0.1
 
     -- https://hackage.haskell.org/package/template-haskell
     -- GHC boot library
-  , template-haskell == 2.12.0.0
+  , template-haskell == 2.13.0.0
 
     -- https://hackage.haskell.org/package/text
-    -- (GHC boot library from GHC 8.4)
-  , text == 1.2.2.0
+    -- GHC boot library
+  , text == 1.2.3.1
 
     -- https://hackage.haskell.org/package/text-short
   , text-short == 0.1.2

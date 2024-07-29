@@ -1,25 +1,27 @@
-name:           ttc
-version:        1.4.0.0
-category:       Data, Text
-synopsis:       Textual Type Classes
+cabal-version:      2.2
+name:               ttc
+version:            1.4.0.0
+synopsis:           Textual Type Classes
 description:
   This library provides type classes for conversion between data types and
   textual data types (strings).  Please see the README on GitHub at
   <https://github.com/ExtremaIS/ttc-haskell/tree/main/ttc#readme>.
+homepage:           https://github.com/ExtremaIS/ttc-haskell/tree/main/ttc#readme
+bug-reports:        https://github.com/ExtremaIS/ttc-haskell/issues
+license:            MIT
+license-file:       LICENSE
+author:             Travis Cardwell <travis.cardwell@extrema.is>
+maintainer:         Travis Cardwell <travis.cardwell@extrema.is>
+copyright:          Copyright (c) 2019-2024 Travis Cardwell
+category:           Data, Text
+build-type:         Simple
 
-homepage:       https://github.com/ExtremaIS/ttc-haskell/tree/main/ttc#readme
-bug-reports:    https://github.com/ExtremaIS/ttc-haskell/issues
-author:         Travis Cardwell <travis.cardwell@extrema.is>
-maintainer:     Travis Cardwell <travis.cardwell@extrema.is>
-copyright:      Copyright (c) 2019-2024 Travis Cardwell
-license:        MIT
-license-file:   LICENSE
+extra-doc-files:
+  CHANGELOG.md
+  README.md
 
-cabal-version:  1.24
-build-type:     Simple
 tested-with:
-  GHC ==8.2.2
-   || ==8.4.4
+  GHC ==8.4.4
    || ==8.6.5
    || ==8.8.4
    || ==8.10.7
@@ -30,10 +32,6 @@ tested-with:
    || ==9.8.2
    || ==9.10.1
 
-extra-doc-files:
-  CHANGELOG.md
-  README.md
-
 source-repository head
   type: git
   location: https://github.com/ExtremaIS/ttc-haskell.git
@@ -43,10 +41,10 @@ library
   exposed-modules:
       Data.TTC
   build-depends:
-      base >=4.10.1 && <4.21
-    , bytestring >=0.10.8 && <0.13
-    , template-haskell >=2.12 && <2.23
-    , text >=1.2.2 && <2.2
+      base >=4.11.1.0 && <4.21
+    , bytestring >=0.10.8.2 && <0.13
+    , template-haskell >=2.13.0.0 && <2.23
+    , text >=1.2.3.1 && <2.2
     , text-short >=0.1.2 && <0.2
   default-language: Haskell2010
   default-extensions:
@@ -63,8 +61,8 @@ test-suite ttc-test
   build-depends:
       base
     , bytestring
-    , tasty >=0.11 && <1.6
-    , tasty-hunit >=0.8 && <0.11
+    , tasty >=1.1.0.4 && <1.6
+    , tasty-hunit >=0.10.0.1 && <0.11
     , template-haskell
     , text
     , text-short

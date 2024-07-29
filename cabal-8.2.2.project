@@ -1,8 +1,0 @@
-packages:
-  ttc/ttc.cabal
-  ttc-examples/ttc-examples.cabal
-
--- Haddoc documentation fails to build when using GHC 8.2.2 and `text-2`
-
-constraints:
-  text < 2

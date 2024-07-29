@@ -1,24 +1,20 @@
-name:           ttc-examples
-version:        1.2.0.0
-category:       Data, Text
-synopsis:       TTC Examples
+cabal-version:      2.2
+name:               ttc-examples
+version:            1.2.0.0
+synopsis:           TTC Examples
 description:
   This package contains TTC examples.  Please see the README on GitHub at
   <https://github.com/ExtremaIS/ttc-haskell/tree/main/ttc-examples#readme>.
-
-homepage:       https://github.com/ExtremaIS/ttc-haskell/tree/main/ttc-examples#readme
-bug-reports:    https://github.com/ExtremaIS/ttc-haskell/issues
-author:         Travis Cardwell <travis.cardwell@extrema.is>
-maintainer:     Travis Cardwell <travis.cardwell@extrema.is>
-copyright:      Copyright (c) 2019-2024 Travis Cardwell
-license:        MIT
-license-file:   LICENSE
-
-cabal-version:  1.24
-build-type:     Simple
-
-extra-doc-files:
-  README.md
+homepage:           https://github.com/ExtremaIS/ttc-haskell/tree/main/ttc-examples#readme
+bug-reports:        https://github.com/ExtremaIS/ttc-haskell/issues
+license:            MIT
+license-file:       LICENSE
+author:             Travis Cardwell <travis.cardwell@extrema.is>
+maintainer:         Travis Cardwell <travis.cardwell@extrema.is>
+copyright:          Copyright (c) 2019-2024 Travis Cardwell
+category:           Data, Text
+build-type:         Simple
+extra-doc-files:    README.md
 
 source-repository head
   type: git
