@@ -312,21 +312,21 @@ testToX = testGroup "to*"
       -> a
       -> TestTree
     mkTests testName f x xi = testGroup testName
-        [ testCase "@"           $ x  @=? f @T.Text "test テスト"
-        , testCase "S"           $ x  @=? f         xS
-        , testCase "T"           $ x  @=? f         xT
-        , testCase "TL"          $ x  @=? f         xTL
-        , testCase "TLB"         $ x  @=? f         xTLB
-        , testCase "ST"          $ x  @=? f         xST
-        , testCase "BS"          $ x  @=? f         xBS
-        , testCase "BSL"         $ x  @=? f         xBSL
-        , testCase "BSB"         $ x  @=? f         xBSB
-        , testCase "SBS"         $ x  @=? f         xSBS
-        , testCase "BS/invalid"  $ xi @=? f         xiBS
-        , testCase "BSL/invalid" $ xi @=? f         xiBSL
-        , testCase "BSB/invalid" $ xi @=? f         xiBSB
-        , testCase "SBS/invalid" $ xi @=? f         xiSBS
-        ]
+      [ testCase "@"           $ x  @=? f @T.Text "test テスト"
+      , testCase "S"           $ x  @=? f         xS
+      , testCase "T"           $ x  @=? f         xT
+      , testCase "TL"          $ x  @=? f         xTL
+      , testCase "TLB"         $ x  @=? f         xTLB
+      , testCase "ST"          $ x  @=? f         xST
+      , testCase "BS"          $ x  @=? f         xBS
+      , testCase "BSL"         $ x  @=? f         xBSL
+      , testCase "BSB"         $ x  @=? f         xBSB
+      , testCase "SBS"         $ x  @=? f         xSBS
+      , testCase "BS/invalid"  $ xi @=? f         xiBS
+      , testCase "BSL/invalid" $ xi @=? f         xiBSL
+      , testCase "BSB/invalid" $ xi @=? f         xiBSB
+      , testCase "SBS/invalid" $ xi @=? f         xiSBS
+      ]
 
 ------------------------------------------------------------------------------
 
@@ -351,30 +351,30 @@ testFromX = testGroup "from*"
       -> Maybe a
       -> TestTree
     mkTests testName f x mXi = testGroup testName $
-        [ testCase "@"   $ "test テスト" @=? f @String x
-        , testCase "S"   $ xS            @=? f         x
-        , testCase "T"   $ xT            @=? f         x
-        , testCase "TL"  $ xTL           @=? f         x
-        , testCase "TLB" $ xTLB          @=? f         x
-        , testCase "ST"  $ xST           @=? f         x
-        , testCase "BS"  $ xBS           @=? f         x
-        , testCase "BSL" $ xBSL          @=? f         x
-        , testCase "BSB" $ xBSB          @=? f         x
-        , testCase "SBS" $ xSBS          @=? f         x
-        ] ++
-        case mXi of
-          Nothing -> []
-          Just xi ->
-            [ testCase "S/Invalid"   $ xiS   @=? f xi
-            , testCase "T/Invalid"   $ xiT   @=? f xi
-            , testCase "TL/Invalid"  $ xiTL  @=? f xi
-            , testCase "TLB/Invalid" $ xiTLB @=? f xi
-            , testCase "ST/Invalid"  $ xiST  @=? f xi
-            , testCase "BS/Invalid"  $ xiBS  @=? f xi
-            , testCase "BSL/Invalid" $ xiBSL @=? f xi
-            , testCase "BSB/Invalid" $ xiBSB @=? f xi
-            , testCase "SBS/Invalid" $ xiSBS @=? f xi
-            ]
+      [ testCase "@"   $ "test テスト" @=? f @String x
+      , testCase "S"   $ xS            @=? f         x
+      , testCase "T"   $ xT            @=? f         x
+      , testCase "TL"  $ xTL           @=? f         x
+      , testCase "TLB" $ xTLB          @=? f         x
+      , testCase "ST"  $ xST           @=? f         x
+      , testCase "BS"  $ xBS           @=? f         x
+      , testCase "BSL" $ xBSL          @=? f         x
+      , testCase "BSB" $ xBSB          @=? f         x
+      , testCase "SBS" $ xSBS          @=? f         x
+      ] ++
+      case mXi of
+        Nothing -> []
+        Just xi ->
+          [ testCase "S/Invalid"   $ xiS   @=? f xi
+          , testCase "T/Invalid"   $ xiT   @=? f xi
+          , testCase "TL/Invalid"  $ xiTL  @=? f xi
+          , testCase "TLB/Invalid" $ xiTLB @=? f xi
+          , testCase "ST/Invalid"  $ xiST  @=? f xi
+          , testCase "BS/Invalid"  $ xiBS  @=? f xi
+          , testCase "BSL/Invalid" $ xiBSL @=? f xi
+          , testCase "BSB/Invalid" $ xiBSB @=? f xi
+          , testCase "SBS/Invalid" $ xiSBS @=? f xi
+          ]
 
 ------------------------------------------------------------------------------
 
@@ -399,21 +399,21 @@ testAsX = testGroup "as*"
       -> a
       -> TestTree
     mkTests testName f x xi = testGroup testName
-        [ testCase "@"           $ x  @=? f @T.Text id "test テスト"
-        , testCase "S"           $ x  @=? f         id xS
-        , testCase "T"           $ x  @=? f         id xT
-        , testCase "TL"          $ x  @=? f         id xTL
-        , testCase "TLB"         $ x  @=? f         id xTLB
-        , testCase "ST"          $ x  @=? f         id xST
-        , testCase "BS"          $ x  @=? f         id xBS
-        , testCase "BSL"         $ x  @=? f         id xBSL
-        , testCase "BSB"         $ x  @=? f         id xBSB
-        , testCase "SBS"         $ x  @=? f         id xSBS
-        , testCase "BS/invalid"  $ xi @=? f         id xiBS
-        , testCase "BSL/invalid" $ xi @=? f         id xiBSL
-        , testCase "BSB/invalid" $ xi @=? f         id xiBSB
-        , testCase "SBS/invalid" $ xi @=? f         id xiSBS
-        ]
+      [ testCase "@"           $ x  @=? f @T.Text id "test テスト"
+      , testCase "S"           $ x  @=? f         id xS
+      , testCase "T"           $ x  @=? f         id xT
+      , testCase "TL"          $ x  @=? f         id xTL
+      , testCase "TLB"         $ x  @=? f         id xTLB
+      , testCase "ST"          $ x  @=? f         id xST
+      , testCase "BS"          $ x  @=? f         id xBS
+      , testCase "BSL"         $ x  @=? f         id xBSL
+      , testCase "BSB"         $ x  @=? f         id xBSB
+      , testCase "SBS"         $ x  @=? f         id xSBS
+      , testCase "BS/invalid"  $ xi @=? f         id xiBS
+      , testCase "BSL/invalid" $ xi @=? f         id xiBSL
+      , testCase "BSB/invalid" $ xi @=? f         id xiBSB
+      , testCase "SBS/invalid" $ xi @=? f         id xiSBS
+      ]
 
 ------------------------------------------------------------------------------
 -- $Render
@@ -609,9 +609,9 @@ testWithErrorX = testGroup "withError*"
       -> (e' -> Maybe PosInt -> Either String PosInt)
       -> TestTree
     mkTests testName f = testGroup testName
-        [ testCase "valid"   $ Right answer @=? f undefined (Just answer)
-        , testCase "invalid" $ Left "err"   @=? f "err"     Nothing
-        ]
+      [ testCase "valid"   $ Right answer @=? f undefined (Just answer)
+      , testCase "invalid" $ Left "err"   @=? f "err"     Nothing
+      ]
 
 ------------------------------------------------------------------------------
 
@@ -644,9 +644,9 @@ testPrefixErrorX = testGroup "prefixError*"
       -> (e' -> Either e' PosInt -> Either String PosInt)
       -> TestTree
     mkTests testName f = testGroup testName
-        [ testCase "valid"   $ Right answer     @=? f "oops: " (Right answer)
-        , testCase "invalid" $ Left "oops: err" @=? f "oops: " (Left "err")
-        ]
+      [ testCase "valid"   $ Right answer     @=? f "oops: " (Right answer)
+      , testCase "invalid" $ Left "oops: err" @=? f "oops: " (Left "err")
+      ]
 
 ------------------------------------------------------------------------------
 
@@ -780,9 +780,9 @@ testParseX = testGroup "parse*"
       -> a
       -> TestTree
     mkTests testName f x = testGroup testName
-        [ testCase "valid"   $ Right answer          @=? f x
-        , testCase "invalid" $ Left "not an integer" @=? f "4a2"
-        ]
+      [ testCase "valid"   $ Right answer          @=? f x
+      , testCase "invalid" $ Left "not an integer" @=? f "4a2"
+      ]
 
 ------------------------------------------------------------------------------
 
@@ -901,10 +901,9 @@ testParseUnsafeX = testGroup "parseUnsafe*"
       -> a
       -> TestTree
     mkTests testName f x = testGroup testName
-        [ testCase "valid" $ answer @=? f x
-        , testCase "invalid" . assertRaises (Proxy :: Proxy ErrorCall) $
-            f "4a2"
-        ]
+      [ testCase "valid" $ answer @=? f x
+      , testCase "invalid" . assertRaises (Proxy :: Proxy ErrorCall) $ f "4a2"
+      ]
 
 ------------------------------------------------------------------------------
 
