@@ -654,12 +654,12 @@ testParseWithRead :: TestTree
 testParseWithRead = testGroup "parseWithRead"
     [ testCase "@" $
         Right answerZ @=? TTC.parseWithRead @String IntInvalid "42"
-    , testCase "S" $ Right answerZ @=? parseWithRead answerS
-    , testCase "T" $ Right answerZ @=? parseWithRead answerT
-    , testCase "TL" $ Right answerZ @=? parseWithRead answerTL
+    , testCase "S"   $ Right answerZ @=? parseWithRead answerS
+    , testCase "T"   $ Right answerZ @=? parseWithRead answerT
+    , testCase "TL"  $ Right answerZ @=? parseWithRead answerTL
     , testCase "TLB" $ Right answerZ @=? parseWithRead answerTLB
-    , testCase "ST" $ Right answerZ @=? parseWithRead answerST
-    , testCase "BS" $ Right answerZ @=? parseWithRead answerBS
+    , testCase "ST"  $ Right answerZ @=? parseWithRead answerST
+    , testCase "BS"  $ Right answerZ @=? parseWithRead answerBS
     , testCase "BSL" $ Right answerZ @=? parseWithRead answerBSL
     , testCase "BSB" $ Right answerZ @=? parseWithRead answerBSB
     , testCase "SBS" $ Right answerZ @=? parseWithRead answerSBS
@@ -673,12 +673,12 @@ testParseWithRead' :: TestTree
 testParseWithRead' = testGroup "parseWithRead'"
     [ testCase "@" $
         Right answerZ @=? TTC.parseWithRead' @String @String "Int" "42"
-    , testCase "S" $ Right answerZ @=? parseWithRead' answerS
-    , testCase "T" $ Right answerZ @=? parseWithRead' answerT
-    , testCase "TL" $ Right answerZ @=? parseWithRead' answerTL
+    , testCase "S"   $ Right answerZ @=? parseWithRead' answerS
+    , testCase "T"   $ Right answerZ @=? parseWithRead' answerT
+    , testCase "TL"  $ Right answerZ @=? parseWithRead' answerTL
     , testCase "TLB" $ Right answerZ @=? parseWithRead' answerTLB
-    , testCase "ST" $ Right answerZ @=? parseWithRead' answerST
-    , testCase "BS" $ Right answerZ @=? parseWithRead' answerBS
+    , testCase "ST"  $ Right answerZ @=? parseWithRead' answerST
+    , testCase "BS"  $ Right answerZ @=? parseWithRead' answerBS
     , testCase "BSL" $ Right answerZ @=? parseWithRead' answerBSL
     , testCase "BSB" $ Right answerZ @=? parseWithRead' answerBSB
     , testCase "SBS" $ Right answerZ @=? parseWithRead' answerSBS
@@ -691,12 +691,12 @@ testParseWithRead' = testGroup "parseWithRead'"
 testMaybeParseWithRead :: TestTree
 testMaybeParseWithRead = testGroup "maybeParseWithRead"
     [ testCase "@" $ Just answerZ @=? TTC.maybeParseWithRead @String "42"
-    , testCase "S" $ Just answerZ @=? TTC.maybeParseWithRead answerS
-    , testCase "T" $ Just answerZ @=? TTC.maybeParseWithRead answerT
-    , testCase "TL" $ Just answerZ @=? TTC.maybeParseWithRead answerTL
+    , testCase "S"   $ Just answerZ @=? TTC.maybeParseWithRead answerS
+    , testCase "T"   $ Just answerZ @=? TTC.maybeParseWithRead answerT
+    , testCase "TL"  $ Just answerZ @=? TTC.maybeParseWithRead answerTL
     , testCase "TLB" $ Just answerZ @=? TTC.maybeParseWithRead answerTLB
-    , testCase "ST" $ Just answerZ @=? TTC.maybeParseWithRead answerST
-    , testCase "BS" $ Just answerZ @=? TTC.maybeParseWithRead answerBS
+    , testCase "ST"  $ Just answerZ @=? TTC.maybeParseWithRead answerST
+    , testCase "BS"  $ Just answerZ @=? TTC.maybeParseWithRead answerBS
     , testCase "BSL" $ Just answerZ @=? TTC.maybeParseWithRead answerBSL
     , testCase "BSB" $ Just answerZ @=? TTC.maybeParseWithRead answerBSB
     , testCase "SBS" $ Just answerZ @=? TTC.maybeParseWithRead answerSBS
@@ -712,12 +712,12 @@ testParseEnum = testGroup "parseEnum"
         Right Red
           @=? TTC.parseEnum @String
             False False ColorInvalid ColorAmbiguous "red"
-    , testCase "S" $ Right Red @=? parseEnum False False redS
-    , testCase "T" $ Right Red @=? parseEnum False False redT
-    , testCase "TL" $ Right Red @=? parseEnum False False redTL
+    , testCase "S"   $ Right Red @=? parseEnum False False redS
+    , testCase "T"   $ Right Red @=? parseEnum False False redT
+    , testCase "TL"  $ Right Red @=? parseEnum False False redTL
     , testCase "TLB" $ Right Red @=? parseEnum False False redTLB
-    , testCase "ST" $ Right Red @=? parseEnum False False redST
-    , testCase "BS" $ Right Red @=? parseEnum False False redBS
+    , testCase "ST"  $ Right Red @=? parseEnum False False redST
+    , testCase "BS"  $ Right Red @=? parseEnum False False redBS
     , testCase "BSL" $ Right Red @=? parseEnum False False redBSL
     , testCase "BSB" $ Right Red @=? parseEnum False False redBSB
     , testCase "SBS" $ Right Red @=? parseEnum False False redSBS
@@ -738,12 +738,12 @@ testParseEnum' = testGroup "parseEnum'"
     [ testCase "@" $
         Right Red
           @=? TTC.parseEnum' @String @String "Color" False False "red"
-    , testCase "S" $ Right Red @=? parseEnum' False False redS
-    , testCase "T" $ Right Red @=? parseEnum' False False redT
-    , testCase "TL" $ Right Red @=? parseEnum' False False redTL
+    , testCase "S"   $ Right Red @=? parseEnum' False False redS
+    , testCase "T"   $ Right Red @=? parseEnum' False False redT
+    , testCase "TL"  $ Right Red @=? parseEnum' False False redTL
     , testCase "TLB" $ Right Red @=? parseEnum' False False redTLB
-    , testCase "ST" $ Right Red @=? parseEnum' False False redST
-    , testCase "BS" $ Right Red @=? parseEnum' False False redBS
+    , testCase "ST"  $ Right Red @=? parseEnum' False False redST
+    , testCase "BS"  $ Right Red @=? parseEnum' False False redBS
     , testCase "BSL" $ Right Red @=? parseEnum' False False redBSL
     , testCase "BSB" $ Right Red @=? parseEnum' False False redBSB
     , testCase "SBS" $ Right Red @=? parseEnum' False False redSBS
@@ -788,16 +788,16 @@ testParseX = testGroup "parse*"
 
 testParseMaybe :: TestTree
 testParseMaybe = testGroup "parseMaybe"
-    [ testCase "@" $ Just answer @=? TTC.parseMaybe @String "42"
-    , testCase "S" $ Just answer @=? TTC.parseMaybe answerS
-    , testCase "T" $ Just answer @=? TTC.parseMaybe answerT
-    , testCase "TL" $ Just answer @=? TTC.parseMaybe answerTL
-    , testCase "TLB" $ Just answer @=? TTC.parseMaybe answerTLB
-    , testCase "ST" $ Just answer @=? TTC.parseMaybe answerST
-    , testCase "BS" $ Just answer @=? TTC.parseMaybe answerBS
-    , testCase "BSL" $ Just answer @=? TTC.parseMaybe answerBSL
-    , testCase "BSB" $ Just answer @=? TTC.parseMaybe answerBSB
-    , testCase "SBS" $ Just answer @=? TTC.parseMaybe answerSBS
+    [ testCase "@"   $ Just answer @=? TTC.parseMaybe @String "42"
+    , testCase "S"   $ Just answer @=? TTC.parseMaybe         answerS
+    , testCase "T"   $ Just answer @=? TTC.parseMaybe         answerT
+    , testCase "TL"  $ Just answer @=? TTC.parseMaybe         answerTL
+    , testCase "TLB" $ Just answer @=? TTC.parseMaybe         answerTLB
+    , testCase "ST"  $ Just answer @=? TTC.parseMaybe         answerST
+    , testCase "BS"  $ Just answer @=? TTC.parseMaybe         answerBS
+    , testCase "BSL" $ Just answer @=? TTC.parseMaybe         answerBSL
+    , testCase "BSB" $ Just answer @=? TTC.parseMaybe         answerBSB
+    , testCase "SBS" $ Just answer @=? TTC.parseMaybe         answerSBS
     , testCase "noerror" $
         Just (PartialParser "test") @=? TTC.parseMaybe @String "test"
     , testCase "negative" $ Nothing @=? TTC.parseMaybe @String @PosInt "-42"
@@ -832,16 +832,16 @@ mkTestsParseMaybe testName f x = testGroup testName
 
 testParseOrFail :: TestTree
 testParseOrFail = testGroup "parseOrFail"
-    [ testCase "@" $ Just answer @=? TTC.parseOrFail @String "42"
-    , testCase "S" $ Just answer @=? TTC.parseOrFail answerS
-    , testCase "T" $ Just answer @=? TTC.parseOrFail answerT
-    , testCase "TL" $ Just answer @=? TTC.parseOrFail answerTL
-    , testCase "TLB" $ Just answer @=? TTC.parseOrFail answerTLB
-    , testCase "ST" $ Just answer @=? TTC.parseOrFail answerST
-    , testCase "BS" $ Just answer @=? TTC.parseOrFail answerBS
-    , testCase "BSL" $ Just answer @=? TTC.parseOrFail answerBSL
-    , testCase "BSB" $ Just answer @=? TTC.parseOrFail answerBSB
-    , testCase "SBS" $ Just answer @=? TTC.parseOrFail answerSBS
+    [ testCase "@"   $ Just answer @=? TTC.parseOrFail @String "42"
+    , testCase "S"   $ Just answer @=? TTC.parseOrFail         answerS
+    , testCase "T"   $ Just answer @=? TTC.parseOrFail         answerT
+    , testCase "TL"  $ Just answer @=? TTC.parseOrFail         answerTL
+    , testCase "TLB" $ Just answer @=? TTC.parseOrFail         answerTLB
+    , testCase "ST"  $ Just answer @=? TTC.parseOrFail         answerST
+    , testCase "BS"  $ Just answer @=? TTC.parseOrFail         answerBS
+    , testCase "BSL" $ Just answer @=? TTC.parseOrFail         answerBSL
+    , testCase "BSB" $ Just answer @=? TTC.parseOrFail         answerBSB
+    , testCase "SBS" $ Just answer @=? TTC.parseOrFail         answerSBS
     , testCase "noerror" $
         Just (PartialParser "test") @=? TTC.parseOrFail @String "test"
     , testCase "negative" $ Nothing @=? TTC.parseOrFail @String @PosInt "-42"
@@ -909,14 +909,14 @@ testParseUnsafeX = testGroup "parseUnsafe*"
 
 testReadsWithParse :: TestTree
 testReadsWithParse = testGroup "readsWithParse"
-    [ testCase "valid" $ [(answer, "")] @=? TTC.readsWithParse answerS
+    [ testCase "valid"   $ [(answer, "")] @=? TTC.readsWithParse answerS
     , testCase "invalid" $ [] @=? (TTC.readsWithParse :: ReadS PosInt) "-42"
     ]
 
 testReadsEnum :: TestTree
 testReadsEnum = testGroup "readsEnum"
-    [ testCase "valid" $ Just Red @=? readMaybe "R"
-    , testCase "invalid" $ Nothing @=? (readMaybe "bl" :: Maybe Color)
+    [ testCase "valid"   $ Just Red @=? readMaybe        "R"
+    , testCase "invalid" $ Nothing  @=? readMaybe @Color "bl"
     ]
 
 ------------------------------------------------------------------------------
