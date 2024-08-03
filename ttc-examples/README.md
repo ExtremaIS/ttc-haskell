@@ -162,3 +162,19 @@ To run the example, run the following command from the `ttc-haskell` project
 directory:
 
     $ make ttc-example-mkuvalidqq
+
+## `wrapper`
+
+This example demonstrates use of [DerivingVia][] to define TTC instances via a
+wrapper type.
+
+[DerivingVia]: <https://downloads.haskell.org/ghc/latest/docs/users_guide/exts/deriving_via.html>
+
+Source:
+
+* [wrapper.hs](wrapper/wrapper.hs)
+
+To run the example, run the following command from the `ttc-haskell` project
+directory:
+
+    $ make ttc-example-wrapper

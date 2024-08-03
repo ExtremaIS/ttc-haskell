@@ -38,6 +38,7 @@ library
   hs-source-dirs: src
   exposed-modules:
       Data.TTC
+    , Data.TTC.Wrapper
   build-depends:
       base >=4.13.0.0 && <4.21
     , bytestring >=0.10.10.1 && <0.13
@@ -55,6 +56,7 @@ test-suite ttc-test
   main-is: Spec.hs
   other-modules:
       Data.TTC.Test
+    , Data.TTC.Wrapper.Test
     , TestTypes.Ex
   build-depends:
       base

@@ -40,6 +40,7 @@ following conventions:
 
 ### Non-Breaking
 
+* Add `Data.TTC.Wrapper` module
 * Add Template Haskell functions for loading default instances
 * Bump `base` dependency version upper bound
 * Bump `template-haskell` dependency version upper bound

@@ -373,6 +373,15 @@ else
 endif
 .PHONY: ttc-example-validof
 
+ttc-example-wrapper: hr
+ttc-example-wrapper: # build and run ttc-example-wrapper *
+ifeq ($(MODE), stack)
+> stack run $(STACK_ARGS) ttc-example-wrapper
+else
+> cabal run $(CABAL_ARGS) ttc-example-wrapper
+endif
+.PHONY: ttc-example-wrapper
+
 ttc-repl: # ttc: enter a REPL *
 ifeq ($(MODE), stack)
 > stack repl ttc $(STACK_ARGS)
