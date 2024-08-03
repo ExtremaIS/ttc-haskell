@@ -1885,9 +1885,9 @@ readsEnum allowCI allowPrefix s =
 --   -> TH.Q (TH.TExp a)
 -- @
 --
--- This function is used the same way in all GHC versions.  See the @valid@,
--- @invalid@, and @lift@ example programs in the @ttc-examples@ directory of
--- the source repository.  The following is example usage from the @valid@
+-- This function is used the same way in all GHC versions.  See the @valid@
+-- and @invalid@ example programs in the @ttc-examples@ directory of the
+-- source repository.  The following is example usage from the @valid@
 -- example:
 --
 -- @

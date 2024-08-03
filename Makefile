@@ -301,15 +301,6 @@ else
 endif
 .PHONY: ttc-example-invalid
 
-ttc-example-lift: hr
-ttc-example-lift: # build and run ttc-example-lift *
-ifeq ($(MODE), stack)
-> stack run $(STACK_ARGS) ttc-example-lift
-else
-> cabal run $(CABAL_ARGS) ttc-example-lift
-endif
-.PHONY: ttc-example-lift
-
 ttc-example-mkvalid: hr
 ttc-example-mkvalid: # build and run ttc-example-mkvalid *
 ifeq ($(MODE), stack)

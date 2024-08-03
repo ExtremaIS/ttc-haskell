@@ -81,21 +81,6 @@ directory:
 
 The compilation fails due to the invalid username.
 
-## `lift`
-
-This is another example of using `valid` to validate a constant at
-compile-time, where one cannot automatically deriving a `Lift` instance.
-
-Source:
-
-* [Username.hs](lift/Username.hs)
-* [lift.hs](lift/lift.hs)
-
-To run the example, run the following command from the `ttc-haskell` project
-directory:
-
-    $ make ttc-example-lift
-
 ## `validof`
 
 This is an example of using `validOf` to validate a constant at compile-time.
