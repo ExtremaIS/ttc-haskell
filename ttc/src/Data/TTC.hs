@@ -221,9 +221,6 @@ module Data.TTC
   ) where
 
 -- https://hackage.haskell.org/package/base
-#if __GLASGOW_HASKELL__ <= 806
-import Control.Monad.Fail (MonadFail)
-#endif
 import Data.Int (Int8, Int16, Int32, Int64)
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
 import Data.String (IsString(fromString))

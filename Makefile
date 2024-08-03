@@ -194,7 +194,6 @@ endif
 
 test-all: # run all configured tests and build examples using MODE
 ifeq ($(MODE), stack)
-> @make test-build CONFIG=stack-8.6.5.yaml
 > @make test-build CONFIG=stack-8.8.4.yaml
 > @make test-build CONFIG=stack-8.10.7.yaml
 > @make test-build CONFIG=stack-9.0.2.yaml
@@ -204,7 +203,6 @@ ifeq ($(MODE), stack)
 > @make test-build CONFIG=stack-9.8.2.yaml
 > @make test-build CONFIG=stack-9.10.1.yaml
 else
-> @make test-build GHC_VERSION=8.6.5
 > @make test-build GHC_VERSION=8.8.4
 > @make test-build GHC_VERSION=8.10.7
 > @make test-build GHC_VERSION=9.0.2
@@ -421,7 +419,6 @@ endif
 
 ttc-test-all: # ttc: run all configured tests and build examples using MODE
 ifeq ($(MODE), stack)
-> @make ttc-test-build CONFIG=stack-8.6.5.yaml
 > @make ttc-test-build CONFIG=stack-8.8.4.yaml
 > @make ttc-test-build CONFIG=stack-8.10.7.yaml
 > @make ttc-test-build CONFIG=stack-9.0.2.yaml
@@ -431,7 +428,6 @@ ifeq ($(MODE), stack)
 > @make ttc-test-build CONFIG=stack-9.8.2.yaml
 > @make ttc-test-build CONFIG=stack-9.10.1.yaml
 else
-> @make ttc-test-build GHC_VERSION=8.6.5
 > @make ttc-test-build GHC_VERSION=8.8.4
 > @make ttc-test-build GHC_VERSION=8.10.7
 > @make ttc-test-build GHC_VERSION=9.0.2
