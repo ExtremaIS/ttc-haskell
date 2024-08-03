@@ -22,7 +22,6 @@ jobs:
         os:
           - ubuntu-latest
         ghc:
-          - "8.4.4"
           - "8.6.5"
           - "8.8.4"
           - "8.10.7"
@@ -100,7 +99,7 @@ jobs:
       - name: "cabal: ttc: examples"
         run: cabal build ttc-examples $CABAL_OPTS
 
-      - if: matrix.ghc == '8.4.4'
+      - if: matrix.ghc == '8.6.5'
         name: "ttc lower bounds: setup environment"
         run: |
           cabal clean
@@ -108,13 +107,13 @@ jobs:
           CABAL_OPTS="--project-file=cabal-ttc-bounds-lower.project"
           echo "CABAL_OPTS=${CABAL_OPTS}" | tee -a "${GITHUB_ENV}"
 
-      - if: matrix.ghc == '8.4.4'
+      - if: matrix.ghc == '8.6.5'
         name: "ttc lower bounds: configure build"
         run: |
           cabal configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
           cabal build ttc ttc-examples --dry-run $CABAL_OPTS
 
-      - if: matrix.ghc == '8.4.4'
+      - if: matrix.ghc == '8.6.5'
         name: "ttc lower bounds: restore cache"
         uses: actions/cache/restore@v4
         id: cache-ttc-bounds-lower
@@ -125,30 +124,30 @@ jobs:
           key: ${{ env.key }}-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ env.key }}-
 
-      - if: ${{ matrix.ghc == '8.4.4' && !steps.cache-ttc-bounds-lower.outputs.cache-hit }}
+      - if: ${{ matrix.ghc == '8.6.5' && !steps.cache-ttc-bounds-lower.outputs.cache-hit }}
         name: "ttc lower bounds: install dependencies"
         run: cabal build ttc ttc-examples $CABAL_OPTS --only-dependencies
 
-      - if: ${{ matrix.ghc == '8.4.4' && !steps.cache-ttc-bounds-lower.outputs.cache-hit }}
+      - if: ${{ matrix.ghc == '8.6.5' && !steps.cache-ttc-bounds-lower.outputs.cache-hit }}
         name: "ttc lower bounds: save cache"
         uses: actions/cache/save@v4
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-ttc-bounds-lower.outputs.cache-primary-key }}
 
-      - if: matrix.ghc == '8.4.4'
+      - if: matrix.ghc == '8.6.5'
         name: "ttc lower bounds: build"
         run: cabal build ttc $CABAL_OPTS
 
-      - if: matrix.ghc == '8.4.4'
+      - if: matrix.ghc == '8.6.5'
         name: "ttc lower bounds: test"
         run: cabal test ttc $CABAL_OPTS
 
-      - if: matrix.ghc == '8.4.4'
+      - if: matrix.ghc == '8.6.5'
         name: "ttc lower bounds: haddock"
         run: cabal haddock ttc $CABAL_OPTS
 
-      - if: matrix.ghc == '8.4.4'
+      - if: matrix.ghc == '8.6.5'
         name: "ttc lower bounds: examples"
         run: cabal build ttc-examples $CABAL_OPTS
 
@@ -236,7 +235,7 @@ jobs:
           path: ~/.stack
           key: ${{ steps.cache-stack.outputs.cache-primary-key }}
 
-  test-ghc844-cabal2410:
+  test-ghc865-cabal2410:
     name: Cabal ${{ matrix.cabal }} (GHC ${{ matrix.ghc }})
     runs-on: ${{ matrix.os }}
     strategy:
@@ -245,7 +244,7 @@ jobs:
         os:
           - ubuntu-latest
         ghc:
-          - "8.4.4"
+          - "8.6.5"
         cabal:
           - "2.4.1.0"
     steps:
