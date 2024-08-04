@@ -28,8 +28,6 @@ module Data.TTC.Wrapper
   , WrapperSBS(..)
   ) where
 
--- https://hackage.haskell.org/package/base
-
 -- https://hackage.haskell.org/package/bytestring
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Builder as BSB
