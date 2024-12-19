@@ -6,6 +6,16 @@
 
 ## Compatibility
 
+* GHC 9.12.1 boot libraries [`base`][] 4.21.0.0 and
+  [`template-haskell`][] 2.23.0.0 blocked by
+  [`hashable`][] and
+  [`text-short`][]
+
+[`base`]: <https://hackage.haskell.org/package/base>
+[`template-haskell`]: <https://hackage.haskell.org/package/template-haskell>
+[`hashable`]: <https://hackage.haskell.org/package/hashable>
+[`text-short`]: <https://hackage.haskell.org/package/text-short>
+
 ### Future
 
 * [`linear-builder`](https://github.com/Bodigrim/linear-builder)
