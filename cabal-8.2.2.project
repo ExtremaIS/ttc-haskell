@@ -1,9 +1,0 @@
-packages:
-  ./ttc.cabal
-  examples/ttc-examples.cabal
-
--- TTC works fine with GHC 8.2.2 and `text-2`, but Haddock documentation fails
--- to build.  This constraint allows documentation to build.
-
-constraints:
-  text < 2

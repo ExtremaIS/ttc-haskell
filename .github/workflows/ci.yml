@@ -1,307 +1,309 @@
 name: CI
 
 on:
-  pull_request:
   push:
     branches:
       - develop
       - main
+  pull_request:
+    branches:
+      - develop
 
 permissions:
   contents: read
 
 jobs:
-  config:
-    name: "Load configuration"
-    runs-on: ubuntu-latest
-    outputs:
-      ghcvers: ${{ steps.set-ghcvers.outputs.ghcvers }}
-      ghcvers_lower: ${{ steps.set-ghcvers.outputs.ghcvers_lower }}
-      ghcvers_upper: ${{ steps.set-ghcvers.outputs.ghcvers_upper }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Set ghcvers
-        id: set-ghcvers
-        run: ./test-all.sh github >> $GITHUB_OUTPUT
-
-  cabal:
-    name: "Cabal: GHC ${{ matrix.ghc }}"
-    needs: config
-    runs-on: ubuntu-latest
+  test-ghc-os:
+    name: GHC ${{ matrix.ghc }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        ghc: ${{fromJSON(needs.config.outputs.ghcvers)}}
+        os:
+          - ubuntu-latest
+        ghc:
+          - "8.8.4"
+          - "8.10.7"
+          - "9.0.2"
+          - "9.2.8"
+          - "9.4.8"
+          - "9.6.6"
+          - "9.8.4"
+          - "9.10.1"
+          - "9.12.1"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Haskell
+      - name: "checkout"
+        uses: actions/checkout@v4
+
+      - name: "setup Haskell"
         uses: haskell-actions/setup@v2
         id: setup
         with:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: latest
-          cabal-update: true
-      - name: Setup Environment
-        run: |
-          GHC_VERSION=$(ghc --numeric-version)
-          echo "GHC_VERSION=${GHC_VERSION}" | tee -a "${GITHUB_ENV}"
-          CABAL_VERSION=$(cabal --numeric-version)
-          echo "CABAL_VERSION=${CABAL_VERSION}" | tee -a "${GITHUB_ENV}"
-          CABAL_OPTS="--enable-tests --enable-benchmarks"
-          if [ -f "cabal-${GHC_VERSION}.project" ] ; then
-            CABAL_OPTS="--project-file=cabal-${GHC_VERSION}.project ${CABAL_OPTS}"
-          fi
-          echo "CABAL_OPTS=${CABAL_OPTS}" | tee -a "${GITHUB_ENV}"
-          CACHE_RESTORE_KEY="${RUNNER_OS}-$(date +%Y%m)-ghc-${GHC_VERSION}-cabal-${CABAL_VERSION}-"
-          echo "CACHE_RESTORE_KEY=${CACHE_RESTORE_KEY}" | tee -a "${GITHUB_ENV}"
-      - name: Configure Build
-        run: |
-          cabal v2-configure $CABAL_OPTS --disable-documentation
-          cabal v2-build --dry-run $CABAL_OPTS
-      - name: Restore Cached Dependencies
-        uses: actions/cache/restore@v3
-        id: cache
-        with:
-          path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ env.CACHE_RESTORE_KEY }}plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.CACHE_RESTORE_KEY }}
-      - name: Install Dependencies
-        run: cabal v2-build all $CABAL_OPTS --only-dependencies
-      - name: Save Cached Dependencies
-        uses: actions/cache/save@v3
-        if: ${{ !steps.cache.outputs.cache-hit
-          || steps.cache.outputs.cache-primary-key != steps.cache.outputs.cache-matched-key }}
-        with:
-          path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ steps.cache.outputs.cache-primary-key }}
-      - name: Build
-        run: cabal v2-build all $CABAL_OPTS
-      - name: Test
-        run: cabal v2-test all $CABAL_OPTS
-      - name: Haddock
-        run: cabal v2-haddock all $CABAL_OPTS
-      - name: Examples
-        run: cabal v2-build ttc-examples -f examples $CABAL_OPTS
-
-  stack:
-    name: "Stack: GHC ${{ matrix.ghc }}"
-    needs: config
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ghc: ${{fromJSON(needs.config.outputs.ghcvers)}}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Haskell
-        uses: haskell-actions/setup@v2
-        id: setup
-        with:
-          ghc-version: ${{ matrix.ghc }}
-          cabal-version: latest
-          cabal-update: true
+          cabal-update: false
           enable-stack: true
           stack-version: latest
-      - name: Setup Environment
+
+      - name: "update Cabal"
+        run: cabal update
+
+      - name: "setup environment"
         run: |
           GHC_VERSION=$(ghc --numeric-version)
-          echo "GHC_VERSION=${GHC_VERSION}" | tee -a "${GITHUB_ENV}"
-          CABAL_VERSION=$(cabal --numeric-version)
-          echo "CABAL_VERSION=${CABAL_VERSION}" | tee -a "${GITHUB_ENV}"
+          CABAL_OPTS=""
+          if [ -f "cabal-${GHC_VERSION}.project" ] ; then
+            CABAL_OPTS="--project-file=cabal-${GHC_VERSION}.project"
+          fi
+          echo "CABAL_OPTS=${CABAL_OPTS}" | tee -a "${GITHUB_ENV}"
           STACK_YAML="stack-${GHC_VERSION}.yaml"
           echo "STACK_YAML=${STACK_YAML}" | tee -a "${GITHUB_ENV}"
-          CACHE_RESTORE_KEY="${RUNNER_OS}-$(date +%Y%m)-ghc-${GHC_VERSION}-stack-"
-          echo "CACHE_RESTORE_KEY=${CACHE_RESTORE_KEY}" | tee -a "${GITHUB_ENV}"
-      - name: Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.stack
-            .stack-work
-          key: ${{ env.CACHE_RESTORE_KEY }}${{ hashFiles('ttc.cabal', env.STACK_YAML) }}
-          restore-keys: ${{ env.CACHE_RESTORE_KEY }}
-      - name: Build
-        run: stack build --system-ghc --test --bench --no-run-tests --no-run-benchmarks
-      - name: Test
-        run: stack test --system-ghc
-      - name: Haddock
-        run: stack haddock --system-ghc
-      - name: Examples
-        run: stack build --system-ghc --flag ttc-examples:examples
+          TS_YYYYMM="$(date +%Y%m)"
+          echo "TS_YYYYMM=${TS_YYYYMM}" | tee -a "${GITHUB_ENV}"
 
-  bounds-lower:
-    name: "Lower Bounds (GHC ${{ matrix.ghc }})"
-    needs: config
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ghc: ${{fromJSON(needs.config.outputs.ghcvers_lower)}}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Haskell
-        uses: haskell-actions/setup@v2
-        id: setup
-        with:
-          ghc-version: ${{ matrix.ghc }}
-          cabal-version: latest
-          cabal-update: true
-      - name: Setup Environment
+      - name: "cabal: configure build"
         run: |
-          GHC_VERSION=$(ghc --numeric-version)
-          echo "GHC_VERSION=${GHC_VERSION}" | tee -a "${GITHUB_ENV}"
-          CABAL_VERSION=$(cabal --numeric-version)
-          echo "CABAL_VERSION=${CABAL_VERSION}" | tee -a "${GITHUB_ENV}"
-          CABAL_OPTS="--enable-tests --enable-benchmarks --project-file=cabal-bounds-lower.project"
+          cabal configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
+          cabal build all --dry-run $CABAL_OPTS
+
+      - name: "cabal: restore cache"
+        uses: actions/cache/restore@v4
+        id: cache-cabal
+        env:
+          key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
+        with:
+          path: ${{ steps.setup.outputs.cabal-store }}
+          key: ${{ env.key }}-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ env.key }}-
+
+      - if: ${{ !steps.cache-cabal.outputs.cache-hit }}
+        name: "cabal: install dependencies"
+        run: cabal build all $CABAL_OPTS --only-dependencies
+
+      - if: ${{ !steps.cache-cabal.outputs.cache-hit }}
+        name: "cabal: save cache"
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.setup.outputs.cabal-store }}
+          key: ${{ steps.cache-cabal.outputs.cache-primary-key }}
+
+      - name: "cabal: ttc: build"
+        run: cabal build ttc $CABAL_OPTS
+
+      - name: "cabal: ttc: test"
+        run: cabal test ttc $CABAL_OPTS
+
+      - name: "cabal: ttc: haddock"
+        run: cabal haddock ttc $CABAL_OPTS
+
+      - name: "cabal: ttc: examples"
+        run: cabal build ttc-examples $CABAL_OPTS
+
+      - if: matrix.ghc == '8.8.4'
+        name: "ttc lower bounds: setup environment"
+        run: |
+          cabal clean
+          rm -rf ~/.cabal/store
+          CABAL_OPTS="--project-file=cabal-ttc-bounds-lower.project"
           echo "CABAL_OPTS=${CABAL_OPTS}" | tee -a "${GITHUB_ENV}"
-          CACHE_RESTORE_KEY="${RUNNER_OS}-$(date +%Y%m)-ghc-${GHC_VERSION}-cabal-${CABAL_VERSION}-"
-          echo "CACHE_RESTORE_KEY=${CACHE_RESTORE_KEY}" | tee -a "${GITHUB_ENV}"
-      - name: Configure Build
-        run: |
-          cabal v2-configure $CABAL_OPTS --disable-documentation
-          cabal v2-build --dry-run $CABAL_OPTS
-      - name: Restore Cached Dependencies
-        uses: actions/cache/restore@v3
-        id: cache
-        with:
-          path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ env.CACHE_RESTORE_KEY }}plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.CACHE_RESTORE_KEY }}
-      - name: Install Dependencies
-        run: cabal v2-build all $CABAL_OPTS --only-dependencies
-      - name: Save Cached Dependencies
-        uses: actions/cache/save@v3
-        if: ${{ !steps.cache.outputs.cache-hit
-          || steps.cache.outputs.cache-primary-key != steps.cache.outputs.cache-matched-key }}
-        with:
-          path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ steps.cache.outputs.cache-primary-key }}
-      - name: Build
-        run: cabal v2-build all $CABAL_OPTS
-      - name: Test
-        run: cabal v2-test all $CABAL_OPTS
-      - name: Haddock
-        run: cabal v2-haddock all $CABAL_OPTS
-      - name: Examples
-        run: cabal v2-build ttc-examples -f examples $CABAL_OPTS
 
-  bounds-upper:
-    name: "Upper Bounds (GHC ${{ matrix.ghc }})"
-    needs: config
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ghc: ${{fromJSON(needs.config.outputs.ghcvers_upper)}}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Haskell
-        uses: haskell-actions/setup@v2
-        id: setup
-        with:
-          ghc-version: ${{ matrix.ghc }}
-          cabal-version: latest
-          cabal-update: true
-      - name: Setup Environment
+      - if: matrix.ghc == '8.8.4'
+        name: "ttc lower bounds: configure build"
         run: |
-          GHC_VERSION=$(ghc --numeric-version)
-          echo "GHC_VERSION=${GHC_VERSION}" | tee -a "${GITHUB_ENV}"
-          CABAL_VERSION=$(cabal --numeric-version)
-          echo "CABAL_VERSION=${CABAL_VERSION}" | tee -a "${GITHUB_ENV}"
-          CABAL_OPTS="--enable-tests --enable-benchmarks --project-file=cabal-bounds-upper.project"
+          cabal configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
+          cabal build ttc ttc-examples --dry-run $CABAL_OPTS
+
+      - if: matrix.ghc == '8.8.4'
+        name: "ttc lower bounds: restore cache"
+        uses: actions/cache/restore@v4
+        id: cache-ttc-bounds-lower
+        env:
+          key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}-ttc-bounds-lower
+        with:
+          path: ${{ steps.setup.outputs.cabal-store }}
+          key: ${{ env.key }}-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ env.key }}-
+
+      - if: ${{ matrix.ghc == '8.8.4' && !steps.cache-ttc-bounds-lower.outputs.cache-hit }}
+        name: "ttc lower bounds: install dependencies"
+        run: cabal build ttc ttc-examples $CABAL_OPTS --only-dependencies
+
+      - if: ${{ matrix.ghc == '8.8.4' && !steps.cache-ttc-bounds-lower.outputs.cache-hit }}
+        name: "ttc lower bounds: save cache"
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.setup.outputs.cabal-store }}
+          key: ${{ steps.cache-ttc-bounds-lower.outputs.cache-primary-key }}
+
+      - if: matrix.ghc == '8.8.4'
+        name: "ttc lower bounds: build"
+        run: cabal build ttc $CABAL_OPTS
+
+      - if: matrix.ghc == '8.8.4'
+        name: "ttc lower bounds: test"
+        run: cabal test ttc $CABAL_OPTS
+
+      - if: matrix.ghc == '8.8.4'
+        name: "ttc lower bounds: haddock"
+        run: cabal haddock ttc $CABAL_OPTS
+
+      - if: matrix.ghc == '8.8.4'
+        name: "ttc lower bounds: examples"
+        run: cabal build ttc-examples $CABAL_OPTS
+
+      - if: matrix.ghc == '9.12.1'
+        name: "ttc upper bounds: setup environment"
+        run: |
+          cabal clean
+          rm -rf ~/.cabal/store
+          CABAL_OPTS="--project-file=cabal-ttc-bounds-upper.project"
           echo "CABAL_OPTS=${CABAL_OPTS}" | tee -a "${GITHUB_ENV}"
-          CACHE_RESTORE_KEY="${RUNNER_OS}-$(date +%Y%m)-ghc-${GHC_VERSION}-cabal-${CABAL_VERSION}-"
-          echo "CACHE_RESTORE_KEY=${CACHE_RESTORE_KEY}" | tee -a "${GITHUB_ENV}"
-      - name: Configure Build
-        run: |
-          cabal v2-configure $CABAL_OPTS --disable-documentation
-          cabal v2-build --dry-run $CABAL_OPTS
-      - name: Restore Cached Dependencies
-        uses: actions/cache/restore@v3
-        id: cache
-        with:
-          path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ env.CACHE_RESTORE_KEY }}plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.CACHE_RESTORE_KEY }}
-      - name: Install Dependencies
-        run: cabal v2-build all $CABAL_OPTS --only-dependencies
-      - name: Save Cached Dependencies
-        uses: actions/cache/save@v3
-        if: ${{ !steps.cache.outputs.cache-hit
-          || steps.cache.outputs.cache-primary-key != steps.cache.outputs.cache-matched-key }}
-        with:
-          path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ steps.cache.outputs.cache-primary-key }}
-      - name: Build
-        run: cabal v2-build all $CABAL_OPTS
-      - name: Test
-        run: cabal v2-test all $CABAL_OPTS
-      - name: Haddock
-        run: cabal v2-haddock all $CABAL_OPTS
-      - name: Examples
-        run: cabal v2-build ttc-examples -f examples $CABAL_OPTS
 
-  cabal-version:
-    name: "Cabal ${{ matrix.cabal }} (GHC ${{ matrix.ghc }})"
-    runs-on: ubuntu-latest
+      - if: matrix.ghc == '9.12.1'
+        name: "ttc upper bounds: configure build"
+        run: |
+          cabal configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
+          cabal build ttc ttc-examples --dry-run $CABAL_OPTS
+
+      - if: matrix.ghc == '9.12.1'
+        name: "ttc upper bounds: restore cache"
+        uses: actions/cache/restore@v4
+        id: cache-ttc-bounds-upper
+        env:
+          key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}-ttc-bounds-upper
+        with:
+          path: ${{ steps.setup.outputs.cabal-store }}
+          key: ${{ env.key }}-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ env.key }}-
+
+      - if: ${{ matrix.ghc == '9.12.1' && !steps.cache-ttc-bounds-upper.outputs.cache-hit }}
+        name: "ttc upper bounds: install dependencies"
+        run: cabal build ttc ttc-examples $CABAL_OPTS --only-dependencies
+
+      - if: ${{ matrix.ghc == '9.12.1' && !steps.cache-ttc-bounds-upper.outputs.cache-hit }}
+        name: "ttc upper bounds: save cache"
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ steps.setup.outputs.cabal-store }}
+          key: ${{ steps.cache-ttc-bounds-upper.outputs.cache-primary-key }}
+
+      - if: matrix.ghc == '9.12.1'
+        name: "ttc upper bounds: build"
+        run: cabal build ttc $CABAL_OPTS
+
+      - if: matrix.ghc == '9.12.1'
+        name: "ttc upper bounds: test"
+        run: cabal test ttc $CABAL_OPTS
+
+      - if: matrix.ghc == '9.12.1'
+        name: "ttc upper bounds: haddock"
+        run: cabal haddock ttc $CABAL_OPTS
+
+      - if: matrix.ghc == '9.12.1'
+        name: "ttc upper bounds: examples"
+        run: cabal build ttc-examples $CABAL_OPTS
+
+      - name: "stack: configure build"
+        run: stack --system-ghc ls dependencies json > stack-deps.json
+
+      - name: "stack: restore cache"
+        uses: actions/cache/restore@v4
+        id: cache-stack
+        env:
+          key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-stack
+        with:
+          path: ~/.stack
+          key: ${{ env.key }}-${{ hashFiles('stack-deps.json') }}
+          restore-keys: ${{ env.key }}-
+
+      - name: "stack: ttc: build"
+        run: stack build ttc --system-ghc --test --bench --no-run-tests --no-run-benchmarks
+
+      - name: "stack: ttc: test"
+        run: stack test ttc --system-ghc
+
+      - name: "stack: ttc: haddock"
+        run: stack haddock ttc --system-ghc
+
+      - name: "stack: ttc: examples"
+        run: stack build ttc-examples --system-ghc
+
+      - if: ${{ !steps.cache-stack.outputs.cache-hit }}
+        name: "stack: save cache"
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.stack
+          key: ${{ steps.cache-stack.outputs.cache-primary-key }}
+
+  test-ghc884-cabal3000:
+    name: Cabal ${{ matrix.cabal }} (GHC ${{ matrix.ghc }})
+    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
-        cabal: ['2.4.1.0', '3.0.0.0', '3.2.0.0', '3.4.1.0', '3.6.2.0', '3.8.1.0', '3.10.2.0']
-        ghc: ['8.2.2']
+        os:
+          - ubuntu-latest
+        ghc:
+          - "8.8.4"
+        cabal:
+          - "3.0.0.0"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-      - name: Setup Haskell
+      - name: "checkout"
+        uses: actions/checkout@v4
+
+      - name: "setup Haskell"
         uses: haskell-actions/setup@v2
         id: setup
         with:
           ghc-version: ${{ matrix.ghc }}
           cabal-version: ${{ matrix.cabal }}
           cabal-update: true
-      - name: Setup Environment
+
+      - name: "setup environment"
         run: |
           GHC_VERSION=$(ghc --numeric-version)
-          echo "GHC_VERSION=${GHC_VERSION}" | tee -a "${GITHUB_ENV}"
-          CABAL_VERSION=$(cabal --numeric-version)
-          echo "CABAL_VERSION=${CABAL_VERSION}" | tee -a "${GITHUB_ENV}"
-          CABAL_OPTS="--enable-tests --enable-benchmarks"
+          CABAL_OPTS=""
           if [ -f "cabal-${GHC_VERSION}.project" ] ; then
-            CABAL_OPTS="--project-file=cabal-${GHC_VERSION}.project ${CABAL_OPTS}"
+            CABAL_OPTS="--project-file=cabal-${GHC_VERSION}.project"
           fi
           echo "CABAL_OPTS=${CABAL_OPTS}" | tee -a "${GITHUB_ENV}"
-          CACHE_RESTORE_KEY="${RUNNER_OS}-$(date +%Y%m)-ghc-${GHC_VERSION}-cabal-${CABAL_VERSION}-"
-          echo "CACHE_RESTORE_KEY=${CACHE_RESTORE_KEY}" | tee -a "${GITHUB_ENV}"
-      - name: Configure Build
+          TS_YYYYMM="$(date +%Y%m)"
+          echo "TS_YYYYMM=${TS_YYYYMM}" | tee -a "${GITHUB_ENV}"
+
+      - name: "configure build"
         run: |
-          cabal v2-configure $CABAL_OPTS --disable-documentation
-          cabal v2-build --dry-run $CABAL_OPTS
-      - name: Restore Cached Dependencies
-        uses: actions/cache/restore@v3
-        id: cache
+          cabal v2-configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
+          cabal v2-build all --dry-run $CABAL_OPTS
+
+      - name: "restore cache"
+        uses: actions/cache/restore@v4
+        id: cache-cabal
+        env:
+          key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ env.CACHE_RESTORE_KEY }}plan-${{ hashFiles('**/plan.json') }}
-          restore-keys: ${{ env.CACHE_RESTORE_KEY }}
-      - name: Install Dependencies
+          key: ${{ env.key }}-${{ hashFiles('**/plan.json') }}
+          restore-keys: ${{ env.key }}-
+
+      - if: ${{ !steps.cache-cabal.outputs.cache-hit }}
+        name: "install dependencies"
         run: cabal v2-build all $CABAL_OPTS --only-dependencies
-      - name: Save Cached Dependencies
-        uses: actions/cache/save@v3
-        if: ${{ !steps.cache.outputs.cache-hit
-          || steps.cache.outputs.cache-primary-key != steps.cache.outputs.cache-matched-key }}
+
+      - if: ${{ !steps.cache-cabal.outputs.cache-hit }}
+        name: "save cache"
+        uses: actions/cache/save@v4
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
-          key: ${{ steps.cache.outputs.cache-primary-key }}
-      - name: Build
-        run: cabal v2-build all $CABAL_OPTS
-      - name: Test
-        run: cabal v2-test all $CABAL_OPTS
-      - name: Haddock
-        run: cabal v2-haddock all $CABAL_OPTS
-      - name: Examples
-        run: cabal v2-build ttc-examples -f examples $CABAL_OPTS
+          key: ${{ steps.cache-cabal.outputs.cache-primary-key }}
+
+      - name: "ttc: build"
+        run: cabal v2-build ttc $CABAL_OPTS
+
+      - name: "ttc: test"
+        run: cabal v2-test ttc $CABAL_OPTS
+
+      - name: "ttc: haddock"
+        run: cabal v2-haddock ttc $CABAL_OPTS
+
+      - name: "ttc: examples"
+        run: cabal v2-build ttc-examples $CABAL_OPTS

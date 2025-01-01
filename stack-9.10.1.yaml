@@ -1,0 +1,5 @@
+resolver: nightly-2025-01-01
+
+packages:
+  - ./ttc
+  - ./ttc-examples
