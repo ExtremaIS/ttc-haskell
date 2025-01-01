@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               ttc
-version:            1.4.0.0
+version:            1.5.0.0
 synopsis:           Textual Type Classes
 description:
   This library provides type classes for conversion between data types and
