@@ -30,6 +30,7 @@ jobs:
           - "9.6.6"
           - "9.8.4"
           - "9.10.1"
+          - "9.12.1"
     steps:
       - name: "checkout"
         uses: actions/checkout@v4
@@ -150,7 +151,7 @@ jobs:
         name: "ttc lower bounds: examples"
         run: cabal build ttc-examples $CABAL_OPTS
 
-      - if: matrix.ghc == '9.10.1'
+      - if: matrix.ghc == '9.12.1'
         name: "ttc upper bounds: setup environment"
         run: |
           cabal clean
@@ -158,13 +159,13 @@ jobs:
           CABAL_OPTS="--project-file=cabal-ttc-bounds-upper.project"
           echo "CABAL_OPTS=${CABAL_OPTS}" | tee -a "${GITHUB_ENV}"
 
-      - if: matrix.ghc == '9.10.1'
+      - if: matrix.ghc == '9.12.1'
         name: "ttc upper bounds: configure build"
         run: |
           cabal configure $CABAL_OPTS --enable-tests --enable-benchmarks --disable-documentation
           cabal build ttc ttc-examples --dry-run $CABAL_OPTS
 
-      - if: matrix.ghc == '9.10.1'
+      - if: matrix.ghc == '9.12.1'
         name: "ttc upper bounds: restore cache"
         uses: actions/cache/restore@v4
         id: cache-ttc-bounds-upper
@@ -175,30 +176,30 @@ jobs:
           key: ${{ env.key }}-${{ hashFiles('**/plan.json') }}
           restore-keys: ${{ env.key }}-
 
-      - if: ${{ matrix.ghc == '9.10.1' && !steps.cache-ttc-bounds-upper.outputs.cache-hit }}
+      - if: ${{ matrix.ghc == '9.12.1' && !steps.cache-ttc-bounds-upper.outputs.cache-hit }}
         name: "ttc upper bounds: install dependencies"
         run: cabal build ttc ttc-examples $CABAL_OPTS --only-dependencies
 
-      - if: ${{ matrix.ghc == '9.10.1' && !steps.cache-ttc-bounds-upper.outputs.cache-hit }}
+      - if: ${{ matrix.ghc == '9.12.1' && !steps.cache-ttc-bounds-upper.outputs.cache-hit }}
         name: "ttc upper bounds: save cache"
         uses: actions/cache/save@v4
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-ttc-bounds-upper.outputs.cache-primary-key }}
 
-      - if: matrix.ghc == '9.10.1'
+      - if: matrix.ghc == '9.12.1'
         name: "ttc upper bounds: build"
         run: cabal build ttc $CABAL_OPTS
 
-      - if: matrix.ghc == '9.10.1'
+      - if: matrix.ghc == '9.12.1'
         name: "ttc upper bounds: test"
         run: cabal test ttc $CABAL_OPTS
 
-      - if: matrix.ghc == '9.10.1'
+      - if: matrix.ghc == '9.12.1'
         name: "ttc upper bounds: haddock"
         run: cabal haddock ttc $CABAL_OPTS
 
-      - if: matrix.ghc == '9.10.1'
+      - if: matrix.ghc == '9.12.1'
         name: "ttc upper bounds: examples"
         run: cabal build ttc-examples $CABAL_OPTS
 
