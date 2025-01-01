@@ -2,7 +2,7 @@
 -- |
 -- Module      : CreditCard
 -- Description : credit card data types
--- Copyright   : Copyright (c) 2019-2024 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2025 Travis Cardwell
 -- License     : MIT
 --
 -- This module defines the data types for a credit card, with 'TTC.Render' and

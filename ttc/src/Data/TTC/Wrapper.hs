@@ -2,7 +2,7 @@
 -- |
 -- Module      : Data.TTC.Wrapper
 -- Description : TTC wrapper types
--- Copyright   : Copyright (c) 2019-2024 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2025 Travis Cardwell
 -- License     : MIT
 --
 -- This module defines a @newtype@ wrapper for each 'TTC.Textual' data type.

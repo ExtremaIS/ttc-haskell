@@ -2,7 +2,7 @@
 -- |
 -- Module      : Main
 -- Description : minimal example of using Render and Parse instances
--- Copyright   : Copyright (c) 2019-2024 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2025 Travis Cardwell
 -- License     : MIT
 ------------------------------------------------------------------------------
 

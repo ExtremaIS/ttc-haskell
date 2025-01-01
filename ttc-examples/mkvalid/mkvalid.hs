@@ -2,7 +2,7 @@
 -- |
 -- Module      : Main
 -- Description : example of compile-time validation
--- Copyright   : Copyright (c) 2019-2024 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2025 Travis Cardwell
 -- License     : MIT
 --
 -- 'TTC.mkValid' is used to create @valid@ function, to validate constants of

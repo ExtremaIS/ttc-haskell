@@ -2,7 +2,7 @@
 -- |
 -- Module      : Data.TTC
 -- Description : Textual Type Classes
--- Copyright   : Copyright (c) 2019-2024 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2025 Travis Cardwell
 -- License     : MIT
 --
 -- TTC, an initialism of /Textual Type Classes/, is a library that provides

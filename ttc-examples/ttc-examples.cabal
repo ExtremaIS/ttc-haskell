@@ -11,7 +11,7 @@ license:            MIT
 license-file:       LICENSE
 author:             Travis Cardwell <travis.cardwell@extrema.is>
 maintainer:         Travis Cardwell <travis.cardwell@extrema.is>
-copyright:          Copyright (c) 2019-2024 Travis Cardwell
+copyright:          Copyright (c) 2019-2025 Travis Cardwell
 category:           Data, Text
 build-type:         Simple
 extra-doc-files:    README.md

@@ -2,7 +2,7 @@
 -- |
 -- Module      : Main
 -- Description : example of compile-time validation
--- Copyright   : Copyright (c) 2019-2024 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2025 Travis Cardwell
 -- License     : MIT
 --
 -- 'TTC.mkUntypedValidQQ' is used to create @valid@ quasi-quoter, to validate

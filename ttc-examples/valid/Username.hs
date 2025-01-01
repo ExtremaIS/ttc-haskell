@@ -2,7 +2,7 @@
 -- |
 -- Module      : Username
 -- Description : username data type
--- Copyright   : Copyright (c) 2019-2024 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2025 Travis Cardwell
 -- License     : MIT
 --
 -- This module defines a username data type, with 'TTC.Render' and 'TTC.Parse'

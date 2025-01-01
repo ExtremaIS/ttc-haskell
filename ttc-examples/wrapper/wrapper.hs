@@ -2,7 +2,7 @@
 -- |
 -- Module      : Main
 -- Description : minimal example of using a wrapper type
--- Copyright   : Copyright (c) 2019-2024 Travis Cardwell
+-- Copyright   : Copyright (c) 2019-2025 Travis Cardwell
 -- License     : MIT
 --
 -- This example demonstrates use of @DerivingVia@ to define TTC instances via
