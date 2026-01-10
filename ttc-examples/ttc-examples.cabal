@@ -1,6 +1,6 @@
 cabal-version:      2.2
 name:               ttc-examples
-version:            1.2.0.0
+version:            1.5.0.1
 synopsis:           TTC Examples
 description:
   This package contains TTC examples.  Please see the README on GitHub at
