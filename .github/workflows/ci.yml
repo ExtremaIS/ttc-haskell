@@ -34,7 +34,7 @@ jobs:
           - "9.14.1"
     steps:
       - name: "checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: "setup Haskell"
         uses: haskell-actions/setup@v2
@@ -68,7 +68,7 @@ jobs:
           cabal build all --dry-run $CABAL_OPTS
 
       - name: "cabal: restore cache"
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: cache-cabal
         env:
           key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
@@ -83,7 +83,7 @@ jobs:
 
       - if: ${{ !steps.cache-cabal.outputs.cache-hit }}
         name: "cabal: save cache"
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-cabal.outputs.cache-primary-key }}
@@ -116,7 +116,7 @@ jobs:
 
       - if: matrix.ghc == '8.8.4'
         name: "ttc lower bounds: restore cache"
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: cache-ttc-bounds-lower
         env:
           key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}-ttc-bounds-lower
@@ -131,7 +131,7 @@ jobs:
 
       - if: ${{ matrix.ghc == '8.8.4' && !steps.cache-ttc-bounds-lower.outputs.cache-hit }}
         name: "ttc lower bounds: save cache"
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-ttc-bounds-lower.outputs.cache-primary-key }}
@@ -168,7 +168,7 @@ jobs:
 
       - if: matrix.ghc == '9.14.1'
         name: "ttc upper bounds: restore cache"
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: cache-ttc-bounds-upper
         env:
           key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}-ttc-bounds-upper
@@ -183,7 +183,7 @@ jobs:
 
       - if: ${{ matrix.ghc == '9.14.1' && !steps.cache-ttc-bounds-upper.outputs.cache-hit }}
         name: "ttc upper bounds: save cache"
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-ttc-bounds-upper.outputs.cache-primary-key }}
@@ -208,7 +208,7 @@ jobs:
         run: stack --system-ghc ls dependencies json > stack-deps.json
 
       - name: "stack: restore cache"
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: cache-stack
         env:
           key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-stack
@@ -231,7 +231,7 @@ jobs:
 
       - if: ${{ !steps.cache-stack.outputs.cache-hit }}
         name: "stack: save cache"
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ~/.stack
           key: ${{ steps.cache-stack.outputs.cache-primary-key }}
@@ -250,7 +250,7 @@ jobs:
           - "3.0.0.0"
     steps:
       - name: "checkout"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: "setup Haskell"
         uses: haskell-actions/setup@v2
@@ -277,7 +277,7 @@ jobs:
           cabal v2-build all --dry-run $CABAL_OPTS
 
       - name: "restore cache"
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         id: cache-cabal
         env:
           key: ${{ runner.os }}-${{ env.TS_YYYYMM }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ steps.setup.outputs.cabal-version }}
@@ -292,7 +292,7 @@ jobs:
 
       - if: ${{ !steps.cache-cabal.outputs.cache-hit }}
         name: "save cache"
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: ${{ steps.setup.outputs.cabal-store }}
           key: ${{ steps.cache-cabal.outputs.cache-primary-key }}
