@@ -80,6 +80,11 @@ strings.
 
 There are a number of libraries that simplify conversion between string types.
 
+The following library has a similar design to TTC, using a single type
+variable.
+
+* [text-convert][]
+
 The following libraries provide type classes with two type variables.  The
 primary benefit of this approach is that one can add support for any string
 type.  The drawback of this approach is that implementations of `Render` and
@@ -89,7 +94,7 @@ resulting in unnecessary conversion when using other types.
 * [string-conv][]
 * [string-conversions][]
 
-The following library provide type classes with a single type variable, but
+The following libraries provide type classes with a single type variable, but
 conversion is done via a fixed type.
 
 * [hxt-regex-xmlschema][] has a `StringLike` type class and does conversion
@@ -105,6 +110,11 @@ conversion is done via a fixed type.
 * [text-conversions][] converts via the `Text` type
 * [textual][] (deprecated) converts via the `String` type
 
+The following library just converts from `Text`.
+
+* [from-text][] converts from `Text` to various types, including non-Unicode
+  types (`PosixString` and `OsString`)
+
 [string-conv]: <https://hackage.haskell.org/package/string-conv>
 [string-conversions]: <https://hackage.haskell.org/package/string-conversions>
 [hxt-regex-xmlschema]: <https://hackage.haskell.org/package/hxt-regex-xmlschema>
@@ -113,7 +123,9 @@ conversion is done via a fixed type.
 [stringlike]: <https://hackage.haskell.org/package/stringlike>
 [tagsoup]: <https://hackage.haskell.org/package/tagsoup>
 [text-conversions]: <https://hackage.haskell.org/package/text-conversions>
+[text-convert]: <https://hackage-content.haskell.org/package/text-convert>
 [textual]: <https://hackage.haskell.org/package/textual>
+[from-text]: <https://hackage.haskell.org/package/from-text>
 
 ### Arbitrary Type Conversion
 
@@ -123,11 +135,18 @@ between arbitrary types, including string types.
 * [basement][] provides type classes for conversion that may fail as well as
   conversion that cannot fail
 * [convertible][]
+* [lawful-conversions][]
 * [witch][] provides type classes for conversion that may fail as well as
   conversion that cannot fail
 
+The following library provides conversion between a fixed set of types.
+
+* [unwitch][] just uses functions (with no type classes)
+
 [basement]: <https://hackage.haskell.org/package/basement>
 [convertible]: <https://hackage.haskell.org/package/convertible>
+[lawful-conversions]: <https://hackage-content.haskell.org/package/lawful-conversions>
+[unwitch]: <https://hackage-content.haskell.org/package/unwitch>
 [witch]: <https://hackage.haskell.org/package/witch>
 
 ## Project
