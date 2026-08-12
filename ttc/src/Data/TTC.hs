@@ -55,10 +55,15 @@
 
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE ExplicitForAll #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Data.TTC
@@ -76,6 +81,8 @@ module Data.TTC
   , toBSL
   , toBSB
   , toSBS
+  , Concrete
+  , toConcrete
     -- ** \"From\" Conversions
     -- $TextualFrom
   , fromS
@@ -283,7 +290,13 @@ import qualified Data.Text.Short as ST
 -- <https://www.extrema.is/articles/ttc-textual-type-classes/textual-type-class>
 --
 -- @since 0.1.0.0
-class IsString t => Textual t where
+class
+  ( IsString t
+  , Eq (Concrete t)
+  , Ord (Concrete t)
+  , IsString (Concrete t)
+  , Show (Concrete t)
+  ) => Textual t where
   -- | Convert from a textual data type to a 'String'
   --
   -- @since 0.1.0.0
@@ -334,6 +347,65 @@ class IsString t => Textual t where
   -- @since 0.1.0.0
   convert' :: Textual t' => t' -> t
 
+  -- | A representation of a textual data type with 'Eq' and 'Ord' instances.
+  --
+  -- For most textual data types, this is a newtype around the data type itself.
+  -- But for the builder types, it is the corresponding lazy data type: @Text@
+  -- 'TLB.Builder' uses lazy 'TL.Text', and @ByteString@ 'BSB.Builder' uses
+  -- lazy 'BSL.ByteString'.
+  --
+  -- Builder types are represented internally by functions. Converting one to
+  -- its concrete representation evaluates those functions and stores the
+  -- resulting text or bytes. Lazy results may still be stored as chunks, but
+  -- the builder is not regenerated when the concrete value is compared again.
+  --
+  -- For a non-builder type, converting to its concrete representation simply
+  -- wraps the converted value in a newtype.
+  --
+  -- @since 1.6.0.0
+  data Concrete t
+
+  -- | Convert a concrete representation to any textual data type.
+  --
+  -- This class method is used by the 'Textual' instance for 'Concrete' to
+  -- implement the conversion functions. It is not exported.
+  --
+  -- Its only purpose is to be called by the conversion functions, 
+  -- such as 'toS' and 'toT', in the @Textual (Concrete t)@ instance. 
+  -- Once that instance is defined, callers can use those 
+  -- conversion functions directly.
+  --
+  -- @since 1.6.0.0
+  fromConcrete' :: Textual t' => Concrete t -> t'
+
+  -- | Convert a textual data type to its concrete representation.
+  --
+  -- For example, a 'Parse' instance can use this function to pattern match on
+  -- a textual value without converting it to a particular textual type:
+  --
+  -- @
+  -- {-# LANGUAGE OverloadedStrings #-}
+  --
+  -- data PrimaryColour = Red | Green | Blue
+  --
+  -- instance Parse PrimaryColour where
+  --   parse x = case toConcrete x of
+  --     "red" -> Right Red
+  --     "green" -> Right Green
+  --     "blue" -> Right Blue
+  --     _ -> Left "Invalid colour"
+  -- @
+  --
+  -- 'Parse' instances are polymorphic over all 'Textual' types. Using
+  -- 'toConcrete' lets them avoid unnecessary conversions for types that are
+  -- already concrete, while also avoiding repeated evaluation of builders.
+  --
+  -- With @OverloadedStrings@ enabled, the 'Eq' and 'IsString' superclass
+  -- constraints allow the result to be matched against string literals.
+  --
+  -- @since 1.6.0.0
+  toConcrete :: t -> Concrete t
+
 instance Textual String where
   toS = id
   toT = T.pack
@@ -345,6 +417,10 @@ instance Textual String where
   toBSB = BSB.byteString . TE.encodeUtf8 . T.pack
   toSBS = SBS.toShort . TE.encodeUtf8 . T.pack
   convert' = toS
+  newtype Concrete String = ConcreteString { unConcreteString :: String }
+    deriving newtype (Eq, Ord, IsString, Show)
+  toConcrete = ConcreteString
+  fromConcrete' = fromS . unConcreteString
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -355,6 +431,8 @@ instance Textual String where
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
   {-# INLINE convert' #-}
+  {-# INLINE toConcrete #-}
+  {-# INLINE fromConcrete' #-}
 
 instance Textual T.Text where
   toS = T.unpack
@@ -367,6 +445,10 @@ instance Textual T.Text where
   toBSB = BSB.byteString . TE.encodeUtf8
   toSBS = SBS.toShort . TE.encodeUtf8
   convert' = toT
+  newtype Concrete T.Text = ConcreteStrictText { unConcreteStrictText :: T.Text }
+    deriving newtype (Eq, Ord, IsString, Show)
+  toConcrete = ConcreteStrictText
+  fromConcrete' = fromT . unConcreteStrictText
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -377,6 +459,8 @@ instance Textual T.Text where
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
   {-# INLINE convert' #-}
+  {-# INLINE toConcrete #-}
+  {-# INLINE fromConcrete' #-}
 
 instance Textual TL.Text where
   toS = TL.unpack
@@ -389,6 +473,10 @@ instance Textual TL.Text where
   toBSB = BSB.lazyByteString . TLE.encodeUtf8
   toSBS = SBS.toShort . BSL.toStrict . TLE.encodeUtf8
   convert' = toTL
+  newtype Concrete TL.Text = ConcreteLazyText { unConcreteLazyText :: TL.Text }
+    deriving newtype (Eq, Ord, IsString, Show)
+  toConcrete = ConcreteLazyText
+  fromConcrete' = fromTL . unConcreteLazyText
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -399,6 +487,8 @@ instance Textual TL.Text where
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
   {-# INLINE convert' #-}
+  {-# INLINE toConcrete #-}
+  {-# INLINE fromConcrete' #-}
 
 instance Textual TLB.Builder where
   toS = TL.unpack . TLB.toLazyText
@@ -411,6 +501,10 @@ instance Textual TLB.Builder where
   toBSB = BSB.lazyByteString . TLE.encodeUtf8 . TLB.toLazyText
   toSBS = SBS.toShort . BSL.toStrict . TLE.encodeUtf8 . TLB.toLazyText
   convert' = toTLB
+  newtype Concrete TLB.Builder = ConcreteTextBuilder { unConcreteTextBuilder :: TL.Text }
+    deriving newtype (Eq, Ord, IsString, Show)
+  toConcrete = ConcreteTextBuilder . toTL
+  fromConcrete' = fromTL . unConcreteTextBuilder
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -421,6 +515,8 @@ instance Textual TLB.Builder where
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
   {-# INLINE convert' #-}
+  {-# INLINE toConcrete #-}
+  {-# INLINE fromConcrete' #-}
 
 instance Textual ST.ShortText where
   toS = ST.toString
@@ -433,6 +529,10 @@ instance Textual ST.ShortText where
   toBSB = BSB.byteString . ST.toByteString
   toSBS = ST.toShortByteString
   convert' = toST
+  newtype Concrete ST.ShortText = ConcreteShortText { unConcreteShortText :: ST.ShortText }
+    deriving newtype (Eq, Ord, IsString, Show)
+  toConcrete = ConcreteShortText
+  fromConcrete' = fromST . unConcreteShortText
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -443,6 +543,8 @@ instance Textual ST.ShortText where
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
   {-# INLINE convert' #-}
+  {-# INLINE toConcrete #-}
+  {-# INLINE fromConcrete' #-}
 
 instance Textual BS.ByteString where
   toS = T.unpack . TE.decodeUtf8With TEE.lenientDecode
@@ -455,6 +557,10 @@ instance Textual BS.ByteString where
   toBSB = BSB.byteString
   toSBS = SBS.toShort
   convert' = toBS
+  newtype Concrete BS.ByteString = ConcreteStrictByteString { unConcreteStrictByteString :: BS.ByteString }
+    deriving newtype (Eq, Ord, IsString, Show)
+  toConcrete = ConcreteStrictByteString
+  fromConcrete' = fromBS . unConcreteStrictByteString
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -465,6 +571,8 @@ instance Textual BS.ByteString where
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
   {-# INLINE convert' #-}
+  {-# INLINE toConcrete #-}
+  {-# INLINE fromConcrete' #-}
 
 instance Textual BSL.ByteString where
   toS = TL.unpack . TLE.decodeUtf8With TEE.lenientDecode
@@ -477,6 +585,10 @@ instance Textual BSL.ByteString where
   toBSB = BSB.lazyByteString
   toSBS = SBS.toShort . BSL.toStrict
   convert' = toBSL
+  newtype Concrete BSL.ByteString = ConcreteLazyByteString { unConcreteLazyByteString :: BSL.ByteString }
+    deriving newtype (Eq, Ord, IsString, Show)
+  toConcrete = ConcreteLazyByteString
+  fromConcrete' = fromBSL . unConcreteLazyByteString
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -487,6 +599,8 @@ instance Textual BSL.ByteString where
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
   {-# INLINE convert' #-}
+  {-# INLINE toConcrete #-}
+  {-# INLINE fromConcrete' #-}
 
 instance Textual BSB.Builder where
   toS =
@@ -508,6 +622,10 @@ instance Textual BSB.Builder where
   toBSB = id
   toSBS = SBS.toShort . BSL.toStrict . BSB.toLazyByteString
   convert' = toBSB
+  newtype Concrete BSB.Builder = ConcreteByteStringBuilder { unConcreteByteStringBuilder :: BSL.ByteString }
+    deriving newtype (Eq, Ord, IsString, Show)
+  toConcrete = ConcreteByteStringBuilder . toBSL
+  fromConcrete' = fromBSL . unConcreteByteStringBuilder
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -518,6 +636,8 @@ instance Textual BSB.Builder where
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
   {-# INLINE convert' #-}
+  {-# INLINE toConcrete #-}
+  {-# INLINE fromConcrete' #-}
 
 instance Textual SBS.ShortByteString where
   toS = T.unpack . TE.decodeUtf8With TEE.lenientDecode . SBS.fromShort
@@ -530,6 +650,10 @@ instance Textual SBS.ShortByteString where
   toBSB = BSB.byteString . SBS.fromShort
   toSBS = id
   convert' = toSBS
+  newtype Concrete SBS.ShortByteString = ConcreteShortByteString { unConcreteShortByteString :: SBS.ShortByteString }
+    deriving newtype (Eq, Ord, IsString, Show)
+  toConcrete = ConcreteShortByteString
+  fromConcrete' = fromSBS . unConcreteShortByteString
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -540,6 +664,49 @@ instance Textual SBS.ShortByteString where
   {-# INLINE toBSB #-}
   {-# INLINE toSBS #-}
   {-# INLINE convert' #-}
+  {-# INLINE toConcrete #-}
+  {-# INLINE fromConcrete' #-}
+
+instance Textual t => Textual (Concrete t) where
+  -- The class could provide specialized methods such as
+  -- @fromConcreteToS@ and @fromConcreteToT@. That would allow each instance
+  -- to specialize conversions from a concrete representation, but it would 
+  -- add nine methods to every one of the ten instances of this class, 
+  -- (90 implementations) just to avoid one instance dictionary lookup.
+  --
+  -- And since values are converted to their concrete representations 
+  -- more often than they are converted from them, 
+  -- I don't think the additional code bloat  is worthwhile.
+  toS = fromConcrete'
+  toT = fromConcrete'
+  toTL = fromConcrete'
+  toTLB = fromConcrete'
+  toST = fromConcrete'
+  toBS = fromConcrete'
+  toBSL = fromConcrete'
+  toBSB = fromConcrete'
+  toSBS = fromConcrete'
+  convert' = toConcrete . convert'
+  newtype Concrete (Concrete t) = AlreadyConcrete { unAlreadyConcrete :: Concrete t }
+  toConcrete = AlreadyConcrete
+  fromConcrete' = fromConcrete' . unAlreadyConcrete
+  {-# INLINE toS #-}
+  {-# INLINE toT #-}
+  {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
+  {-# INLINE toST #-}
+  {-# INLINE toBS #-}
+  {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
+  {-# INLINE convert' #-}
+  {-# INLINE toConcrete #-}
+  {-# INLINE fromConcrete' #-}
+
+deriving newtype instance Eq (Concrete t) => Eq (Concrete (Concrete t))
+deriving newtype instance Ord (Concrete t) => Ord (Concrete (Concrete t))
+deriving newtype instance IsString (Concrete t) => IsString (Concrete (Concrete t))
+deriving newtype instance Show (Concrete t) => Show (Concrete (Concrete t))
 
 ------------------------------------------------------------------------------
 
