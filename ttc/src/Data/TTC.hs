@@ -283,7 +283,7 @@ import qualified Data.Text.Short as ST
 -- <https://www.extrema.is/articles/ttc-textual-type-classes/textual-type-class>
 --
 -- @since 0.1.0.0
-class Textual t where
+class IsString t => Textual t where
   -- | Convert from a textual data type to a 'String'
   --
   -- @since 0.1.0.0
