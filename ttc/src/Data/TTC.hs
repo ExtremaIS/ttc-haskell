@@ -83,6 +83,8 @@ module Data.TTC
   , toSBS
   , Concrete
   , toConcrete
+  , Builder
+  , toBuilder
     -- ** \"From\" Conversions
     -- $TextualFrom
   , fromS
@@ -229,6 +231,7 @@ module Data.TTC
 
 -- https://hackage.haskell.org/package/base
 import Data.Int (Int8, Int16, Int32, Int64)
+import Data.Monoid (Endo(Endo, appEndo))
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
 import Data.String (IsString(fromString))
 import Data.Word (Word8, Word16, Word32, Word64)
@@ -296,6 +299,8 @@ class
   , Ord (Concrete t)
   , IsString (Concrete t)
   , Show (Concrete t)
+  , Monoid (Builder t)
+  , IsString (Builder t)
   ) => Textual t where
   -- | Convert from a textual data type to a 'String'
   --
@@ -406,6 +411,36 @@ class
   -- @since 1.6.0.0
   toConcrete :: t -> Concrete t
 
+  -- | A representation of a textual data type with @O(1)@ concatenation 'Monoid' instance. 
+  --
+  -- Textual data types based on Unicode text use a @Text@ 'TLB.Builder', and
+  -- textual data types based on 'Word8' use a @ByteString@ 'BSB.Builder'.
+  -- 'String' uses an 'Endo' over 'String'.
+  --
+  -- Naturally conversions to builder types can take up to O(n) time,
+  -- but by converting to the builder representation before concatenation,
+  -- one should avoid issues with @O(n^2)@ concatenation.
+  --
+  -- @since 1.6.0.0
+  data Builder t
+
+  -- | Convert a builder representation to any textual data type.
+  --
+  -- This class method is used by the 'Textual' instance for 'Builder' to
+  -- implement the conversion functions. It is not exported.
+  --
+  -- @since 1.6.0.0
+  fromBuilder' :: Textual t' => Builder t -> t'
+
+  -- | Convert a textual data type to its builder representation.
+  --
+  -- Builders support efficient concatenation using 'mappend' and string
+  -- literals using 'fromString'. Use 'convert' to convert the result to any
+  -- textual data type.
+  --
+  -- @since 1.6.0.0
+  toBuilder :: t -> Builder t
+
 instance Textual String where
   toS = id
   toT = T.pack
@@ -421,6 +456,10 @@ instance Textual String where
     deriving newtype (Eq, Ord, IsString, Show)
   toConcrete = ConcreteString
   fromConcrete' = fromS . unConcreteString
+  newtype Builder String = BuilderString { unBuilderString :: Endo String }
+    deriving newtype (Semigroup, Monoid)
+  toBuilder = BuilderString . Endo . (++)
+  fromBuilder' = fromS . (`appEndo` "") . unBuilderString
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -433,6 +472,11 @@ instance Textual String where
   {-# INLINE convert' #-}
   {-# INLINE toConcrete #-}
   {-# INLINE fromConcrete' #-}
+  {-# INLINE toBuilder #-}
+  {-# INLINE fromBuilder' #-}
+
+instance IsString (Builder String) where
+  fromString = BuilderString . Endo . (++)
 
 instance Textual T.Text where
   toS = T.unpack
@@ -449,6 +493,10 @@ instance Textual T.Text where
     deriving newtype (Eq, Ord, IsString, Show)
   toConcrete = ConcreteStrictText
   fromConcrete' = fromT . unConcreteStrictText
+  newtype Builder T.Text = BuilderStrictText { unBuilderStrictText :: TLB.Builder }
+    deriving newtype (Semigroup, Monoid, IsString)
+  toBuilder = BuilderStrictText . toTLB
+  fromBuilder' = fromTLB . unBuilderStrictText
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -461,6 +509,8 @@ instance Textual T.Text where
   {-# INLINE convert' #-}
   {-# INLINE toConcrete #-}
   {-# INLINE fromConcrete' #-}
+  {-# INLINE toBuilder #-}
+  {-# INLINE fromBuilder' #-}
 
 instance Textual TL.Text where
   toS = TL.unpack
@@ -477,6 +527,10 @@ instance Textual TL.Text where
     deriving newtype (Eq, Ord, IsString, Show)
   toConcrete = ConcreteLazyText
   fromConcrete' = fromTL . unConcreteLazyText
+  newtype Builder TL.Text = BuilderLazyText { unBuilderLazyText :: TLB.Builder }
+    deriving newtype (Semigroup, Monoid, IsString)
+  toBuilder = BuilderLazyText . toTLB
+  fromBuilder' = fromTLB . unBuilderLazyText
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -489,6 +543,8 @@ instance Textual TL.Text where
   {-# INLINE convert' #-}
   {-# INLINE toConcrete #-}
   {-# INLINE fromConcrete' #-}
+  {-# INLINE toBuilder #-}
+  {-# INLINE fromBuilder' #-}
 
 instance Textual TLB.Builder where
   toS = TL.unpack . TLB.toLazyText
@@ -505,6 +561,10 @@ instance Textual TLB.Builder where
     deriving newtype (Eq, Ord, IsString, Show)
   toConcrete = ConcreteTextBuilder . toTL
   fromConcrete' = fromTL . unConcreteTextBuilder
+  newtype Builder TLB.Builder = BuilderTextBuilder { unBuilderTextBuilder :: TLB.Builder }
+    deriving newtype (Semigroup, Monoid, IsString)
+  toBuilder = BuilderTextBuilder
+  fromBuilder' = fromTLB . unBuilderTextBuilder
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -517,6 +577,8 @@ instance Textual TLB.Builder where
   {-# INLINE convert' #-}
   {-# INLINE toConcrete #-}
   {-# INLINE fromConcrete' #-}
+  {-# INLINE toBuilder #-}
+  {-# INLINE fromBuilder' #-}
 
 instance Textual ST.ShortText where
   toS = ST.toString
@@ -533,6 +595,10 @@ instance Textual ST.ShortText where
     deriving newtype (Eq, Ord, IsString, Show)
   toConcrete = ConcreteShortText
   fromConcrete' = fromST . unConcreteShortText
+  newtype Builder ST.ShortText = BuilderShortText { unBuilderShortText :: TLB.Builder }
+    deriving newtype (Semigroup, Monoid, IsString)
+  toBuilder = BuilderShortText . toTLB
+  fromBuilder' = fromTLB . unBuilderShortText
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -545,6 +611,8 @@ instance Textual ST.ShortText where
   {-# INLINE convert' #-}
   {-# INLINE toConcrete #-}
   {-# INLINE fromConcrete' #-}
+  {-# INLINE toBuilder #-}
+  {-# INLINE fromBuilder' #-}
 
 instance Textual BS.ByteString where
   toS = T.unpack . TE.decodeUtf8With TEE.lenientDecode
@@ -561,6 +629,10 @@ instance Textual BS.ByteString where
     deriving newtype (Eq, Ord, IsString, Show)
   toConcrete = ConcreteStrictByteString
   fromConcrete' = fromBS . unConcreteStrictByteString
+  newtype Builder BS.ByteString = BuilderStrictByteString { unBuilderStrictByteString :: BSB.Builder }
+    deriving newtype (Semigroup, Monoid, IsString)
+  toBuilder = BuilderStrictByteString . toBSB
+  fromBuilder' = fromBSB . unBuilderStrictByteString
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -573,6 +645,8 @@ instance Textual BS.ByteString where
   {-# INLINE convert' #-}
   {-# INLINE toConcrete #-}
   {-# INLINE fromConcrete' #-}
+  {-# INLINE toBuilder #-}
+  {-# INLINE fromBuilder' #-}
 
 instance Textual BSL.ByteString where
   toS = TL.unpack . TLE.decodeUtf8With TEE.lenientDecode
@@ -589,6 +663,10 @@ instance Textual BSL.ByteString where
     deriving newtype (Eq, Ord, IsString, Show)
   toConcrete = ConcreteLazyByteString
   fromConcrete' = fromBSL . unConcreteLazyByteString
+  newtype Builder BSL.ByteString = BuilderLazyByteString { unBuilderLazyByteString :: BSB.Builder }
+    deriving newtype (Semigroup, Monoid, IsString)
+  toBuilder = BuilderLazyByteString . toBSB
+  fromBuilder' = fromBSB . unBuilderLazyByteString
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -601,6 +679,8 @@ instance Textual BSL.ByteString where
   {-# INLINE convert' #-}
   {-# INLINE toConcrete #-}
   {-# INLINE fromConcrete' #-}
+  {-# INLINE toBuilder #-}
+  {-# INLINE fromBuilder' #-}
 
 instance Textual BSB.Builder where
   toS =
@@ -626,6 +706,10 @@ instance Textual BSB.Builder where
     deriving newtype (Eq, Ord, IsString, Show)
   toConcrete = ConcreteByteStringBuilder . toBSL
   fromConcrete' = fromBSL . unConcreteByteStringBuilder
+  newtype Builder BSB.Builder = BuilderByteStringBuilder { unBuilderByteStringBuilder :: BSB.Builder }
+    deriving newtype (Semigroup, Monoid, IsString)
+  toBuilder = BuilderByteStringBuilder
+  fromBuilder' = fromBSB . unBuilderByteStringBuilder
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -638,6 +722,8 @@ instance Textual BSB.Builder where
   {-# INLINE convert' #-}
   {-# INLINE toConcrete #-}
   {-# INLINE fromConcrete' #-}
+  {-# INLINE toBuilder #-}
+  {-# INLINE fromBuilder' #-}
 
 instance Textual SBS.ShortByteString where
   toS = T.unpack . TE.decodeUtf8With TEE.lenientDecode . SBS.fromShort
@@ -654,6 +740,10 @@ instance Textual SBS.ShortByteString where
     deriving newtype (Eq, Ord, IsString, Show)
   toConcrete = ConcreteShortByteString
   fromConcrete' = fromSBS . unConcreteShortByteString
+  newtype Builder SBS.ShortByteString = BuilderShortByteString { unBuilderShortByteString :: BSB.Builder }
+    deriving newtype (Semigroup, Monoid, IsString)
+  toBuilder = BuilderShortByteString . toBSB
+  fromBuilder' = fromBSB . unBuilderShortByteString
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -666,6 +756,8 @@ instance Textual SBS.ShortByteString where
   {-# INLINE convert' #-}
   {-# INLINE toConcrete #-}
   {-# INLINE fromConcrete' #-}
+  {-# INLINE toBuilder #-}
+  {-# INLINE fromBuilder' #-}
 
 instance Textual t => Textual (Concrete t) where
   -- The class could provide specialized methods such as
@@ -690,6 +782,9 @@ instance Textual t => Textual (Concrete t) where
   newtype Concrete (Concrete t) = AlreadyConcrete { unAlreadyConcrete :: Concrete t }
   toConcrete = AlreadyConcrete
   fromConcrete' = fromConcrete' . unAlreadyConcrete
+  newtype Builder (Concrete t) = BuilderConcrete { unBuilderConcrete :: Builder t }
+  toBuilder = BuilderConcrete . convert'
+  fromBuilder' = fromBuilder' . unBuilderConcrete
   {-# INLINE toS #-}
   {-# INLINE toT #-}
   {-# INLINE toTL #-}
@@ -702,11 +797,58 @@ instance Textual t => Textual (Concrete t) where
   {-# INLINE convert' #-}
   {-# INLINE toConcrete #-}
   {-# INLINE fromConcrete' #-}
+  {-# INLINE toBuilder #-}
+  {-# INLINE fromBuilder' #-}
 
 deriving newtype instance Eq (Concrete t) => Eq (Concrete (Concrete t))
 deriving newtype instance Ord (Concrete t) => Ord (Concrete (Concrete t))
 deriving newtype instance IsString (Concrete t) => IsString (Concrete (Concrete t))
 deriving newtype instance Show (Concrete t) => Show (Concrete (Concrete t))
+deriving newtype instance Semigroup (Builder t) => Semigroup (Builder (Concrete t))
+deriving newtype instance Monoid (Builder t) => Monoid (Builder (Concrete t))
+deriving newtype instance IsString (Builder t) => IsString (Builder (Concrete t))
+
+instance Textual t => Textual (Builder t) where
+  -- Similar comment as for 'Textual (Concrete t)' instance.
+  -- We could provide specialized implementations here but it's probably not worth it.
+  toS = fromBuilder'
+  toT = fromBuilder'
+  toTL = fromBuilder'
+  toTLB = fromBuilder'
+  toST = fromBuilder'
+  toBS = fromBuilder'
+  toBSL = fromBuilder'
+  toBSB = fromBuilder'
+  toSBS = fromBuilder'
+  convert' = toBuilder . convert'
+  newtype Concrete (Builder t) = ConcreteBuilder { unConcreteBuilder :: Concrete t }
+  toConcrete = ConcreteBuilder . convert'
+  fromConcrete' = convert' . unConcreteBuilder
+  newtype Builder (Builder t) = AlreadyBuilder { unAlreadyBuilder :: Builder t }
+  toBuilder = AlreadyBuilder
+  fromBuilder' = fromBuilder' . unAlreadyBuilder
+  {-# INLINE toS #-}
+  {-# INLINE toT #-}
+  {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
+  {-# INLINE toST #-}
+  {-# INLINE toBS #-}
+  {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
+  {-# INLINE convert' #-}
+  {-# INLINE toConcrete #-}
+  {-# INLINE fromConcrete' #-}
+  {-# INLINE toBuilder #-}
+  {-# INLINE fromBuilder' #-}
+
+deriving newtype instance Eq (Concrete t) => Eq (Concrete (Builder t))
+deriving newtype instance Ord (Concrete t) => Ord (Concrete (Builder t))
+deriving newtype instance IsString (Concrete t) => IsString (Concrete (Builder t))
+deriving newtype instance Show (Concrete t) => Show (Concrete (Builder t))
+deriving newtype instance Semigroup (Builder t) => Semigroup (Builder (Builder t))
+deriving newtype instance Monoid (Builder t) => Monoid (Builder (Builder t))
+deriving newtype instance IsString (Builder t) => IsString (Builder (Builder t))
 
 ------------------------------------------------------------------------------
 
