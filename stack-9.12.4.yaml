@@ -1,4 +1,4 @@
-resolver: nightly-2026-05-23
+resolver: nightly-2026-09-01
 
 packages:
   - ./ttc
