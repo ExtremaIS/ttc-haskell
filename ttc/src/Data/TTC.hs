@@ -56,6 +56,7 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE DefaultSignatures #-}
 {-# LANGUAGE DerivingStrategies #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE ExplicitForAll #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -96,6 +97,10 @@ module Data.TTC
   , fromBSL
   , fromBSB
   , fromSBS
+    -- ** Newtype for UTF-8 compatable 'IsString' instances
+    -- $UTF8IsString
+  , UTF8IsString(..)
+  , fromString
     -- ** \"As\" Conversions
     -- $TextualAs
   , asS
@@ -233,7 +238,8 @@ module Data.TTC
 import Data.Int (Int8, Int16, Int32, Int64)
 import Data.Monoid (Endo(Endo, appEndo))
 import Data.Proxy (Proxy(Proxy), asProxyTypeOf)
-import Data.String (IsString(fromString))
+import Data.String (IsString)
+import qualified Data.String as S
 import Data.Word (Word8, Word16, Word32, Word64)
 import GHC.Stack (HasCallStack)
 import Text.Read (readMaybe)
@@ -259,6 +265,114 @@ import qualified Data.Text.Lazy.Encoding as TLE
 
 -- https://hackage.haskell.org/package/text-short
 import qualified Data.Text.Short as ST
+
+------------------------------------------------------------------------------
+-- $UTF8IsString
+
+-- | A newtype that gives 'IsString' instances that preserve UTF-8 code points
+--
+-- So then we can write 'Render' instances that work sensibly across all
+-- Textual types. For example:
+--
+-- @
+-- {-# LANGUAGE OverloadedStrings #-}
+--
+-- data MyFavouriteThings = Cafe | JapaneseExample | Red
+--
+-- instance Render MyFavouriteThings where
+--   render x = fromUTF8IsString $ case x of
+--     Cafe            -> "café"
+--     JapaneseExample -> "日本語の例"
+--     Red             -> "Red"
+-- @
+-- 
+-- Without `fromUTF8IsString`, this would fail to compile because `IsString t`
+-- is not a superclass of `Textual t`.
+--
+-- So why not make just `IsString t` a superclass of `Textual t`?
+--
+-- The 'IsString' instance for strict 'BS.ByteString's, lazy 'BSL.ByteString's
+-- and 'SBS.ShortByteString's silently truncate unicode code points with
+-- more than one byte to one byte. 
+--
+-- Lots of people think this situation is bad:
+-- (https://github.com/haskell/bytestring/issues/140) but there seems to be
+-- no consensus on how to solve it.
+-- 
+-- Furthermore, inconsistently, the @IsString BSB.Builder@ does properly 
+-- encode UTF-8 to bytes.
+--
+-- This newtype tries to clean up this mess. The text types have sensible 
+-- 'IsString' instances, so we just forward them. With the strict, lazy and
+-- short @ByteString@ types, we use the 'IsString' instance of the
+-- corresponding @Text@ type.
+-- 
+-- If we just used the `IsString` instance of @ByteString@, we'd get the 
+-- following bytes:
+--
+-- ```
+-- "café" == [99,97,102,233]
+-- "日本語の例" == [229,44,158,110,139]
+-- ```
+--
+-- These are just both wrong when we convert them to 'Text'. UTF-8 expects
+-- code points from 128-225 to be encoded in two bytes so will in this case
+-- reject this but in other cases just misinterpret the input, and in the
+-- Japanese case we've just truncated all the code points to one byte.
+--
+-- What we should have is this:
+--
+-- ```
+-- "café" == [99,97,102,195,169]
+-- "日本語の例" == [230,151,165,230,156,172,232,170,158,227,129,174,228,190,139]
+-- ```
+--
+-- By wrapping in this newtype, you will get this sort of result, even if
+-- you're rendering to a 'ByteString'. 
+--
+-- Note that Haskell 'String's (i.e. @[Char]@) can represent 
+-- [Surrogates](https://en.wikipedia.org/wiki/UTF-8#Surrogates) 
+-- which are not valid UTF-8 code points.
+--
+-- The @IsString (UTF8IsString BSB.Builder)@ instance uses 'BSB.stringUtf8', 
+-- which does not check for surrogates even though they are not valid UTF-8. 
+--
+-- Also @IsString (UTFIsString String)@ also does not check for surrogates,
+-- as it is basically the `id` function.
+--
+-- All of the others do check for surrogates, because there either are
+-- 'text' based or proxy their 'IsString' instances via 'text' based types.
+-- They replace surrogates with the 
+-- [replacement character @U+FFFD@](https://en.wikipedia.org/wiki/Specials_(Unicode_block)#Replacement_character).
+--
+-- So long story short, with this newtype, all valid UTF-8 encoded
+-- 'String's will be respected either when calling 'fromString' explicitly
+-- or implicitly when using a string literal with @OverloadedStrings@. 
+-- And GHC will encode any string literals without explicit codepoints
+-- to valid 'UTF-8'. Only if you explicitly encode non UTF-8 code points,
+-- (e.g. @"\xD800\xDC00"@) will you perhaps get different results between
+-- these instances.
+--
+-- @since 1.6.0.0
+newtype UTF8IsString t = UTF8IsString { fromUTF8IsString :: t }
+
+deriving newtype instance IsString (UTF8IsString String)
+deriving newtype instance IsString (UTF8IsString T.Text)
+deriving newtype instance IsString (UTF8IsString TL.Text)
+deriving newtype instance IsString (UTF8IsString TLB.Builder)
+deriving newtype instance IsString (UTF8IsString ST.ShortText)
+
+instance (IsString (UTF8IsString BS.ByteString)) where
+  fromString = UTF8IsString . TE.encodeUtf8 . S.fromString
+instance (IsString (UTF8IsString BSL.ByteString)) where
+  fromString = UTF8IsString . TLE.encodeUtf8 . S.fromString
+instance (IsString (UTF8IsString BSB.Builder)) where
+  fromString = UTF8IsString . BSB.stringUtf8
+instance (IsString (UTF8IsString SBS.ShortByteString)) where
+  -- As 'ShortText' is just a newtype around 'ShortByteString',
+  -- 'ST.toShortByteString' is actually zero cost 
+  -- as it's just unwrapping the newtype.
+  fromString = UTF8IsString . ST.toShortByteString . S.fromString
 
 ------------------------------------------------------------------------------
 -- $Textual
@@ -294,7 +408,7 @@ import qualified Data.Text.Short as ST
 --
 -- @since 0.1.0.0
 class
-  ( IsString t
+  ( IsString (UTF8IsString t)
   , Eq (Concrete t)
   , Ord (Concrete t)
   , IsString (Concrete t)
@@ -626,11 +740,13 @@ instance Textual BS.ByteString where
   toSBS = SBS.toShort
   convert' = toBS
   newtype Concrete BS.ByteString = ConcreteStrictByteString { unConcreteStrictByteString :: BS.ByteString }
-    deriving newtype (Eq, Ord, IsString, Show)
+    deriving newtype (Eq, Ord, Show)
+    deriving IsString via (UTF8IsString BS.ByteString)
   toConcrete = ConcreteStrictByteString
   fromConcrete' = fromBS . unConcreteStrictByteString
   newtype Builder BS.ByteString = BuilderStrictByteString { unBuilderStrictByteString :: BSB.Builder }
-    deriving newtype (Semigroup, Monoid, IsString)
+    deriving newtype (Semigroup, Monoid)
+    deriving IsString via (UTF8IsString BSB.Builder)
   toBuilder = BuilderStrictByteString . toBSB
   fromBuilder' = fromBSB . unBuilderStrictByteString
   {-# INLINE toS #-}
@@ -660,11 +776,13 @@ instance Textual BSL.ByteString where
   toSBS = SBS.toShort . BSL.toStrict
   convert' = toBSL
   newtype Concrete BSL.ByteString = ConcreteLazyByteString { unConcreteLazyByteString :: BSL.ByteString }
-    deriving newtype (Eq, Ord, IsString, Show)
+    deriving newtype (Eq, Ord, Show)
+    deriving IsString via (UTF8IsString BSL.ByteString)
   toConcrete = ConcreteLazyByteString
   fromConcrete' = fromBSL . unConcreteLazyByteString
   newtype Builder BSL.ByteString = BuilderLazyByteString { unBuilderLazyByteString :: BSB.Builder }
-    deriving newtype (Semigroup, Monoid, IsString)
+    deriving newtype (Semigroup, Monoid)
+    deriving IsString via (UTF8IsString BSB.Builder)
   toBuilder = BuilderLazyByteString . toBSB
   fromBuilder' = fromBSB . unBuilderLazyByteString
   {-# INLINE toS #-}
@@ -703,11 +821,13 @@ instance Textual BSB.Builder where
   toSBS = SBS.toShort . BSL.toStrict . BSB.toLazyByteString
   convert' = toBSB
   newtype Concrete BSB.Builder = ConcreteByteStringBuilder { unConcreteByteStringBuilder :: BSL.ByteString }
-    deriving newtype (Eq, Ord, IsString, Show)
+    deriving newtype (Eq, Ord, Show)
+    deriving IsString via (UTF8IsString BSL.ByteString)
   toConcrete = ConcreteByteStringBuilder . toBSL
   fromConcrete' = fromBSL . unConcreteByteStringBuilder
   newtype Builder BSB.Builder = BuilderByteStringBuilder { unBuilderByteStringBuilder :: BSB.Builder }
-    deriving newtype (Semigroup, Monoid, IsString)
+    deriving newtype (Semigroup, Monoid)
+    deriving IsString via (UTF8IsString BSB.Builder)
   toBuilder = BuilderByteStringBuilder
   fromBuilder' = fromBSB . unBuilderByteStringBuilder
   {-# INLINE toS #-}
@@ -737,11 +857,13 @@ instance Textual SBS.ShortByteString where
   toSBS = id
   convert' = toSBS
   newtype Concrete SBS.ShortByteString = ConcreteShortByteString { unConcreteShortByteString :: SBS.ShortByteString }
-    deriving newtype (Eq, Ord, IsString, Show)
+    deriving newtype (Eq, Ord, Show)
+    deriving IsString via (UTF8IsString SBS.ShortByteString)
   toConcrete = ConcreteShortByteString
   fromConcrete' = fromSBS . unConcreteShortByteString
   newtype Builder SBS.ShortByteString = BuilderShortByteString { unBuilderShortByteString :: BSB.Builder }
-    deriving newtype (Semigroup, Monoid, IsString)
+    deriving newtype (Semigroup, Monoid)
+    deriving IsString via (UTF8IsString BSB.Builder)
   toBuilder = BuilderShortByteString . toBSB
   fromBuilder' = fromBSB . unBuilderShortByteString
   {-# INLINE toS #-}
@@ -800,6 +922,7 @@ instance Textual t => Textual (Concrete t) where
   {-# INLINE toBuilder #-}
   {-# INLINE fromBuilder' #-}
 
+deriving newtype instance IsString (Concrete t) => IsString (UTF8IsString (Concrete t))
 deriving newtype instance Eq (Concrete t) => Eq (Concrete (Concrete t))
 deriving newtype instance Ord (Concrete t) => Ord (Concrete (Concrete t))
 deriving newtype instance IsString (Concrete t) => IsString (Concrete (Concrete t))
@@ -842,6 +965,7 @@ instance Textual t => Textual (Builder t) where
   {-# INLINE toBuilder #-}
   {-# INLINE fromBuilder' #-}
 
+deriving newtype instance IsString (Builder t) => IsString (UTF8IsString (Builder t))
 deriving newtype instance Eq (Concrete t) => Eq (Concrete (Builder t))
 deriving newtype instance Ord (Concrete t) => Ord (Concrete (Builder t))
 deriving newtype instance IsString (Concrete t) => IsString (Concrete (Builder t))
@@ -849,6 +973,47 @@ deriving newtype instance Show (Concrete t) => Show (Concrete (Builder t))
 deriving newtype instance Semigroup (Builder t) => Semigroup (Builder (Builder t))
 deriving newtype instance Monoid (Builder t) => Monoid (Builder (Builder t))
 deriving newtype instance IsString (Builder t) => IsString (Builder (Builder t))
+
+instance Textual t => Textual (UTF8IsString t) where
+  toS = toS . fromUTF8IsString
+  toT = toT . fromUTF8IsString
+  toTL = toTL . fromUTF8IsString
+  toTLB = toTLB . fromUTF8IsString
+  toST = toST . fromUTF8IsString
+  toBS = toBS . fromUTF8IsString
+  toBSL = toBSL . fromUTF8IsString
+  toBSB = toBSB . fromUTF8IsString
+  toSBS = toSBS . fromUTF8IsString
+  convert' = UTF8IsString . convert'
+  newtype Concrete (UTF8IsString t) = ConcreteUTF8IsString { unConcreteUTF8IsString :: Concrete t }
+  toConcrete = ConcreteUTF8IsString . toConcrete . fromUTF8IsString
+  fromConcrete' = fromConcrete' . unConcreteUTF8IsString
+  newtype Builder (UTF8IsString t) = BuilderUTF8IsString { unBuilderUTF8IsString :: Builder t }
+  toBuilder = BuilderUTF8IsString . toBuilder . fromUTF8IsString
+  fromBuilder' = fromBuilder' . unBuilderUTF8IsString
+  {-# INLINE toS #-}
+  {-# INLINE toT #-}
+  {-# INLINE toTL #-}
+  {-# INLINE toTLB #-}
+  {-# INLINE toST #-}
+  {-# INLINE toBS #-}
+  {-# INLINE toBSL #-}
+  {-# INLINE toBSB #-}
+  {-# INLINE toSBS #-}
+  {-# INLINE convert' #-}
+  {-# INLINE toConcrete #-}
+  {-# INLINE fromConcrete' #-}
+  {-# INLINE toBuilder #-}
+  {-# INLINE fromBuilder' #-}
+
+deriving newtype instance IsString (UTF8IsString t) => IsString (UTF8IsString (UTF8IsString t))
+deriving newtype instance Eq (Concrete t) => Eq (Concrete (UTF8IsString t))
+deriving newtype instance Ord (Concrete t) => Ord (Concrete (UTF8IsString t))
+deriving newtype instance IsString (Concrete t) => IsString (Concrete (UTF8IsString t))
+deriving newtype instance Show (Concrete t) => Show (Concrete (UTF8IsString t))
+deriving newtype instance Semigroup (Builder t) => Semigroup (Builder (UTF8IsString t))
+deriving newtype instance Monoid (Builder t) => Monoid (Builder (UTF8IsString t))
+deriving newtype instance IsString (Builder t) => IsString (Builder (UTF8IsString t))
 
 ------------------------------------------------------------------------------
 
@@ -860,6 +1025,32 @@ deriving newtype instance IsString (Builder t) => IsString (Builder (Builder t))
 convert :: forall t t'. (Textual t, Textual t') => t -> t'
 convert = convert'
 {-# INLINE convert #-}
+
+-- | Convert from a 'String' to a textual data type, in a UTF-8 compatible manner
+--
+-- This function just uses the 'IsString' instances defined on 'UTF8IsString',
+-- so for details read the documentation for 'UTF8IsString'.
+--
+-- This is also defined in preparation for GHC 10.0 extension 
+-- [QualifiedStrings](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/qualified_strings.html)
+--
+-- Once that is implemented you should be able to do:
+--
+-- @
+-- {-# LANGUAGE QualifiedStrings #-}
+--
+-- import Data.TTC qualified as TTC
+--
+-- myTextual :: Textual t => t
+-- myTextual = TTC."Hello, world!"
+-- @
+--
+-- Without @QualifiedStrings@, @TTC.fromString "Hello, world!"@ achieves the same anyway.
+--
+-- @since 1.6.0.0
+fromString :: Textual t => String -> t
+fromString = fromUTF8IsString . S.fromString
+{-# INLINE fromString #-}
 
 ------------------------------------------------------------------------------
 -- $TextualTo
