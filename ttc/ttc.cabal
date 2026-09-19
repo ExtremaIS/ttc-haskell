@@ -1,6 +1,6 @@
 cabal-version:      3.0
 name:               ttc
-version:            1.5.0.1
+version:            1.6.0.0
 synopsis:           Textual Type Classes
 description:
   This library provides type classes for conversion between data types and
@@ -71,3 +71,4 @@ test-suite ttc-test
     , ttc
   default-language: Haskell2010
   ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+
