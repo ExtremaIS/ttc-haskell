@@ -1,4 +1,4 @@
-resolver: lts-24.57
+resolver: lts-24.59
 
 packages:
   - ./ttc
